@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<cinder>
+<block
+	name="Reymenta"
+	id="fr.batchass.reymenta"
+	author="Bruce Lane"
+	license="MIT"
+	summary="Reymenta block for Cinder"
+	url="https://github.com/brucelane/Cinder-Reymenta"
+	git="git://github.com/brucelane/Cinder-Reymenta.git"
+	>
+	<supports os="msw" />
+	<includePath>include</includePath>
+	<includePath>src</includePath>
+	<headerPattern>src/*.h</headerPattern>
+	<headerPattern>src/ip/*.h</headerPattern>
+	<headerPattern>src/osc/*.h</headerPattern>
+	<sourcePattern>src/*.cpp</sourcePattern>
+	<sourcePattern>src/ip/*.cpp</sourcePattern>
+	<sourcePattern>src/osc/*.cpp</sourcePattern>
+	<sourcePattern>src/ip/win32/*.cpp</sourcePattern>
+	<staticLibrary>lib/Spout.lib</staticLibrary>
+	<buildCopy>lib/Spout.dll</buildCopy>
+	<buildCopy>lib/SpoutPanel.exe</buildCopy>
+</block>
+<template>templates/Reymenta/template.xml</template>
+</cinder>
