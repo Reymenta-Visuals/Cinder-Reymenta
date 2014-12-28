@@ -9,15 +9,13 @@
 #include "Resources.h"
 // log
 #include "Logger.h"
-// live coding
-//#include "CodeEditor.h"
-//#include "CinderAwesomium.h"
+
 // parameters
 #include "ParameterBag.h"
 // thread safe circular buffer
 #include "cinder/ConcurrentCircularBuffer.h"
-// assetmanager
-#include "AssetManager.h"
+// Watchdog
+#include "Watchdog.h"
 // VisualStudio does'nt seem to support initializer_list
 // yet so let's use boost::assign::list_of instead
 #if defined( CINDER_MSW )
