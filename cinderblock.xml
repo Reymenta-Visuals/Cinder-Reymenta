@@ -9,16 +9,13 @@
 	url="https://github.com/brucelane/Cinder-Reymenta"
 	git="git://github.com/brucelane/Cinder-Reymenta.git"
 	>
+	<requires>org.libcinder.osc</requires>
+	<requires>fr.batchass.spout</requires>
 	<supports os="msw" />
 	<includePath>include</includePath>
 	<includePath>src</includePath>
-	<headerPattern>src/*.h</headerPattern>
-	<headerPattern>src/ip/*.h</headerPattern>
-	<headerPattern>src/osc/*.h</headerPattern>
+	<headerPattern>include/*.h</headerPattern>
 	<sourcePattern>src/*.cpp</sourcePattern>
-	<sourcePattern>src/ip/*.cpp</sourcePattern>
-	<sourcePattern>src/osc/*.cpp</sourcePattern>
-	<sourcePattern>src/ip/win32/*.cpp</sourcePattern>
 	<staticLibrary>lib/Spout.lib</staticLibrary>
 	<buildCopy>lib/Spout.dll</buildCopy>
 	<buildCopy>lib/SpoutPanel.exe</buildCopy>
