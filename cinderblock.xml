@@ -5,7 +5,7 @@
 	id="fr.batchass.reymenta"
 	author="Bruce Lane"
 	license="MIT"
-	summary="Reymenta block for Cinder"
+	summary="Reymenta block for Cinder: utilities for Spout, OSC, Watchdog, Shaders, Parameters"
 	url="https://github.com/brucelane/Cinder-Reymenta"
 	git="git://github.com/brucelane/Cinder-Reymenta.git"
 	>
