@@ -35,7 +35,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 		fs::path mixFragFile = getAssetPath("") / "shaders" / "templates" / "mix.frag";
 		if (fs::exists(mixFragFile))
 		{
-			mMixShader = gl::GlslProg::create(loadResource(PASSTHROUGH2_VERT), loadFile(mixFragFile));
+			mMixShader = gl::GlslProg::create(loadAsset("passthru.vert"), loadFile(mixFragFile));
 		}
 		else
 		{
@@ -59,18 +59,25 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 		fs::path liveFragFile = getAssetPath("") / "live.frag";
 		if (fs::exists(liveFragFile))
 		{
-			//mLiveShader = gl::GlslProg::create(loadResource(PASSTHROUGH2_VERT), loadFile(liveFragFile));
-			wd::watch("live.frag", [this](DataSourceRef frag) {
+			// Load our shader and test if it is correctly compiled
+			try {
+				mLiveShader = gl::GlslProg::create(loadAsset("passthru.vert"), loadFile(liveFragFile));
+				liveError = false;
+			}
+			catch (gl::GlslProgCompileExc exc){
+				console() << exc.what() << endl;
+			}
+			/*wd::watch(liveFragFile, [this](const fs::path &frag) {
 
-				// Load our shader and test if it is correctly compiled
-				try {
-					mLiveShader = gl::GlslProg::create(loadResource(PASSTHROUGH2_VERT), frag);
-					liveError = false;
-				}
-				catch (gl::GlslProgCompileExc exc){
-					console() << exc.what() << endl;
-				}
-			});
+			// Load our shader and test if it is correctly compiled
+			try {
+			mLiveShader = gl::GlslProg::create(loadAsset("passthru.vert"), frag);
+			liveError = false;
+			}
+			catch (gl::GlslProgCompileExc exc){
+			console() << exc.what() << endl;
+			}
+			});*/
 		}
 		else
 		{
@@ -92,7 +99,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	{
 		// revert to mix.frag, TODO better quit if mix.frag does not exit
 		fs::path mixFragFile = getAssetPath("") / "shaders" / "templates" / "mix.frag";
-		mLiveShader = gl::GlslProg::create(loadResource(PASSTHROUGH2_VERT), loadFile(mixFragFile));
+		mLiveShader = gl::GlslProg::create(loadAsset("passthru.vert"), loadFile(mixFragFile));
 	}
 	vs = loadString(loadAsset("shaders/templates/passThrough2.vert"));
 	inc = loadString(loadAsset("shaders/templates/shadertoy.inc"));
@@ -112,7 +119,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	// init with passthru shader if something goes wrong	
 	for (size_t m = mFragmentShaders.size(); m < 8; m++)
 	{
-		mFragmentShaders.push_back(gl::GlslProg::create(loadResource(PASSTHROUGH2_VERT), loadResource(PASSTHROUGH_FRAG)));
+		mFragmentShaders.push_back(gl::GlslProg::create(loadAsset("passthru.vert"), loadAsset("passthru.frag")));
 	}
 	mCurrentPreviewShader = 0;
 	mCurrentRenderShader = 0;
