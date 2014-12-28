@@ -60,7 +60,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 		if (fs::exists(liveFragFile))
 		{
 			//mLiveShader = gl::GlslProg::create(loadResource(PASSTHROUGH2_VERT), loadFile(liveFragFile));
-			AssetManager::load("live.frag", [this](DataSourceRef frag) {
+			wd::watch("live.frag", [this](DataSourceRef frag) {
 
 				// Load our shader and test if it is correctly compiled
 				try {
