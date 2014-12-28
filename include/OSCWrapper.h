@@ -7,8 +7,6 @@
 #include "ParameterBag.h"
 //#include "WindowsManager.h"
 #include "Shaders.h"
-// UI
-#include "UI.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -38,16 +36,12 @@ namespace Reymenta
 		void oscProcessMessage( int controlName, int arg0, int arg1 );
 		// parameters
 		ParameterBagRef mParameterBag;
-		// UI
-		//UIRef mUserInterface;
-		osc::Listener 				mOSCReceiver;
-		osc::Sender					mOSCSender;
-		// windowrefs
-		//WindowsManagerRef			mWindowsManager;
 		// Shaders
 		ShadersRef					mShaders;
-		// minimalUI
-		UIRef						mUserInterface;
+
+		osc::Listener 				mOSCReceiver;
+		osc::Sender					mOSCSender;
+
 
 	};
 }
