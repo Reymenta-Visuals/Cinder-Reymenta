@@ -20,7 +20,7 @@
 // shaders
 #include "Shaders.h"
 // to use UI element for update background image
-#include "UIElement.h"
+//#include "UIElement.h"
 
 // gstreamer
 // #include "_2RealGStreamerWrapper.h"
