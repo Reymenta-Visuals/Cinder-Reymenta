@@ -16,9 +16,6 @@
 	<includePath>src</includePath>
 	<headerPattern>include/*.h</headerPattern>
 	<sourcePattern>src/*.cpp</sourcePattern>
-	<staticLibrary>lib/Spout.lib</staticLibrary>
-	<buildCopy>lib/Spout.dll</buildCopy>
-	<buildCopy>lib/SpoutPanel.exe</buildCopy>
 </block>
 <template>templates/Reymenta/template.xml</template>
 </cinder>

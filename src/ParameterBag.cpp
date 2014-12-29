@@ -16,7 +16,7 @@ ParameterBag::ParameterBag()
 	reset();
 
 	// check to see if ReymentaSettings.xml file exists and restore if it does
-	fs::path params = getDocumentsDirectory() / "Reymenta" / "ReymentaSettings.xml";
+	fs::path params = getAssetPath("") / settingsFileName;
 	if (fs::exists(params))
 		restore();
 }
@@ -28,17 +28,14 @@ ParameterBagRef ParameterBag::create()
 
 bool ParameterBag::save()
 {
-	string filename = "ReymentaSettings.xml";
-
-	// attempt to create "Beautiful Chaos" directory in Documents directory
-	fs::path directory = getDocumentsDirectory() / "Reymenta";
+	fs::path directory = getAssetPath("");
 	if (!fs::exists(directory)) {
-		if (!createDirectories(directory / filename)) {
+		if (!createDirectories(directory / settingsFileName)) {
 			return false;
 		}
 	}
 
-	fs::path path = directory / filename;
+	fs::path path = directory / settingsFileName;
 
 	XmlTree settings("settings", "");
 
@@ -90,8 +87,8 @@ bool ParameterBag::save()
 
 bool ParameterBag::restore()
 {
-	// check to see if ReymentaSettings.xml file exists
-	fs::path params = getDocumentsDirectory() / "Reymenta" / "ReymentaSettings.xml";
+	// check to see if Settings.xml file exists
+	fs::path params = getAssetPath("") / settingsFileName;
 	if (fs::exists(params)) {
 		// if it does, restore
 		const XmlTree xml(loadFile(params));
@@ -149,6 +146,7 @@ bool ParameterBag::restore()
 					XmlTree RenderY = settings.getChild("RenderY");
 					mRenderY = RenderY.getAttributeValue<int>("value");
 				}
+				iResolution = Vec3f(mRenderWidth, mRenderHeight, 1.0);
 
 			}
 			return true;
@@ -198,7 +196,7 @@ void ParameterBag::reset()
 	mMarginSmall = 2;
 
 	// OSC
-	mOSCDestinationHost = "127.0.0.1";// "192.168.0.18";
+	mOSCDestinationHost = "127.0.0.1";
 	mOSCDestinationPort = 7001;
 	mOSCReceiverPort = 7000;
 	OSCMsg = "OSC listening on port 7000";
@@ -208,8 +206,6 @@ void ParameterBag::reset()
 	mCount = 1;
 	mZPosition = -0.7f;
 	mLockFR = mLockFG = mLockFB = mLockFA = mLockBR = mLockBG = mLockBB = mLockBA = false;
-	//autoChannel1Speed = autoChannel2Speed = autoChannel3Speed = autoChannel4Speed = autoChannel5Speed = autoChannel6Speed = autoChannel7Speed =  mLockF0 = mLockF0 = mLockF1 = mLockF2 = false;
-	//autoRenderX = autoRenderY = autoPosX = autoPosY = autoResoX = autoResoY= false;
 	tFR = tFG = tFB = tFA = tBR = tBG = tBB = tBA = false;
 
 	// EyePointZ
@@ -370,6 +366,5 @@ void ParameterBag::reset()
 	// invert
 	controlValues[48] = 0.0f;
 	autoInvert = false;
-
 
 }

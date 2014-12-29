@@ -172,7 +172,8 @@ namespace Reymenta {
 		MayaCamUI					mMayaCam;
 		Vec2f						mCamEyePointXY;
 		float						mCamEyePointZ;
-
+	private:
+		const string settingsFileName = "Settings.xml";
 	};
 
 }

@@ -69,14 +69,14 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 			}
 			/*wd::watch(liveFragFile, [this](const fs::path &frag) {
 
-			// Load our shader and test if it is correctly compiled
-			try {
-			mLiveShader = gl::GlslProg::create(loadAsset("passthru.vert"), frag);
-			liveError = false;
-			}
-			catch (gl::GlslProgCompileExc exc){
-			console() << exc.what() << endl;
-			}
+				// Load our shader and test if it is correctly compiled
+				try {
+					mLiveShader = gl::GlslProg::create(loadAsset("passthru.vert"), frag);
+					liveError = false;
+				}
+				catch (gl::GlslProgCompileExc exc){
+					console() << exc.what() << endl;
+				}
 			});*/
 		}
 		else
