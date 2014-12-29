@@ -1,4 +1,16 @@
-void Reymenta::getWindowsResolution()
+#include "Batchass.h"
+
+using namespace Reymenta;
+
+Batchass::Batchass(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
+{
+	mParameterBag = aParameterBag;
+	mShaders = aShadersRef;
+	// instanciate the logger class
+	log = Logger::create("BatchassLog.txt");
+	log->logTimedString("Batchass constructor");
+}
+void Batchass::getWindowsResolution()
 {
 	mParameterBag->mDisplayCount = 0;
 	if (mParameterBag->mAutoLayout)

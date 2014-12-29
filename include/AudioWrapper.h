@@ -18,7 +18,6 @@
 #include "cinder/audio/SampleRecorderNode.h"
 #include "cinder/audio/NodeEffects.h"
 #include "cinder/audio/MonitorNode.h"
-#include "AudioDrawUtils.h"
 #include "cinder/gl/Vbo.h"
 
 using namespace ci;
