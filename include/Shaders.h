@@ -44,11 +44,6 @@ namespace Reymenta
 		{
 			return shared_ptr<Shaders>( new Shaders( aParameterBag ) );
 		}
-		void setFragBegin( string aFragString ) { mFragBegin = aFragString; };
-		void setFragGlobalFunctions( string aFragString ) { mFragGlobalFunctions = aFragString; };
-		void setFragFunctions( string aFragString, int leftOrRight );
-		void setFragMainLines( string aFragString, int leftOrRight );
-		void setFragEnd( string aFragString ) { mFragEnd = aFragString; };
 
 		string getMiddleFragFileName() { return mFragFileName; };
 		string getMiddleFragFullPath() { return mFragFile; };
@@ -64,19 +59,10 @@ namespace Reymenta
 		bool isValidFrag() { return validFrag; };
 		bool isValidVert() { return validVert; };
 
-		//gl::GlslProgRef getCurrentPreviewShader() { return mFragmentShaders[mCurrentPreviewShader]; };
-		//gl::GlslProgRef getCurrentRenderShader() { return mFragmentShaders[mCurrentRenderShader]; };
 		gl::GlslProgRef getMixShader() { return mMixShader; };
 		gl::GlslProgRef getLiveShader() { return mLiveShader; };
 		gl::GlslProgRef getShader(int aIndex) { return mFragmentShaders[aIndex]; };
-		//void setCurrentRenderShaderIndex(int aIndex) { mCurrentRenderShader = aIndex; };
-		//void setCurrentPreviewShaderIndex(int aIndex) { mCurrentPreviewShader = aIndex; };
-		//int getCurrentRenderShaderIndex() { return mCurrentRenderShader; };
-		//int getCurrentPreviewShaderIndex() { return mCurrentPreviewShader; };
-		//void incrementPreviewIndex();
 
-		void loadFragJson( string aFilePath );
-		//bool loadPixelFrag( string aFilePath);
 		bool loadPixelFragmentShader(string aFilePath);
 		void loadFragmentShader(boost::filesystem::path aFilePath);
 		string getFileName(string aFilePath);
@@ -90,7 +76,7 @@ namespace Reymenta
 		// Logger
 		LoggerRef					log;	
 
-		//string						mVertFile;
+
 		string						mFragFile;
 		string						mFragFileName;
 
@@ -101,20 +87,9 @@ namespace Reymenta
 		int							mCurrentRenderShader;
 		int							mCurrentPreviewShader;
 		vector<gl::GlslProgRef>		mFragmentShaders;
-		//vector<gl::GlslProgRef>		mLibraryShaders;
+
 		string						fileName, previousFileName, currentFileName, mixFileName;
-		// live coding
-		string						mFragBegin;
-		string						mFragGlobalFunctions, mFragBlendFunctions;
-		string						mFragFunctionsLeft;
-		string						mFragMainHeaderLeft;
-		string						mFragMainLinesLeft;
-		string						mFragFunctionsRight;
-		string						mFragMainHeaderRight;
-		string						mFragMainLinesRight;
-		string						mFragEnd;
 		string						mError;
-		string						buildFragString();
 		// parameters
 		ParameterBagRef				mParameterBag;
 		// current frag string

@@ -34,7 +34,7 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	sTextures.push_back(gl::Texture(dTexture, GL_LUMINANCE, 512, 2));
 	for (int j = 0; j < mTexturesCount - 1; j++)
 	{
-		gl::Texture img(loadImage(loadResource(IMG)));
+		gl::Texture img(loadImage(loadAsset("reymenta.jpg")));
 		sTextures.push_back(img);
 	}
 

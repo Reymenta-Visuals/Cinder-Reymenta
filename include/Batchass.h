@@ -24,7 +24,6 @@ namespace Reymenta
 	class Batchass {
 	public:
 		Batchass(ParameterBagRef aParameterBag, ShadersRef aShadersRef);
-		virtual					~Batchass();
 		static BatchassRef	create(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 		{
 			return shared_ptr<Batchass>(new Batchass(aParameterBag, aShadersRef));

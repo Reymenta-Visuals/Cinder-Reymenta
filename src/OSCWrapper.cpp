@@ -366,7 +366,7 @@ void OSC::update()
 					fs::path fragFile = getAssetPath("") / "shaders" / "fragjson" / fileName;
 					if (fs::exists(fragFile))
 					{
-						mShaders->loadFragJson(fragFile.string());
+						//mShaders->loadFragJson(fragFile.string());
 					}
 				}
 				else

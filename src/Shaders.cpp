@@ -9,23 +9,11 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	log = Logger::create("ShadersLog.txt");
 	log->logTimedString("Shaders constructor");
 	liveError = true;
-	mFragBegin = getFragStringFromFile("begin.fragpart");
-	mFragFunctionsLeft = getFragStringFromFile("leftfunctions.fragpart");
-	mFragMainHeaderLeft = getFragStringFromFile("leftmainheader.fragpart");
-	mFragMainLinesLeft = getFragStringFromFile("leftmainlines.fragpart");
-	mFragFunctionsRight = getFragStringFromFile("rightfunctions.fragpart");
-	mFragMainHeaderRight = getFragStringFromFile("rightmainheader.fragpart");
-	mFragMainLinesRight = getFragStringFromFile("rightmainlines.fragpart");
-	mFragGlobalFunctions = getFragStringFromFile("globalfunctions.fragpart");
-	mFragBlendFunctions = getFragStringFromFile("blendfunctions.fragpart");
-	mFragEnd = getFragStringFromFile("end.fragpart");
 	previousFileName = "0";
 	currentFileName = "0";
 	fileName = "default.frag";
 	fs::path localFile = getAssetPath("") / "shaders" / fileName;
-	ofstream mDefaultFrag(localFile.string());
-	mDefaultFrag << buildFragString();
-	mDefaultFrag.close();
+
 	mCurrentPreviewShader = 0;
 	mCurrentRenderShader = 0;
 
@@ -98,11 +86,11 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	if (liveError)
 	{
 		// revert to mix.frag, TODO better quit if mix.frag does not exit
-		fs::path mixFragFile = getAssetPath("") / "shaders" / "templates" / "mix.frag";
+		fs::path mixFragFile = getAssetPath("") / "mix.frag";
 		mLiveShader = gl::GlslProg::create(loadAsset("passthru.vert"), loadFile(mixFragFile));
 	}
-	vs = loadString(loadAsset("shaders/templates/passThrough2.vert"));
-	inc = loadString(loadAsset("shaders/templates/shadertoy.inc"));
+	vs = loadString(loadAsset("passthru.vert"));
+	inc = loadString(loadAsset("shadertoy.inc"));
 
 	validFrag = false;
 	validVert = true;
@@ -113,7 +101,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	for (size_t m = 0; m < 8; m++)
 	{
 		fileName = toString(m) + ".glsl";
-		localFile = getAssetPath("") / "shaders" / "default" / fileName;
+		localFile = getAssetPath("")  / fileName;
 		loadPixelFragmentShader(localFile.string());
 	}
 	// init with passthru shader if something goes wrong	
@@ -192,22 +180,13 @@ void Shaders::update()
 		setFragString(data.shadertext);
 	}
 }
-string Shaders::buildFragString()
-{
-	stringstream ss;
-	string s;
-
-	ss << mFragBegin << mFragFunctionsLeft << mFragMainHeaderLeft << mFragMainLinesLeft << mFragFunctionsRight << mFragMainHeaderRight << mFragMainLinesRight << mFragGlobalFunctions << mFragEnd;
-	s = ss.str();
-	return s;
-}
 
 string Shaders::getFragStringFromFile(string fileName)
 {
 	string rtn = "";
 	try
 	{
-		rtn = loadString(loadAsset("shaders/templates/" + fileName));
+		rtn = loadString(loadAsset( fileName));
 	}
 	catch (const std::exception &e)
 	{
@@ -250,99 +229,7 @@ string Shaders::getNewFragFileName(string aFilePath)
 	}
 	return fName + ".frag";
 }
-void Shaders::loadFragJson(string aFilePath)
-{
 
-	try
-	{
-		JsonTree json;
-		if (!fs::exists(aFilePath))
-		{
-			log->logTimedString("file not found: " + aFilePath);
-
-		}
-		else
-		{
-			log->logTimedString("found file: " + aFilePath);
-		}
-		try
-		{
-			json = JsonTree(loadFile(aFilePath));
-			mParameterBag->mCurrentFilePath = aFilePath;
-		}
-		catch (cinder::JsonTree::Exception exception)
-		{
-			log->logTimedString("loadFragJson exception " + aFilePath + ": " + exception.what());
-
-		}
-		// frag
-		try
-		{
-			if (json.hasChild("frag"))
-			{
-				// set file names for saving as frag file
-				int fileNameStartIndex, fileNameEndIndex;
-				fileNameStartIndex = aFilePath.find_last_of("\\");
-				if (fileNameStartIndex != std::string::npos)
-				{
-					fileNameEndIndex = aFilePath.find_last_of(".");
-					if (fileNameEndIndex != std::string::npos)
-					{
-						previousFileName = currentFileName;
-						currentFileName = aFilePath.substr(fileNameStartIndex + 1, fileNameEndIndex - fileNameStartIndex - 1);
-						log->logTimedString("loadFragJson filename " + currentFileName);
-					}
-				}
-				JsonTree jsonfrags = json.getChild("frag");
-				for (JsonTree::ConstIter jsonElement = jsonfrags.begin(); jsonElement != jsonfrags.end(); ++jsonElement)
-				{
-					mParameterBag->iPreviewCrossfade = mParameterBag->iCrossfade;
-					if (mParameterBag->iCrossfade < 0.5)
-					{
-						//Right
-						setFragFunctions(jsonElement->getChild("fragfunctions").getValue<string>(), 1);
-						setFragMainLines(jsonElement->getChild("fragmain").getValue<string>(), 1);
-					}
-					else
-					{
-						//Left
-						setFragFunctions(jsonElement->getChild("fragfunctions").getValue<string>(), 0);
-						setFragMainLines(jsonElement->getChild("fragmain").getValue<string>(), 0);
-					}
-				}
-			}
-		}
-		catch (cinder::JsonTree::Exception exception)
-		{
-			log->logTimedString("loadFragJson exception parser " + aFilePath + ": " + exception.what());
-
-		}
-
-		//params
-		try
-		{
-			if (json.hasChild("params"))
-			{
-				JsonTree jsonParams = json.getChild("params");
-				for (JsonTree::ConstIter jsonElement = jsonParams.begin(); jsonElement != jsonParams.end(); ++jsonElement)
-				{
-					int id = jsonElement->getChild("paramid").getValue<int>();
-					//string name = jsonElement->getChild("name").getValue<string>();
-					//TODO colors of the controls: control[id]=
-					mParameterBag->controlValues[id] = jsonElement->getChild("value").getValue<float>();
-				}
-			}
-		}
-		catch (cinder::JsonTree::Exception exception)
-		{
-			log->logTimedString("loadFragJson exception parser " + aFilePath + ": " + exception.what());
-		}
-	}
-	catch (...)
-	{
-		log->logTimedString("loadFragJson parsing error: " + aFilePath);
-	}
-}
 void Shaders::renderPreviewShader()
 {
 	//mShader = mPreviewShader;
@@ -386,75 +273,6 @@ bool Shaders::loadPixelFragmentShader(string aFilePath)
 	}
 
 	return rtn;
-}
-/*
-bool Shaders::loadPixelFrag(string aFilePath)
-{
-bool rtn = false;
-// reset
-mParameterBag->iFade = false;
-mParameterBag->controlValues[13] = 1.0f;
-try
-{
-fs::path fr = aFilePath;
-if (fs::exists(fr))
-{
-validFrag = false;
-mFragmentShaders[mCurrentPreviewShader] = gl::GlslProg::create(loadResource(PASSTHROUGH2_VERT), loadFile(aFilePath));
-if (mParameterBag->mDirectRender) renderPreviewShader();
-mFragFile = aFilePath;
-mFragFileName = getFileName(aFilePath);
-validFrag = true;
-rtn = true;
-mError = "";
-
-log->logTimedString("Loaded and compiled: " + aFilePath);
-}
-else
-{
-log->logTimedString(mFragFile + " loaded and compiled, does not exist:" + aFilePath);
-}
-}
-catch (gl::GlslProgCompileExc &exc)
-{
-mError = string(exc.what());
-log->logTimedString(aFilePath + " unable to load/compile shader:" + string(exc.what()));
-}
-catch (const std::exception &e)
-{
-mError = string(e.what());
-log->logTimedString(aFilePath + " unable to load shader:" + string(e.what()));
-}
-
-return rtn;
-}*/
-
-void Shaders::setFragFunctions(string aFragString, int leftOrRight)
-{
-	if (leftOrRight == 0)
-	{
-		//left
-		mFragFunctionsLeft = aFragString;
-	}
-	else
-	{
-		//right
-		mFragFunctionsRight = aFragString;
-	}
-}
-void Shaders::setFragMainLines(string aFragString, int leftOrRight)
-{
-	if (leftOrRight == 0)
-	{
-		//left
-		mFragMainLinesLeft = aFragString;
-	}
-	else
-	{
-		//right
-		mFragMainLinesRight = aFragString;
-	}
-	setFragString(buildFragString());
 }
 
 void Shaders::loadCurrentFrag()
