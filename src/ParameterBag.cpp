@@ -283,7 +283,7 @@ void ParameterBag::reset()
 	ColorYellow = ColorA(1.0f, 1.0f, 0.0f, 1.0f);
 	ColorPurple = ColorA(0.5f, 0.0f, 1.0f, 1.0f);
 	isUIDirty = true;
-	isShaderDirty = false;
+	//isShaderDirty = false;
 	mShaderToLoad = "";
 
 	mStateTransition = 1.0;

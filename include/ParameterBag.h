@@ -59,7 +59,7 @@ namespace Reymenta {
 		Vec2f						mRenderCodeEditorXY;
 
 		bool						isUIDirty;
-		bool						isShaderDirty;
+		//bool						isShaderDirty;
 		int							mCount;
 		float						mZPosition;
 		bool						mLockFR, mLockFG, mLockFB, mLockFA, mLockBR, mLockBG, mLockBB, mLockBA;

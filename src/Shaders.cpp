@@ -11,8 +11,6 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	liveError = true;
 	previousFileName = "0";
 	currentFileName = "0";
-	fileName = "default.frag";
-	fs::path localFile = getAssetPath("") / "shaders" / fileName;
 
 	mCurrentPreviewShader = 0;
 	mCurrentRenderShader = 0;
@@ -20,7 +18,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	//load mix shader
 	try
 	{
-		fs::path mixFragFile = getAssetPath("") / "shaders" / "templates" / "mix.frag";
+		fs::path mixFragFile = getAssetPath("") / "mix.frag";
 		if (fs::exists(mixFragFile))
 		{
 			mMixShader = gl::GlslProg::create(loadAsset("passthru.vert"), loadFile(mixFragFile));
@@ -95,13 +93,15 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	validFrag = false;
 	validVert = true;
 
-	mFragFileName = fileName;
-	mFragFile = localFile.string();
+	//fileName = "default.frag";
+	fs::path localFile; //= getAssetPath("") / "shaders" / fileName;
 	//loadPixelFrag(localFile.string());
 	for (size_t m = 0; m < 8; m++)
 	{
 		fileName = toString(m) + ".glsl";
 		localFile = getAssetPath("")  / fileName;
+		mFragFileName = fileName;
+		mFragFile = localFile.string();
 		loadPixelFragmentShader(localFile.string());
 	}
 	// init with passthru shader if something goes wrong	
