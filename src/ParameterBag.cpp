@@ -79,6 +79,10 @@ bool ParameterBag::save()
 	OSCDestinationHost.setAttribute("value", toString(mOSCDestinationHost));
 	settings.push_back(OSCDestinationHost);
 
+	XmlTree MIDIOpenAllInputPorts("MIDIOpenAllInputPorts", "");
+	MIDIOpenAllInputPorts.setAttribute("value", toString(mMIDIOpenAllInputPorts));
+	settings.push_back(MIDIOpenAllInputPorts);
+
 	// TODO: test for successful writing of XML
 	settings.write(writeFile(path));
 
@@ -127,6 +131,10 @@ bool ParameterBag::restore()
 				XmlTree OSCDestinationHost = settings.getChild("OSCDestinationHost");
 				mOSCDestinationHost = OSCDestinationHost.getAttributeValue<string>("value");
 			}
+			if (settings.hasChild("MIDIOpenAllInputPorts")) {
+				XmlTree MIDIOpenAllInputPorts = settings.getChild("MIDIOpenAllInputPorts");
+				mMIDIOpenAllInputPorts = MIDIOpenAllInputPorts.getAttributeValue<bool>("value");
+			}
 			// if AutoLayout is false we have to read the custom screen layout
 			if (!mAutoLayout)
 			{
@@ -161,7 +169,7 @@ bool ParameterBag::restore()
 void ParameterBag::reset()
 {
 	// parameters exposed in XML
-	//mDirectRender = false;
+	mMIDIOpenAllInputPorts = false;
 	mAutoLayout = true;
 	mOutputVideoResolution = 1024;
 

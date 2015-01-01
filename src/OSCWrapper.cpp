@@ -2,10 +2,9 @@
 
 using namespace Reymenta;
 
-OSC::OSC(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
+OSC::OSC(ParameterBagRef aParameterBag)
 {
 	mParameterBag = aParameterBag;
-	mShaders = aShadersRef;
 	for (int i = 0; i < 20; i++)
 	{
 		skeleton[i] = Vec4i::zero();
@@ -16,9 +15,9 @@ OSC::OSC(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	mOSCReceiver.setup(mParameterBag->mOSCReceiverPort);
 }
 
-OSCRef OSC::create(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
+OSCRef OSC::create(ParameterBagRef aParameterBag)
 {
-	return shared_ptr<OSC>(new OSC(aParameterBag, aShadersRef));
+	return shared_ptr<OSC>(new OSC(aParameterBag));
 }
 
 void OSC::update()
@@ -102,79 +101,57 @@ void OSC::update()
 	{
 		osc::Message message;
 		mOSCReceiver.getNextMessage(&message);
-		int arg0 = 0;
-		int arg1 = 0;
-		int arg2 = 0;
-		int arg3 = 0;
+		for (int a = 0; a < 6; a++)
+		{
+			iargs[a] = 0;
+			fargs[a] = 0.0;
+			sargs[a] = "";
+		}
 		int skeletonIndex = 0;
 		int jointIndex = 0;
 		string oscAddress = message.getAddress();
-		string oscArg0 = "";
-		string oscArg1 = "";
-		string oscArg2 = "";
-		string oscArg3 = "";
+
 		int numArgs = message.getNumArgs();
-		if (oscAddress == "/midi")
+		// get arguments
+		for (int i = 0; i < message.getNumArgs(); i++)
 		{
-			for (int i = 0; i < message.getNumArgs(); i++) {
-				cout << "-- Argument " << i << std::endl;
-				cout << "---- type: " << message.getArgTypeName(i) << std::endl;
-				if (message.getArgType(i) == osc::TYPE_INT32) {
-					try {
-						//cout << "------ int value: "<< message.getArgAsInt32(i) << std::endl;
-						if (i == 0)
-						{
-							arg0 = message.getArgAsInt32(i);
-							oscArg0 = toString(message.getArgAsInt32(i));
-						}
-						if (i == 1)
-						{
-							arg1 = message.getArgAsInt32(i);
-							oscArg1 = toString(message.getArgAsInt32(i));
-						}
-						if (i == 2)
-						{
-							arg2 = message.getArgAsInt32(i);
-							oscArg2 = toString(message.getArgAsInt32(i));
-						}
-						if (i == 3)
-						{
-							arg3 = message.getArgAsInt32(i);
-							oscArg3 = toString(message.getArgAsInt32(i));
-						}
-					}
-					catch (...) {
-						cout << "Exception reading argument as int32" << std::endl;
-					}
+			cout << "-- Argument " << i << std::endl;
+			cout << "---- type: " << message.getArgTypeName(i) << std::endl;
+			if (message.getArgType(i) == osc::TYPE_INT32) {
+				try
+				{
+					iargs[i] = message.getArgAsInt32(i);
+					sargs[i] = toString(iargs[i]);
+				}
+				catch (...) {
+					cout << "Exception reading argument as int32" << std::endl;
 				}
 			}
-			if (arg0 < 0) arg0 = 0;
-			if (arg1 < 0) arg1 = 0;
-			if (arg0 > 4096) arg0 = 4096;
-			if (arg1 > 4096) arg1 = 4096;
-			float normalizedValue = lmap<float>(arg1, 0.0, 127.0, 0.0, 1.0);
-			switch (arg0)
-			{
-			case 14:
-				mParameterBag->controlValues[19] = (arg1 - 63.0) / 63.0;
-				break;
-			case 17:
-				mParameterBag->iCrossfade = normalizedValue;
-				break;
-			default:
-				mParameterBag->controlValues[arg0] = normalizedValue;
-				break;
+			if (message.getArgType(i) == osc::TYPE_FLOAT) {
+				try
+				{
+					fargs[i] = message.getArgAsFloat(i);
+					sargs[i] = toString(fargs[i]);
+				}
+				catch (...) {
+					cout << "Exception reading argument as float" << std::endl;
+				}
 			}
+			if (message.getArgType(i) == osc::TYPE_STRING) {
+				try
+				{
+					sargs[i] = message.getArgAsString(i);
+				}
+				catch (...) {
+					cout << "Exception reading argument as string" << std::endl;
+				}
+			}
+		}
 
-		}
-		else if (oscAddress == "/pixelfrag")
+
+		if (oscAddress == "/sumMovement")
 		{
-			oscArg0 = message.getArgAsString(0);
-			mShaders->setFragString(oscArg0);
-		}
-		else if (oscAddress == "/sumMovement")
-		{
-			float sumMovement = message.getArgAsFloat(0);
+			float sumMovement = fargs[0];
 			//exposure
 			mParameterBag->controlValues[14] = sumMovement;
 			//greyScale
@@ -189,7 +166,7 @@ void OSC::update()
 		}
 		else if (oscAddress == "/handsHeadHeight")
 		{
-			float handsHeadHeight = message.getArgAsFloat(0);
+			float handsHeadHeight = fargs[0];
 			if (handsHeadHeight > 0.3)
 			{
 				// glitch
@@ -205,152 +182,26 @@ void OSC::update()
 		}
 		else if (oscAddress == "/centerXY")
 		{
-			float x = message.getArgAsFloat(0);
-			float y = message.getArgAsFloat(1);
+			float x = fargs[0];
+			float y = fargs[1];
 			// background green
 			mParameterBag->controlValues[6] = y;
 			// green
 			mParameterBag->controlValues[2] = x;
 		}
-		/*// background red
-		controlValues[5] = 0.1f;
-		// background green
-		controlValues[6] = 0.1f;
-		// background blue
-		controlValues[7] = 0.1f;
-		// vignette
-		controlValues[47] = 1.0f;
-		*/
+		
 		else if (oscAddress == "/joint")
 		{
-			skeletonIndex = message.getArgAsInt32(0);
-			jointIndex = message.getArgAsInt32(1);
+			skeletonIndex = iargs[0];
+			jointIndex = iargs[1];
 			if (jointIndex < 20)
 			{
-				arg0 = message.getArgAsInt32(2);
-				arg1 = message.getArgAsInt32(3);
-				arg2 = message.getArgAsInt32(4);
-				arg3 = message.getArgAsInt32(5);
-				skeleton[jointIndex] = Vec4i(arg0, arg1, arg2, arg3);
+				skeleton[jointIndex] = Vec4i(iargs[2], iargs[3], iargs[4], iargs[5]);
 			}
-		}
-		else if (oscAddress == "/renderwindows")//	sendOSCIntMessage("/renderwindows", mRenderWindowsCount, 0, 0 );
-		{
-			mParameterBag->mWindowToCreate = message.getArgAsInt32(1);
-			oscArg0 = toString(message.getArgAsInt32(0));
-			oscArg1 = toString(message.getArgAsInt32(1));
-
-		}
-		else if (oscAddress == "/warp/loadimage")
-		{
-			oscArg0 = message.getArgAsString(0);
-			//fs::path imagePath = oscArg0;
-			//mImage = loadImage( imagePath );//CHECK
-			//mSrcArea = mImage->getBounds();
-			// adjust the content size of the warps
-			//Warp::setSize( mWarps, mImage->getSize() );
-		}
-		else if (oscAddress == "/warp/loadmovie")
-		{
-			oscArg0 = message.getArgAsString(0);
-			//fs::path moviePath = oscArg0;
-			//loadMovieFile( moviePath );
-		}
-		else if (oscAddress == "/activeclip/video/positionx/values")
-		{
-			mParameterBag->iMouse.x = message.getArgAsFloat(0);
-			oscArg0 = toString(message.getArgAsFloat(0));
-			//pad->setValue( Vec2f(iMouse.x, iMouse.y ) );
-		}
-		else if (oscAddress == "/composition/video/rotatex/values")
-		{
-			mParameterBag->iMouse.x = (message.getArgAsFloat(0) + 1)  * mParameterBag->multFactor;
-			oscArg0 = toString(message.getArgAsFloat(0));
-			//console() << "x: " << iMouse.x  << " y: " << iMouse.y << std::endl;
-			//status->setLabel("x: "+toString(iMouse.x)+" y: "+toString(iMouse.y)+" volume: "+toString(maxVolume));
-
-			//pad->setValue( Vec2f(iMouse.x, iMouse.y ) );
-		}
-		else if (oscAddress == "/composition/video/rotatey/values")
-		{
-			mParameterBag->iMouse.y = (message.getArgAsFloat(0) + 1) * mParameterBag->multFactor;
-			oscArg0 = toString(message.getArgAsFloat(0));
-			//pad->setValue( Vec2f(iMouse.x, iMouse.y ) );
-		}
-		else if (oscAddress == "/activeclip/video/positiony/values")
-		{
-			mParameterBag->iMouse.y = message.getArgAsFloat(0);
-			oscArg0 = toString(message.getArgAsFloat(0));
-			//pad->setValue( Vec2f(iMouse.x, iMouse.y ) );
 		}
 		else
 		{
 			console() << "OSC message received: " << oscAddress << std::endl;
-			for (int i = 0; i < message.getNumArgs(); i++) {
-				cout << "-- Argument " << i << std::endl;
-				cout << "---- type: " << message.getArgTypeName(i) << std::endl;
-				if (message.getArgType(i) == osc::TYPE_INT32) {
-					try {
-						//cout << "------ int value: "<< message.getArgAsInt32(i) << std::endl;
-						if (i == 0)
-						{
-							arg0 = message.getArgAsInt32(i);
-							oscArg0 = toString(message.getArgAsInt32(i));
-						}
-						if (i == 1)
-						{
-							arg1 = message.getArgAsInt32(i);
-							oscArg1 = toString(message.getArgAsInt32(i));
-						}
-						if (i == 2)
-						{
-							arg2 = message.getArgAsInt32(i);
-							oscArg2 = toString(message.getArgAsInt32(i));
-						}
-						if (i == 3)
-						{
-							arg3 = message.getArgAsInt32(i);
-							oscArg3 = toString(message.getArgAsInt32(i));
-						}
-					}
-					catch (...) {
-						cout << "Exception reading argument as int32" << std::endl;
-					}
-				}
-				else if (message.getArgType(i) == osc::TYPE_FLOAT) {
-					try {
-						cout << "------ float value: " << message.getArgAsFloat(i) << std::endl;
-						if (i == 0)
-						{
-							oscArg0 = toString(message.getArgAsFloat(i));
-						}
-						if (i == 1)
-						{
-							oscArg1 = toString(message.getArgAsFloat(i));
-						}
-					}
-					catch (...) {
-						cout << "Exception reading argument as float" << std::endl;
-					}
-				}
-				else if (message.getArgType(i) == osc::TYPE_STRING) {
-					try {
-						cout << "------ string value: " << message.getArgAsString(i).c_str() << std::endl;
-						if (i == 0)
-						{
-							oscArg0 = message.getArgAsString(i).c_str();
-						}
-						if (i == 1)
-						{
-
-							oscArg1 = message.getArgAsString(i).c_str();
-						}
-					}
-					catch (...) {
-						cout << "Exception reading argument as string" << std::endl;
-					}
-				}
-			}
 			// is it a layer msg?
 			int layer = 0;
 			unsigned layerFound = oscAddress.find("layer");
@@ -384,102 +235,47 @@ void OSC::update()
 
 			unsigned found = oscAddress.find_last_of("/");
 			int name = atoi(oscAddress.substr(found + 1).c_str());
-			if (name > 0)	oscProcessMessage(name, arg0, arg1);
 		}
-		string oscString = "osc from:" + message.getRemoteIp() + " adr:" + oscAddress + " 0: " + oscArg0 + " 1: " + oscArg1;
+		string oscString = "osc from:" + message.getRemoteIp() + " adr:" + oscAddress + " 0: " + sargs[0] + " 1: " + sargs[1];
 		//mUserInterface->labelOSC->setName( oscString );
 		mParameterBag->OSCMsg = oscString;
-		//stringstream oscString; 
-		//oscString << "osc address: " << oscAddress << " oscArg0: " << oscArg0  << " oscArg1: " << oscArg1;
-		//oscStatus->setLabel( oscString );
-	}
-}
-void OSC::oscProcessMessage(int controlName, int arg0, int arg1)
-{
-	float normalizedValue = lmap<float>(arg0, 0.0, 127.0, 0.0, 1.0);
 
-	if (arg0 < 0) arg0 = 0;
-	if (arg1 < 0) arg1 = 0;
-	if (arg0 > 4096) arg0 = 4096;
-	if (arg1 > 4096) arg1 = 4096;
-
-	switch (controlName)
-	{
-		//pad
-	case 0:
-		mParameterBag->mRenderResoXY.x = lmap<float>(arg0, 0, 127, 0.0, 4096.0);
-		mParameterBag->mRenderResoXY.y = lmap<float>(arg1, 0, 127, 0.0, 4096.0);
-		//pad->setValue(mMousePos);
-		break;
-	default:
-		mParameterBag->controlValues[controlName] = normalizedValue;
-		break;
 	}
 }
 
-void OSC::rotaryChange(int name, float newValue)
-{
-	switch (name)
-	{
-	case 14:
-		mParameterBag->controlValues[19] = (newValue*127.0 - 63.0) / 63.0;
-		break;
-	case 17:
-		//mParameterBag->iCrossfade = lmap<float>(newValue, 0.0, 127.0, 0.0, 1.0);
-		mParameterBag->iCrossfade = newValue;
-		break;
-	default:
-		mParameterBag->controlValues[name] = newValue;
-		break;
-	}
-
-}
-void OSC::toggleChange(int name, float newValue)
-{
-	if (newValue > 1.0) newValue = 1.0; // for boolean in frag
-	mParameterBag->controlValues[name] = newValue;
-	if (name > 20 && name < 29)
-	{
-		if (mParameterBag->mMode != name - 21)
-		{
-			mParameterBag->mNewMode = name - 21;
-		}
-	}
-	if (name > 30 && name < 39)
-	{
-		/*if (mParameterBag->mMode == 0) //normal
-		{
-		mShaders->setCurrentRenderShaderIndex(name - 31);
-		}*/
-		if (mParameterBag->mMode == 1) //mix
-		{
-			if (name > 30 && name < 35) mParameterBag->mLeftFboIndex = name - 31;
-			if (name > 34 && name < 39) mParameterBag->mRightFboIndex = name - 35;
-		}
-	}
-	else
-	{
-		switch (name)
-		{
-		case 31:
-			break;
-		}
-	}
-
-
-}
-void OSC::sendOSCIntMessage(string controlType, int controlName, int controlValue0, int controlValue1)
+void OSC::sendOSCIntMessage(string controlType, int iarg0, int iarg1, int iarg2, int iarg3, int iarg4, int iarg5)
 {
 	osc::Message m;
 	m.setAddress(controlType);
-	m.addIntArg(controlName);
-	m.addIntArg(controlValue0);
+	m.addIntArg(iarg0);
+	m.addIntArg(iarg1);
+	m.addIntArg(iarg2);
+	m.addIntArg(iarg3);
+	m.addIntArg(iarg4);
+	m.addIntArg(iarg5);
 	mOSCSender.sendMessage(m);
 }
-void OSC::sendOSCStringMessage(string controlType, string controlString)
+void OSC::sendOSCStringMessage(string controlType, int iarg0, string sarg1, string sarg2, string sarg3, string sarg4, string sarg5)
 {
 	osc::Message m;
 	m.setAddress(controlType);
-	m.addStringArg(controlString);
+	m.addIntArg(iarg0);
+	if (sarg1 != "") m.addStringArg(sarg1);
+	if (sarg2 != "") m.addStringArg(sarg2);
+	if (sarg3 != "") m.addStringArg(sarg3);
+	if (sarg4 != "") m.addStringArg(sarg4);
+	if (sarg5 != "") m.addStringArg(sarg5);
+	mOSCSender.sendMessage(m);
+}
+void OSC::sendOSCFloatMessage(string controlType, int iarg0, float farg1, float farg2, float farg3, float farg4, float farg5)
+{
+	osc::Message m;
+	m.setAddress(controlType);
+	m.addIntArg(iarg0);
+	m.addFloatArg(farg1);
+	m.addFloatArg(farg2);
+	m.addFloatArg(farg3);
+	m.addFloatArg(farg4);
+	m.addFloatArg(farg5);
 	mOSCSender.sendMessage(m);
 }

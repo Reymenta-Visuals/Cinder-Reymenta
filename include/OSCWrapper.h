@@ -5,8 +5,6 @@
 #include "OSCSender.h"
 #include "Resources.h"
 #include "ParameterBag.h"
-//#include "WindowsManager.h"
-#include "Shaders.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -21,27 +19,27 @@ namespace Reymenta
 	{
 
 	public:
-		OSC( ParameterBagRef aParameterBag, ShadersRef aShadersRef );
-		static	OSCRef create( ParameterBagRef aParameterBag, ShadersRef aShadersRef );
+		OSC( ParameterBagRef aParameterBag );
+		static	OSCRef create( ParameterBagRef aParameterBag );
 
 		void	update();
 
-		void	sendOSCIntMessage( string controlType, int controlName, int controlValue0, int controlValue1 );
-		void	sendOSCStringMessage( string controlType, string controlString );
-		void	rotaryChange( int name, float newValue );
-		void	toggleChange(int name, float newValue);
+		void	sendOSCIntMessage(string controlType, int iarg0 = 0, int iarg1 = 0, int iarg2 = 0, int iarg3 = 0, int iarg4 = 0, int iarg5 = 0);
+		void	sendOSCFloatMessage(string controlType, int iarg0 = 0, float farg1 = 0.0, float farg2 = 0.0, float farg3 = 0.0, float farg4 = 0.0, float farg5 = 0.0);
+		void	sendOSCStringMessage(string controlType, int iarg0 = 0, string sarg1 = "", string sarg2 = "", string sarg3 = "", string sarg4 = "", string sarg5 = "");
+
 		Vec4i	skeleton[20];
 	private:
 
-		void oscProcessMessage( int controlName, int arg0, int arg1 );
 		// parameters
-		ParameterBagRef mParameterBag;
-		// Shaders
-		ShadersRef					mShaders;
+		ParameterBagRef				mParameterBag;
 
 		osc::Listener 				mOSCReceiver;
 		osc::Sender					mOSCSender;
 
+		int							iargs[6];
+		float						fargs[6];
+		string						sargs[6];
 
 	};
 }
