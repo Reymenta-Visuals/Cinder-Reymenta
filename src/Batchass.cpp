@@ -2,10 +2,9 @@
 
 using namespace Reymenta;
 
-Batchass::Batchass(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
+Batchass::Batchass(ParameterBagRef aParameterBag)
 {
 	mParameterBag = aParameterBag;
-	mShaders = aShadersRef;
 	// instanciate the logger class
 	log = Logger::create("BatchassLog.txt");
 	log->logTimedString("Batchass constructor");

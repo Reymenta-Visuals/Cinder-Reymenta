@@ -23,12 +23,13 @@ namespace Reymenta
 
 	class Batchass {
 	public:
-		Batchass(ParameterBagRef aParameterBag, ShadersRef aShadersRef);
-		static BatchassRef	create(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
+		Batchass(ParameterBagRef aParameterBag);
+		static BatchassRef	create(ParameterBagRef aParameterBag)
 		{
-			return shared_ptr<Batchass>(new Batchass(aParameterBag, aShadersRef));
+			return shared_ptr<Batchass>(new Batchass(aParameterBag));
 		}
 		void						getWindowsResolution();
+	private:
 		// parameters
 		ParameterBagRef				mParameterBag;
 		// Shaders
