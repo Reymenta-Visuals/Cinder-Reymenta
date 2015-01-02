@@ -158,9 +158,10 @@ namespace Reymenta {
 		map<int, int>				iChannels;
 		// fbo indexes for warping
 		map<int, int>				iWarpFboChannels;
+		int							mCurrentShadaFboIndex;
 		int							selectedWarp;
 		int							mWarpCount;
-		bool						mOptimizeUI;//mDirectRender, 
+		bool						mOptimizeUI;
 		int							mUIRefresh;
 		int							mCurrentPreviewFboIndex;
 		int							mSphereFboIndex, mMeshFboIndex, mWarpFboIndex, mMixFboIndex, mAudioFboIndex, mLiveFboIndex;
@@ -174,6 +175,8 @@ namespace Reymenta {
 		MayaCamUI					mMayaCam;
 		vec2						mCamEyePointXY;
 		float						mCamEyePointZ;
+		//! maximum number of fbos, shaders, textures
+		static const int			MAX = 16;
 	private:
 		const string settingsFileName = "Settings.xml";
 	};

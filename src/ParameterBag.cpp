@@ -310,6 +310,7 @@ void ParameterBag::reset()
 	// fbo indexes for warp
 	mFboResolution = 2048;
 	mCurrentPreviewFboIndex = 0;
+	mCurrentShadaFboIndex = 0;
 	mMixFboIndex = 1;
 	mAudioFboIndex = 2;
 	mWarpFboIndex = 3;

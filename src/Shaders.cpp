@@ -1,3 +1,11 @@
+/**
+* \file Shaders.cpp
+* \author Bruce LANE
+* \date 20 november 2014
+*
+* Manages the shaders.
+*
+*/
 #include "Shaders.h"
 
 using namespace Reymenta;
@@ -5,360 +13,193 @@ using namespace Reymenta;
 Shaders::Shaders(ParameterBagRef aParameterBag)
 {
 	mParameterBag = aParameterBag;
-	// instanciate the logger class
+	//! instanciate the logger class
 	log = Logger::create("ShadersLog.txt");
 	log->logTimedString("Shaders constructor");
-	liveError = true;
-	previousFileName = "0";
-	currentFileName = "0";
-
-	mCurrentPreviewShader = 0;
-	mCurrentRenderShader = 0;
-
-	//load mix shader
-	try
-	{
-		fs::path mixFragFile = getAssetPath("") / "mix.frag";
-		if (fs::exists(mixFragFile))
-		{
-			mMixShader = gl::GlslProg::create(loadAsset("passthru.vert"), loadFile(mixFragFile));
-		}
-		else
-		{
-			log->logTimedString("mix.frag does not exist, should quit");
-
-		}
-	}
-	catch (gl::GlslProgCompileExc &exc)
-	{
-		mError = string(exc.what());
-		log->logTimedString("unable to load/compile shader:" + string(exc.what()));
-	}
-	catch (const std::exception &e)
-	{
-		mError = string(e.what());
-		log->logTimedString("unable to load shader:" + string(e.what()));
-	}
-	//load live shader
-	try
-	{
-		fs::path liveFragFile = getAssetPath("") / "live.frag";
-		if (fs::exists(liveFragFile))
-		{
-			// Load our shader and test if it is correctly compiled
-			try {
-				mLiveShader = gl::GlslProg::create(loadAsset("passthru.vert"), loadFile(liveFragFile));
-				liveError = false;
-			}
-			catch (gl::GlslProgCompileExc exc){
-				console() << exc.what() << endl;
-			}
-			/*wd::watch(liveFragFile, [this](const fs::path &frag) {
-
-				// Load our shader and test if it is correctly compiled
-				try {
-					mLiveShader = gl::GlslProg::create(loadAsset("passthru.vert"), frag);
-					liveError = false;
-				}
-				catch (gl::GlslProgCompileExc exc){
-					console() << exc.what() << endl;
-				}
-			});*/
-		}
-		else
-		{
-			log->logTimedString("live.frag does not exist:");
-		}
-	}
-	catch (gl::GlslProgCompileExc &exc)
-	{
-		mError = string(exc.what());
-		log->logTimedString("unable to load/compile shader:" + string(exc.what()));
-	}
-	catch (const std::exception &e)
-	{
-
-		mError = string(e.what());
-		log->logTimedString("unable to load shader:" + string(e.what()));
-	}
-	if (liveError)
-	{
-		// revert to mix.frag, TODO better quit if mix.frag does not exit
-		fs::path mixFragFile = getAssetPath("") / "mix.frag";
-		mLiveShader = gl::GlslProg::create(loadAsset("passthru.vert"), loadFile(mixFragFile));
-	}
-	vs = loadString(loadAsset("passthru.vert"));
-	inc = loadString(loadAsset("shadertoy.inc"));
-
+	header = loadString(loadAsset("shadertoy.inc"));
+	defaultVertexShader = loadString(loadAsset("default.vert"));
+	defaultFragmentShader = loadString(loadAsset("default.glsl"));
 	validFrag = false;
-	validVert = true;
 
-	//fileName = "default.frag";
-	fs::path localFile; //= getAssetPath("") / "shaders" / fileName;
-	//loadPixelFrag(localFile.string());
-	for (size_t m = 0; m < 3; m++)
+	string fileName;
+	fs::path localFile;
+	//! load mix shader
+	fileName = "mix.glsl";
+	localFile = getAssetPath("") / fileName;
+	loadPixelFragmentShader(localFile.string());
+	//! init some shaders
+	for (size_t m = 0; m < 8; m++)
 	{
 		fileName = toString(m) + ".glsl";
-		localFile = getAssetPath("")  / fileName;
-		mFragFileName = fileName;
-		mFragFile = localFile.string();
+		localFile = getAssetPath("") / fileName;
 		loadPixelFragmentShader(localFile.string());
 	}
-	// init with passthru shader if something goes wrong	
-	for (size_t m = mFragmentShaders.size(); m < 8; m++)
-	{
-		mFragmentShaders.push_back(gl::GlslProg::create(loadAsset("passthru.vert"), loadAsset("passthru.frag")));
-	}
-	mCurrentPreviewShader = 0;
-	mCurrentRenderShader = 0;
-	// Create our thread communication buffers.
-	mRequests = new ConcurrentCircularBuffer<LoaderData>(10);
-	mResponses = new ConcurrentCircularBuffer<LoaderData>(10);
+}
 
-	// Start the loading thread.
-	setupLoader();
-
-}
-void Shaders::setupLoader()
+void Shaders::resize()
 {
-	// If succeeded, start the loading thread.
-	mThreadAbort = false;
-	mThread = std::make_shared<std::thread>(&Shaders::loader, this);
-}
-void Shaders::shutdownLoader()
-{
-	// Tell the loading thread to abort, then wait for it to stop.
-	mThreadAbort = true;
-	mThread->join();
-}
-void Shaders::loader()
-{
-	// Loading loop.
-	while (!mThreadAbort)
+	// change iResolution
+	for (auto &shader : mFragmentShaders)
 	{
-		// Wait for a request.
-		if (mRequests->isNotEmpty())
+		auto map = shader.prog->getActiveUniformTypes();
+		if (map.find("iResolution") != map.end())
 		{
-			// Take the request from the buffer.
-			LoaderData data;
-			mRequests->popBack(&data);
-
-			// Try to load, parse and compile the shader.
-			try {
-				//std::string vs = loadString(loadAsset("shaders/templates/passThrough2.vert"));
-				std::string fs = inc + loadString(loadFile(data.path));
-				//data.shader = gl::GlslProg::create(vs.c_str(), fs.c_str());
-				data.shadertext = fs.c_str();
-
-				// If the shader compiled successfully, pass it to the main thread.
-				mResponses->pushFront(data);
-			}
-			catch (const std::exception& e) {
-				// Uhoh, something went wrong.
-				console() << e.what() << endl;
-			}
-		}
-		else {
-			// Allow the CPU to do other things for a while.
-			std::chrono::milliseconds duration(100);
-			std::this_thread::sleep_for(duration);
+			shader.prog->uniform("iResolution", vec3(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 0.0f));
 		}
 	}
-}
-void Shaders::loadFragmentShader(boost::filesystem::path aFilePath)
-{
-	if (mRequests->isNotFull()) mRequests->pushFront(aFilePath);
-}
-void Shaders::update()
-{
-	LoaderData data;
-
-	// If we are ready for the next shader, take it from the buffer.
-	if (mResponses->isNotEmpty()) {
-		mResponses->popBack(&data);
-
-		setFragString(data.shadertext);
+	auto mixMap = mMixShader->getActiveUniformTypes();
+	if (mixMap.find("iResolution") != mixMap.end())
+	{
+		mMixShader->uniform("iResolution", vec3(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 0.0f));
 	}
+
 }
 
-string Shaders::getFragStringFromFile(string fileName)
+gl::GlslProgRef Shaders::getShader(int aIndex)
 {
-	string rtn = "";
-	try
-	{
-		rtn = loadString(loadAsset( fileName));
-	}
-	catch (const std::exception &e)
-	{
-		log->logTimedString(fileName + " unable to load string from file:" + string(e.what()));
-	}
-	return rtn;
-}
-string Shaders::getFragError()
-{
-	return mError;
-}
+	if (aIndex > mFragmentShaders.size() - 1) aIndex = mFragmentShaders.size() - 1;
+	if (aIndex < 0) aIndex = 0;
+	return mFragmentShaders[aIndex].prog;
+};
 
-Shaders::~Shaders()
-{
-	log->logTimedString("Shaders destructor");
-}
-string Shaders::getFileName(string aFilePath)
-{
-	string fName;
-	if (aFilePath.find_last_of("\\") != std::string::npos)
-	{
-		fName = aFilePath.substr(aFilePath.find_last_of("\\") + 1);
-	}
-	else
-	{
-		fName = aFilePath;
-	}
-	return fName;
-}
-string Shaders::getNewFragFileName(string aFilePath)
-{
-	string fName;
-	if (aFilePath.find_last_of("\\") != std::string::npos)
-	{
-		fName = aFilePath.substr(aFilePath.find_last_of("\\") + 1);
-	}
-	else
-	{
-		fName = aFilePath;
-	}
-	return fName + ".frag";
-}
-
-void Shaders::renderPreviewShader()
-{
-	//mShader = mPreviewShader;
-	mParameterBag->iCrossfade = mParameterBag->iPreviewCrossfade;
-	mFragmentShaders[mCurrentRenderShader] = mFragmentShaders[mCurrentPreviewShader];
-}
-bool Shaders::loadPixelFragmentShader(string aFilePath)
+bool Shaders::loadPixelFragmentShader(const fs::path &fragment_path)
 {
 	bool rtn = false;
 	// reset 
 	mParameterBag->iFade = false;
 	mParameterBag->controlValues[13] = 1.0f;
+	string mFile = fragment_path.string();
 	try
 	{
-		fs::path fr = aFilePath;
-		string name = "unknown";
-		string mFile = fr.string();
-		if (mFile.find_last_of("\\") != std::string::npos) name = mFile.substr(mFile.find_last_of("\\") + 1);
-		mFragFileName = name;
-		if (fs::exists(fr))
+		if (mFile.find_last_of("\\") != std::string::npos) mFragFileName = mFile.substr(mFile.find_last_of("\\") + 1);
+		if (fs::exists(fragment_path))
 		{
-			validFrag = false;
-			std::string fs = inc + loadString(loadFile(aFilePath));
-
-			rtn = setGLSLString(fs);
+			std::string fs = header + loadString(loadFile(fragment_path));
+			rtn = setGLSLString(fs, mFragFileName);
 		}
 		else
 		{
-			log->logTimedString(mFragFile + " loaded and compiled, does not exist:" + aFilePath);
+			log->logTimedString(mFragFileName + " loaded and compiled, does not exist:" + mFile);
 		}
 	}
 	catch (gl::GlslProgCompileExc &exc)
 	{
 		mError = string(exc.what());
-		log->logTimedString(aFilePath + " unable to load/compile shader:" + string(exc.what()));
+		log->logTimedString(mFile + " unable to load/compile shader:" + string(exc.what()));
 	}
-	catch (const std::exception &e)
+	catch (ci::Exception &e)
 	{
 		mError = string(e.what());
-		log->logTimedString(aFilePath + " unable to load shader:" + string(e.what()));
+		log->logTimedString(mFile + " unable to load shader:" + string(e.what()));
 	}
-
 	return rtn;
 }
-
-void Shaders::loadCurrentFrag()
+void Shaders::update()
 {
-	mParameterBag->controlValues[4] = 0.0;
-	try
+	// get the current time with second-level accuracy
+	auto now = boost::posix_time::second_clock::local_time();
+	auto date = now.date();
+	auto time = now.time_of_day();
+	// set each uniform if it exists in the shader program
+	// when compiled, only uniforms that are used remain in the program
+	for (auto &shader : mFragmentShaders)
 	{
-		string dbg = currentFrag.c_str();
-		mFragmentShaders[mCurrentRenderShader] = gl::GlslProg::create(NULL, currentFrag.c_str());
-		log->logTimedString("loadCurrentFrag success");
-		mError = "";
-		validFrag = true;
+		auto map = shader.prog->getActiveUniformTypes();
+		if (map.find("iChannelResolution") != map.end())	shader.prog->uniform("iChannelResolution", mParameterBag->iChannelResolution, 4);
+		if (map.find("iGlobalTime") != map.end())			shader.prog->uniform("iGlobalTime", static_cast<float>(getElapsedSeconds()));
+		if (map.find("iZoom") != map.end())					shader.prog->uniform("iZoom", mParameterBag->controlValues[13]);
+		if (map.find("iSteps") != map.end())				shader.prog->uniform("iSteps", (int)mParameterBag->controlValues[16]);
+		if (map.find("iDate") != map.end())					shader.prog->uniform("iDate", vec4(date.year(), date.month(), date.day_number(), time.total_seconds()));
+		if (map.find("iMouse") != map.end())				shader.prog->uniform("iMouse", mParameterBag->iMouse);
+		if (map.find("iColor") != map.end())				shader.prog->uniform("iColor", vec3(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3]));
+		if (map.find("iBackgroundColor") != map.end())		shader.prog->uniform("iBackgroundColor", vec3(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
+		if (map.find("iAudio0") != map.end())				shader.prog->uniform("iAudio0", 1);//TODO replace with audioTextureIndex
+		if (map.find("iChannel0") != map.end())				shader.prog->uniform("iChannel0", 0);
+		if (map.find("iChannel1") != map.end())				shader.prog->uniform("iChannel1", 1);
+		if (map.find("iFreq0") != map.end())				shader.prog->uniform("iFreq0", mParameterBag->iFreqs[0]);
+		if (map.find("iFreq1") != map.end())				shader.prog->uniform("iFreq1", mParameterBag->iFreqs[1]);
+		if (map.find("iFreq2") != map.end())				shader.prog->uniform("iFreq2", mParameterBag->iFreqs[2]);
+		if (map.find("iFreq3") != map.end())				shader.prog->uniform("iFreq3", mParameterBag->iFreqs[3]);
+		if (map.find("iRatio") != map.end())				shader.prog->uniform("iRatio", mParameterBag->controlValues[11]);
+		if (map.find("iRenderXY") != map.end())				shader.prog->uniform("iRenderXY", mParameterBag->mLeftRenderXY);
+		if (map.find("iAlpha") != map.end())				shader.prog->uniform("iAlpha", mParameterBag->controlValues[4]);
+		if (map.find("iBlendmode") != map.end())			shader.prog->uniform("iBlendmode", mParameterBag->controlValues[15]);
+		if (map.find("iRotationSpeed") != map.end())		shader.prog->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
+		if (map.find("iPixelate") != map.end())				shader.prog->uniform("iPixelate", mParameterBag->controlValues[18]);
+		if (map.find("iExposure") != map.end())				shader.prog->uniform("iExposure", mParameterBag->controlValues[14]);
+		if (map.find("iDeltaTime") != map.end())			shader.prog->uniform("iDeltaTime", mParameterBag->iDeltaTime);
+		if (map.find("iFade") != map.end())					shader.prog->uniform("iFade", mParameterBag->iFade);
+		if (map.find("iToggle") != map.end())				shader.prog->uniform("iToggle", mParameterBag->controlValues[46]);
+		if (map.find("iLight") != map.end())				shader.prog->uniform("iLight", mParameterBag->iLight);
+		if (map.find("iLightAuto") != map.end())			shader.prog->uniform("iLightAuto", mParameterBag->iLightAuto);
+		if (map.find("iGreyScale") != map.end())			shader.prog->uniform("iGreyScale", mParameterBag->iGreyScale);
+		if (map.find("iTransition") != map.end())			shader.prog->uniform("iTransition", mParameterBag->iTransition);
+		if (map.find("iAnim") != map.end())					shader.prog->uniform("iAnim", mParameterBag->iAnim.value());
+		if (map.find("iRepeat") != map.end())				shader.prog->uniform("iRepeat", mParameterBag->iRepeat);
+		if (map.find("iVignette") != map.end())				shader.prog->uniform("iVignette", mParameterBag->controlValues[47]);
+		if (map.find("iInvert") != map.end())				shader.prog->uniform("iInvert", mParameterBag->controlValues[48]);
+		if (map.find("iDebug") != map.end())				shader.prog->uniform("iDebug", mParameterBag->iDebug);
+		if (map.find("iShowFps") != map.end())				shader.prog->uniform("iShowFps", mParameterBag->iShowFps);
+		if (map.find("iFps") != map.end())					shader.prog->uniform("iFps", mParameterBag->iFps);
+		if (map.find("iTempoTime") != map.end())			shader.prog->uniform("iTempoTime", mParameterBag->iTempoTime);
+		if (map.find("iGlitch") != map.end())				shader.prog->uniform("iGlitch", mParameterBag->controlValues[45]);
 	}
-	catch (gl::GlslProgCompileExc &exc)
-	{
-		validFrag = false;
-		mError = string(exc.what());
-		log->logTimedString("loadCurrentFrag error: " + mError);
-	}
-	// reset to no transition
-	mParameterBag->iTransition = 0;
-	// avoid looping or transition to run
-	mParameterBag->iAnim = 1.0;
-	if (mParameterBag->iCrossfade < 0.5)
-	{
-		//Right
-		mParameterBag->iCrossfade = 1.0;
-	}
-	else
-	{
-		//Left
-		mParameterBag->iCrossfade = 0.0;
-
-	}
-	timeline().apply(&mParameterBag->iAnim, 1.0f, 0.1f, EaseOutCubic()).finishFn([&]{
-		mParameterBag->controlValues[4] = 1.0;
-	});
-
+	auto mixMap = mMixShader->getActiveUniformTypes();
+	if (mixMap.find("iGlobalTime") != mixMap.end())			mMixShader->uniform("iGlobalTime", static_cast<float>(getElapsedSeconds()));
+	if (mixMap.find("iCrossfade") != mixMap.end())			mMixShader->uniform("iCrossfade", mParameterBag->controlValues[15]);//TODO a crossfader for each warp
+	if (mixMap.find("iAlpha") != mixMap.end())				mMixShader->uniform("iAlpha", mParameterBag->controlValues[4]);
+	if (mixMap.find("iChannel0") != mixMap.end())			mMixShader->uniform("iChannel0", 0);
+	if (mixMap.find("iChannel1") != mixMap.end())			mMixShader->uniform("iChannel1", 1);
 }
-
-void Shaders::doTransition()
+bool Shaders::setGLSLString(string pixelFrag, string fileName)
 {
-	if (mParameterBag->iTransition > 0)
-	{
-		mParameterBag->iAnim = 128.0;
-		timeline().apply(&mParameterBag->iAnim, 1.0f, mParameterBag->mTransitionDuration, EaseOutCubic()).startFn([&]{ mParameterBag->controlValues[16] = 16.0; }).finishFn([&]{
-			loadCurrentFrag();
-		});
-	}
-}
-
-bool Shaders::setGLSLString(string pixelFrag)
-{
-	int foundIndex = -1;
 	currentFrag = pixelFrag;
+	Shada newShada;
+	newShada.name = fileName;
+	newShada.active = true;
+	newShada.prog = gl::GlslProg::create(gl::GlslProg::Format().vertex(defaultVertexShader.c_str()).fragment(currentFrag.c_str()));
 	try
 	{
-		// searching first index of not running shader
-		if (mFragmentShaders.size() < 8)
+		// special treatment for mix.glsl
+		if (fileName == "mix.glsl")
 		{
-			mFragmentShaders.push_back(gl::GlslProg::create(NULL, currentFrag.c_str()));
-			foundIndex = mFragmentShaders.size() - 1;
+			mMixShader = gl::GlslProg::create(gl::GlslProg::Format().vertex(defaultVertexShader.c_str()).fragment(currentFrag.c_str()));
+			log->logTimedString("setGLSLString success for mMixShader ");
+			auto mixMap = mMixShader->getActiveUniformTypes();
+			for (const auto &pair : mixMap)
+			{
+				log->logTimedString(pair.first);
+			}
+			if (mixMap.find("iResolution") != mixMap.end()) mMixShader->uniform("iResolution", vec3(getWindowWidth(), getWindowHeight(), 0.0f));
+			
 		}
 		else
 		{
-			bool indexFound = false;
-			/*if (mParameterBag->mDirectRender)
+			// searching first index of not running shader
+			if (mFragmentShaders.size() < mParameterBag->MAX)
 			{
-			foundIndex = mParameterBag->mRightFragIndex;
+				mFragmentShaders.push_back(newShada);
 			}
 			else
-			{*/
-			while (!indexFound)
 			{
-				foundIndex++;
-				if (foundIndex != mParameterBag->mLeftFragIndex && foundIndex != mParameterBag->mRightFragIndex && foundIndex != mParameterBag->mPreviewFragIndex) indexFound = true;
-				if (foundIndex > mFragmentShaders.size() - 1) indexFound = true;
+				// load the new shader
+				mFragmentShaders[mFragmentShaders.size() - 1] = newShada;
 			}
+			//preview the new loaded shader
+			mParameterBag->mCurrentShadaFboIndex = mFragmentShaders.size() - 1;
+			log->logTimedString("setGLSLString success, mFragmentShaders size " + static_cast<ostringstream*>(&(ostringstream() << mFragmentShaders.size() - 1))->str());
+			// check that uniforms exist before setting the constant uniforms
+			auto map = mFragmentShaders[mFragmentShaders.size() - 1].prog->getActiveUniformTypes();
 
-			//}
-			// load the new shader
-			mFragmentShaders[foundIndex] = gl::GlslProg::create(NULL, currentFrag.c_str());
+			log->logTimedString("Found uniforms for " + fileName);
+			for (const auto &pair : map)
+			{
+				log->logTimedString(pair.first);
+			}
+			console() << endl;
+			if (map.find("iResolution") != map.end()) mFragmentShaders[mFragmentShaders.size() - 1].prog->uniform("iResolution", vec3(getWindowWidth(), getWindowHeight(), 0.0f));
+
 		}
-		//preview the new loaded shader
-		mParameterBag->mPreviewFragIndex = foundIndex;
-		log->logTimedString("setGLSLString success");
 		mError = "";
 		validFrag = true;
 	}
@@ -371,84 +212,11 @@ bool Shaders::setGLSLString(string pixelFrag)
 	return validFrag;
 }
 
-bool Shaders::setFragString(string pixelFrag)
+Shaders::~Shaders()
 {
-	currentFrag = pixelFrag;
-	try
-	{
-		if (mParameterBag->iTransition > 0)
-		{
-			doTransition();
-		}
-		else
-		{
-			mFragmentShaders[mCurrentPreviewShader] = gl::GlslProg::create(NULL, currentFrag.c_str());
-			//if (mParameterBag->mDirectRender) renderPreviewShader();// mFragmentShaders[mCurrentRenderShader] = gl::GlslProg(NULL, currentFrag.c_str());
-			log->logTimedString("setFragString success");
-			mError = "";
-			validFrag = true;
-		}
-		// save as current.frag for code editor
-		/* not refreshed but ok to load before live code is enabled */
-		if (mParameterBag->iDebug)
-		{
-			fs::path currentFile = getAssetPath("") / "shaders" / "current.frag";
-			ofstream mCurrentFrag(currentFile.string(), std::ofstream::binary);
-			mCurrentFrag << pixelFrag;
-			mCurrentFrag.close();
-			log->logTimedString("current live editor mix saved:" + currentFile.string());
-
-			mixFileName = previousFileName + "-" + currentFileName + ".frag";
-			fs::path defaultFile = getAssetPath("") / "shaders" / "default" / mixFileName;
-			ofstream mDefaultFrag(defaultFile.string(), std::ofstream::binary);
-			mDefaultFrag << pixelFrag;
-			mDefaultFrag.close();
-			log->logTimedString("default mix saved:" + defaultFile.string());
-		}
-		// if codeeditor mCodeEditor->setValue( pixelFrag );// CHECK 
-
-	}
-	catch (gl::GlslProgCompileExc &exc)
-	{
-		validFrag = false;
-		mError = string(exc.what());
-		log->logTimedString("setFragString error: " + mError);
-	}
-
-	return validFrag;
+	log->logTimedString("Shaders destructor");
 }
-
-
-bool Shaders::loadTextFile(string aFilePath)
+string Shaders::getFragError()
 {
-	bool success = false;
-	string rtn = "";
-	try
-	{
-		fs::path txtFile = aFilePath;
-		if (fs::exists(txtFile))
-		{
-			DataSourceRef dsr = loadFile(txtFile);
-			rtn = loadString(loadFile(txtFile));
-			log->logTimedString(aFilePath + " content:" + rtn);
-		}
-		success = true;
-	}
-	catch (const std::exception &e)
-	{
-		log->logTimedString(fileName + " unable to load string from text file:" + string(e.what()));
-	}
-	return success;
-	/* TODO
-	// parse json
-	if ( parseFragJson( mFile ) )
-	{
-	if ( mUserInterface->mCodeEditor )
-	{
-	string s = fragBegin + fragGlobalFunctions + fragFunctions + fragMainHeader + fragMainLines + fragEnd;
-	mUserInterface->mCodeEditor->setValue( s );
-	mUserInterface->mCodeEditor->write( mFile + "-" + ci::toString( (int)getAverageFps() ) + ".frag" );
-	}
-	*/
+	return mError;
 }
-#pragma warning(pop) // _CRT_SECURE_NO_WARNINGS

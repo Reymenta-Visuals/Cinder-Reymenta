@@ -19,7 +19,7 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	log->logTimedString("Textures constructor");
 
 	// init texture
-	startupImage = gl::Texture::create(loadImage(loadResource(IMG)), gl::Texture2d::Format().loadTopDown());
+	//startupImage = gl::Texture::create(loadImage(loadResource(IMG)), gl::Texture2d::Format().loadTopDown());
 
 	// init
 	string pathToStartupFile = (getAssetPath("") / "startup.jpg").string();

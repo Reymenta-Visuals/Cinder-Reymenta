@@ -1,3 +1,11 @@
+/**
+* \file Shaders.h
+* \author Bruce LANE
+* \date 20 november 2014
+*
+* Manages the shaders.
+*
+*/
 #pragma once
 
 #include "cinder/Cinder.h"
@@ -5,26 +13,12 @@
 #include "cinder/gl/GlslProg.h"
 #include "cinder/Utilities.h"
 #include "cinder/Timeline.h"
-
+#include <boost/date_time/posix_time/posix_time_types.hpp>
 #include "Resources.h"
 // log
 #include "Logger.h"
-
 // parameters
 #include "ParameterBag.h"
-// thread safe circular buffer
-#include "cinder/ConcurrentCircularBuffer.h"
-// Watchdog
-#include "Watchdog.h"
-// VisualStudio does'nt seem to support initializer_list
-// yet so let's use boost::assign::list_of instead
-#if defined( CINDER_MSW )
-#include "boost/assign/list_of.hpp"
-using namespace boost::assign;
-#endif
-
-#pragma warning(push)
-#pragma warning(disable: 4996) // _CRT_SECURE_NO_WARNINGS
 
 using namespace ci;
 using namespace ci::app;
@@ -34,98 +28,50 @@ namespace Reymenta
 {
 	// stores the pointer to the Shaders instance
 	typedef std::shared_ptr<class Shaders> ShadersRef;
-
+	struct Shada {
+		string name;
+		gl::GlslProgRef prog;
+		bool active;
+	};
 	class Shaders {
 	public:		
 		Shaders( ParameterBagRef aParameterBag );
-		virtual					~Shaders();
-		void update();
+		virtual						~Shaders();
 		static ShadersRef	create( ParameterBagRef aParameterBag )
 		{
 			return shared_ptr<Shaders>( new Shaders( aParameterBag ) );
 		}
-
-		string getMiddleFragFileName() { return mFragFileName; };
-		string getMiddleFragFullPath() { return mFragFile; };
-
-		void doTransition();
-		bool setFragString(string pixelFrag);
-		bool setGLSLString(string pixelFrag);
-		bool loadTextFile(string aFilePath);
-		void loadCurrentFrag();
-
-		string getFragError();
-		
-		bool isValidFrag() { return validFrag; };
-		bool isValidVert() { return validVert; };
-
-		gl::GlslProgRef getMixShader() { return mMixShader; };
-		gl::GlslProgRef getLiveShader() { return mLiveShader; };
-		gl::GlslProgRef getShader(int aIndex) { return mFragmentShaders[aIndex]; };
-
-		bool loadPixelFragmentShader(string aFilePath);
-		void loadFragmentShader(boost::filesystem::path aFilePath);
-		string getFileName(string aFilePath);
-		string getNewFragFileName( string aFilePath);
-		string getFragStringFromFile( string fileName );
-		void renderPreviewShader();
-		int getCount() { return mFragmentShaders.size(); };
-
-		void shutdownLoader();
+		void						update();
+		void						resize();
+		string						getFragError();
+		gl::GlslProgRef				getShader(int aIndex);
+		gl::GlslProgRef				getMixShader() { return mMixShader; };
+		bool						loadPixelFragmentShader(const fs::path &fragment_path);
+		string						getFragFileName() { return mFragFileName; };
+		string						getShaderName(int aIndex) { return mFragmentShaders[aIndex].name; };
+		bool						setGLSLString(string pixelFrag, string fileName);
+		int							getShaderCount() { return mFragmentShaders.size(); };
 	private:
 		// Logger
-		LoggerRef					log;	
-
-
-		string						mFragFile;
-		string						mFragFileName;
-
-		bool						validFrag;
-		bool						validVert;
-		bool						liveError;
-		// new
-		int							mCurrentRenderShader;
-		int							mCurrentPreviewShader;
-		vector<gl::GlslProgRef>		mFragmentShaders;
-
-		string						fileName, previousFileName, currentFileName, mixFileName;
+		LoggerRef					log;
+		string						mixFileName;
 		string						mError;
-		// parameters
-		ParameterBagRef				mParameterBag;
+		//! name of the loaded shader file
+		string						mFragFileName;
+		//! include shader lines for header of loaded files
+		std::string					header;
+		//! default vertex shader string
+		std::string					defaultVertexShader;
+		//! default fragment shader string
+		std::string					defaultFragmentShader;
 		// current frag string
 		string						currentFrag;
-		// thread
-		void setupLoader();
-		void loader();
-		struct LoaderData
-		{
-			LoaderData() {}
-			//LoaderData(const fs::path& path, gl::GlslProgRef shader): path(path), shader(shader) {}
-
-			//! This constructor allows implicit conversion from path to LoaderData.
-			LoaderData(const fs::path& path)
-				: path(path) {}
-
-			fs::path path;
-			std::string shadertext;
-			//gl::GlslProgRef shader;
-		};
-		//! The main thread will push data to this buffer, to be picked up by the loading thread.
-		ConcurrentCircularBuffer<LoaderData>* mRequests;
-		//! The loading thread will push data to this buffer, to be picked up by the main thread.
-		ConcurrentCircularBuffer<LoaderData>* mResponses;
-		//! Our loading thread, sharing a OpenGL context with the main thread.
-		std::shared_ptr<std::thread>          mThread;
-		//! Signals if the loading thread should abort.
-		bool                                  mThreadAbort;
-		// default vertex shader
-		std::string vs;
-		// include shader lines
-		std::string inc;
-		// mix shader
-		gl::GlslProgRef mMixShader;
-		// live coding shader
-		gl::GlslProgRef mLiveShader;
-
+		//! vector of fragment shaders
+		vector<Shada>				mFragmentShaders;
+		bool						validFrag;
+		//! parameters
+		ParameterBagRef				mParameterBag;
+		//! mix shader
+		gl::GlslProgRef				mMixShader;
 	};
 }
