@@ -148,8 +148,11 @@ void OSC::update()
 			}
 		}
 
-
-		if (oscAddress == "/sumMovement")
+		if (oscAddress == "/cc")
+		{
+			mParameterBag->controlValues[iargs[0]] = fargs[1];
+		}
+		else if (oscAddress == "/sumMovement")
 		{
 			float sumMovement = fargs[0];
 			//exposure

@@ -105,6 +105,13 @@ ci::gl::Texture Textures::getTexture(int index)
 	if (index > sTextures.size() - 1) index = sTextures.size() - 1;
 	return sTextures[index];
 }
+void Textures::setTexture(int index, ci::gl::Texture texture)
+{
+	if (index < sTextures.size())
+	{
+		sTextures[index] = texture;
+	}
+}
 ci::gl::Texture Textures::getFboTexture(int index)
 {
 	if (index > mFbos.size() - 1) index = mFbos.size() - 1;

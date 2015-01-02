@@ -47,6 +47,7 @@ namespace Reymenta
 		}
 		void						setTexture( int index, string fileName );
 		ci::gl::Texture				getTexture(int index);
+		void						setTexture(int index, ci::gl::Texture texture);
 		ci::gl::Texture				getFboTexture(int index);
 		
 		ci::gl::Fbo					getFbo(int index);

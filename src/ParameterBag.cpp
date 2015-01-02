@@ -169,7 +169,7 @@ bool ParameterBag::restore()
 void ParameterBag::reset()
 {
 	// parameters exposed in XML
-	mMIDIOpenAllInputPorts = false;
+	mMIDIOpenAllInputPorts = true;
 	mAutoLayout = true;
 	mOutputVideoResolution = 1024;
 
