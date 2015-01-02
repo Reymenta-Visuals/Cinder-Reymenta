@@ -2,12 +2,16 @@
 
 using namespace Reymenta;
 
-OSC::OSC(ParameterBagRef aParameterBag)
+OSC::OSC(ParameterBagRef aParameterBag, ShadersRef aShadersRef, TexturesRef aTextures, WarpWrapperRef aWarpings)
 {
+	mParameterBag = aParameterBag;
+	mShaders = aShadersRef;
+	mTextures = aTextures;
+	mWarpings = aWarpings;
 	mParameterBag = aParameterBag;
 	for (int i = 0; i < 20; i++)
 	{
-		skeleton[i] = Vec4i::zero();
+		skeleton[i] = ivec4(0);
 	}
 	// OSC sender
 	mOSCSender.setup(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort);
@@ -15,9 +19,9 @@ OSC::OSC(ParameterBagRef aParameterBag)
 	mOSCReceiver.setup(mParameterBag->mOSCReceiverPort);
 }
 
-OSCRef OSC::create(ParameterBagRef aParameterBag)
+OSCRef OSC::create(ParameterBagRef aParameterBag, ShadersRef aShadersRef, TexturesRef aTextures, WarpWrapperRef aWarpings)
 {
-	return shared_ptr<OSC>(new OSC(aParameterBag));
+	return shared_ptr<OSC>(new OSC(aParameterBag, aShadersRef, aTextures, aWarpings));
 }
 
 void OSC::update()
@@ -32,9 +36,9 @@ void OSC::update()
 	// check for mouse moved message
 	if(m.getAddress() == "/mouse/position"){
 	// both the arguments are int32's
-	Vec2i pos = Vec2i( m.getArgAsInt32(0), m.getArgAsInt32(1));
-	Vec2f mouseNorm = Vec2f( pos ) / getWindowSize();
-	Vec2f mouseVel = Vec2f( pos - pMouse ) / getWindowSize();
+	ivec2 pos = ivec2( m.getArgAsInt32(0), m.getArgAsInt32(1));
+	vec2 mouseNorm = vec2( pos ) / getWindowSize();
+	vec2 mouseVel = vec2( pos - pMouse ) / getWindowSize();
 	addToFluid( mouseNorm, mouseVel, true, true );
 	pMouse = pos;
 	if ( m.getArgAsInt32(2) == 1 )
@@ -54,7 +58,7 @@ void OSC::update()
 	// check for mouse button message
 	else if(m.getAddress() == "/mouse/button"){
 	// the single argument is a string
-	Vec2i pos = Vec2i( m.getArgAsInt32(0), m.getArgAsInt32(1));
+	ivec2 pos = ivec2( m.getArgAsInt32(0), m.getArgAsInt32(1));
 	mArcball.mouseDown( pos );
 	mCurrentMouseDown = mInitialMouseDown = pos;
 	if ( m.getArgAsInt32(2) == 1 )
@@ -152,6 +156,31 @@ void OSC::update()
 		{
 			mParameterBag->controlValues[iargs[0]] = fargs[1];
 		}
+		else if (oscAddress == "/fspath")
+		{
+			mShaders->loadPixelFragmentShader(sargs[1]);
+			mTextures->addShadaFbo();
+		}
+		else if (oscAddress == "/texture")
+		{
+			mTextures->setInput(iargs[0], iargs[1], iargs[2]);
+		}
+		else if (oscAddress == "/createwarps")
+		{
+			mWarpings->createWarps(iargs[0]);
+		}
+		else if (oscAddress == "/select")
+		{
+			mWarpings->setSelectedWarp(iargs[0]);
+		}
+		else if (oscAddress == "/channel")
+		{
+			mWarpings->setChannelForSelectedWarp(iargs[0]);
+		}
+		else if (oscAddress == "/crossfade")
+		{
+			mWarpings->setCrossfadeForSelectedWarp(fargs[0]);
+		}
 		else if (oscAddress == "/sumMovement")
 		{
 			float sumMovement = fargs[0];
@@ -199,7 +228,7 @@ void OSC::update()
 			jointIndex = iargs[1];
 			if (jointIndex < 20)
 			{
-				skeleton[jointIndex] = Vec4i(iargs[2], iargs[3], iargs[4], iargs[5]);
+				skeleton[jointIndex] = ivec4(iargs[2], iargs[3], iargs[4], iargs[5]);
 			}
 		}
 		else

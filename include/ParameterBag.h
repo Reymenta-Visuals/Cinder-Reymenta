@@ -48,15 +48,15 @@ namespace Reymenta {
 		// render windows
 		int							mRenderWidth;
 		int							mRenderHeight;
-		Vec2f						mRenderXY, mLeftRenderXY, mRightRenderXY, mPreviewRenderXY;
-		Vec2f						mRenderPosXY;
-		Vec2f						mPreviewFragXY;
-		Vec2f						mCamPosXY;
-		Vec2f						mRenderResoXY;
+		vec2						mRenderXY, mLeftRenderXY, mRightRenderXY, mPreviewRenderXY;
+		vec2						mRenderPosXY;
+		vec2						mPreviewFragXY;
+		vec2						mCamPosXY;
+		vec2						mRenderResoXY;
 		bool						mAutoLayout;
 
 		// code editor
-		Vec2f						mRenderCodeEditorXY;
+		vec2						mRenderCodeEditorXY;
 
 		bool						isUIDirty;
 		bool						mMIDIOpenAllInputPorts;
@@ -73,9 +73,9 @@ namespace Reymenta {
 		// shader uniforms	
 		float						iGlobalTime;        // shader playback time (in seconds)
 		float						iChannelTime[4];
-		Vec3f						iResolution;        // viewport resolution (in pixels)
-		Vec3f						iChannelResolution[4];	// channel resolution (in pixels)
-		Vec4f						iMouse;             // mouse pixel coords. xy: current (if MLB down), zw: click
+		vec3						iResolution;        // viewport resolution (in pixels)
+		vec3						iChannelResolution[4];	// channel resolution (in pixels)
+		vec4						iMouse;             // mouse pixel coords. xy: current (if MLB down), zw: click
 		bool						iFade;
 		bool						iRepeat;
 		bool						iLight;
@@ -92,6 +92,7 @@ namespace Reymenta {
 		int							multFactor;
 		// windows and params
 		int							mMainDisplayWidth;
+		int							mMainDisplayHeight;
 		int							mRenderX;
 		int							mRenderY;
 		int							mDisplayCount;
@@ -140,7 +141,7 @@ namespace Reymenta {
 
 		ci::Anim<float>				mStateTransition;
 
-		Vec2i						mRenderResolution;        // render resolution (replaces iResolution which increments magically)
+		ivec2						mRenderResolution;        // render resolution (replaces iResolution which increments magically)
 		// 
 		bool						mSendToOutput;
 		bool						autoInvert;
@@ -150,13 +151,14 @@ namespace Reymenta {
 		// spout
 		int							mFboResolution;
 		int							mOutputVideoResolution;
-		Vec2f						mOutputResolution;
+		vec2						mOutputResolution;
 		// OSC/MIDI/JSON controlled UI and params
 		map<int, float>				controlValues;
 		// indexes for textures
 		map<int, int>				iChannels;
 		// fbo indexes for warping
 		map<int, int>				iWarpFboChannels;
+		int							selectedWarp;
 		int							mWarpCount;
 		bool						mOptimizeUI;//mDirectRender, 
 		int							mUIRefresh;
@@ -170,7 +172,7 @@ namespace Reymenta {
 		// camera
 		CameraPersp					mCamera;
 		MayaCamUI					mMayaCam;
-		Vec2f						mCamEyePointXY;
+		vec2						mCamEyePointXY;
 		float						mCamEyePointZ;
 	private:
 		const string settingsFileName = "Settings.xml";

@@ -1,3 +1,11 @@
+/**
+* \file Textures.h
+* \author Bruce LANE
+* \date 20 november 2014
+*
+* Manages the textures.
+*
+*/
 #pragma once
 
 #include <string>
@@ -8,77 +16,120 @@
 #include "cinder/ImageIo.h"
 #include "cinder/gl/Texture.h"
 #include "cinder/Rand.h"
-#include "Logger.h"
 #include "cinder/Utilities.h"
 #include "cinder/Filesystem.h"
 #include "cinder/Capture.h"
 #include "cinder/gl/GlslProg.h"
 #include "cinder/gl/Fbo.h"
 #include "cinder/Camera.h"
+#include "cinder/gl/Shader.h"
+#include "cinder/gl/VboMesh.h"
+
 // parameters
 #include "ParameterBag.h"
 // shaders
 #include "Shaders.h"
-// to use UI element for update background image
-//#include "UIElement.h"
-
-// gstreamer
-// #include "_2RealGStreamerWrapper.h"
-// WMFVideo
-//#include "../../../src/ciWMFVideoPlayer.h"
+// log to file
+#include "Logger.h"
 
 using namespace ci;
 using namespace ci::app;
 using namespace std;
-//using namespace _2RealGStreamerWrapper;
 
 namespace Reymenta
 {
 	// stores the pointer to the Textures instance
 	typedef std::shared_ptr<class Textures> TexturesRef;
 
+	//! struct to keep track of the texture names for spout senders and shader fbo-rendered textures
+	//typedef 
+	struct Sender
+	{
+		char						SenderName[256];
+		unsigned int				width, height;
+		ci::gl::TextureRef			texture;
+		bool						active;
+	};
+	struct ShadaFbo
+	{
+		ci::gl::FboRef				fbo;
+		int							shadaIndex;
+	};
+	struct WarpInput
+	{
+		int							leftIndex;
+		int							leftMode;		// 0 for input texture, 1 for shader
+		int							rightIndex;
+		int							rightMode;		// 0 for input texture, 1 for shader
+		float						iCrossfade;		// from 0 left to 1 right
+		bool						hasTexture;		// has already a texture? if not the first one is put on left and right
+	};
 	class Textures {
-	public:		
+	public:
 		Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef);
-		virtual					~Textures();
-		static TexturesRef	create(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
+		static TexturesRef			create(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 		{
 			return shared_ptr<Textures>(new Textures(aParameterBag, aShadersRef));
 		}
-		void						setTexture( int index, string fileName );
-		ci::gl::Texture				getTexture(int index);
-		void						setTexture(int index, ci::gl::Texture texture);
-		ci::gl::Texture				getFboTexture(int index);
-		
-		ci::gl::Fbo					getFbo(int index);
-		int							getTextureCount() { return sTextures.size(); };
-		int							getFboCount() { return mFbos.size(); };
-		void						flipMixFbo(bool flip);
+		//! Returns Texture at index
+		ci::gl::TextureRef			getTexture(int index);
+		ci::gl::TextureRef			getMixTexture(int index);
+		ci::gl::TextureRef			getFboTexture(int index);
+		int							getInputTexturesCount() { return inputTextures.size(); };
+		ci::gl::TextureRef			getSenderTexture(int index);
+		int							createTexture(char name[256], unsigned int width, unsigned int height, gl::TextureRef texture);
+		int							createSpoutTexture(char name[256], unsigned int width, unsigned int height);
 		// from audio
-		void						setAudioTexture( unsigned char *signal );
-		// image
-		void						loadImageFile( int index, string aFile );
+		void						setAudioTexture(int audioTextureIndex, unsigned char *signal);
 
-		void						update();
+		//! load image file as texture
+		void						setTextureFromFile(string fileName);
+
+		//! main draw for fbos and textures
 		void						draw();
-
+		void						update();
+		void						shutdown();
+		void						setSenderTextureSize(int index, int width, int height);
+		char*						getSenderName(int index);
+		void						renderShadersToFbo();
+		void						renderMixesToFbo();
+		void						saveThumb();
+		void						setShadaIndex(int index);
+		void						setInputTextureIndex(int index);
+		int							getInputTextureIndex() { return selectedInputTexture; };
+		WarpInput					setInput(int index, bool left, int currentMode);
+		int							getShadaFbosSize() { return mShadaFbos.size(); };
+		int							addShadaFbo();
+		void						createWarpInput();
+		//! warpInputs: vector of warp input textures/shader fbo texture
+		vector<WarpInput>			warpInputs;
+		void						setCrossfade(int value) { warpInputs[mParameterBag->selectedWarp].iCrossfade = value; };
 	private:
-		// Logger
-		LoggerRef					log;	
-		static const int			mTexturesCount = 8;
-
-		ci::gl::Texture				previousTexture;
-		ci::gl::Texture				currentTexture;
-		unsigned char				dTexture[1024];
-		vector<ci::gl::Texture>		sTextures;
-
-		// fbo
-		vector<gl::Fbo>				mFbos;
-		// shaders
-		gl::GlslProgRef				aShader;
-		// parameters
+		//! Logger
+		LoggerRef					log;
+		//! startup image
+		gl::TextureRef				startupImage;
+		//! fboFormat
+		gl::Fbo::Format				fboFormat;
+		//! check if valid index
+		int							checkedIndex(int index);
+		//! parameters
 		ParameterBagRef				mParameterBag;
-		// Shaders
+		//! mixes fbos
+		vector<gl::FboRef>			mMixesFbos;
+		//! shader fbos
+		vector<ShadaFbo>			mShadaFbos;
+		//! Shaders
 		ShadersRef					mShaders;
+		//! shader
+		gl::GlslProgRef				aShader;
+		int							selectedShada;
+		//! inputTextures: vector of Spout received textures
+		vector<Sender>				inputTextures;
+		bool						inputReceived;
+		int							selectedInputTexture;
+		//! mesh for shader drawing
+		gl::VboMeshRef				mMesh;
+
 	};
 }

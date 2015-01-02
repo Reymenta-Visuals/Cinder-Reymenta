@@ -9,6 +9,12 @@
 using namespace ci;
 using namespace ci::app;
 using namespace std;
+// shaders
+#include "Shaders.h"
+// textures
+#include "Textures.h"
+// Warps
+#include "WarpWrapper.h"
 
 namespace Reymenta 
 {
@@ -19,8 +25,8 @@ namespace Reymenta
 	{
 
 	public:
-		OSC( ParameterBagRef aParameterBag );
-		static	OSCRef create( ParameterBagRef aParameterBag );
+		OSC(ParameterBagRef aParameterBag, ShadersRef aShadersRef, TexturesRef aTextures, WarpWrapperRef aWarpings);
+		static	OSCRef create(ParameterBagRef aParameterBag, ShadersRef aShadersRef, TexturesRef aTextures, WarpWrapperRef aWarpings);
 
 		void	update();
 
@@ -28,11 +34,17 @@ namespace Reymenta
 		void	sendOSCFloatMessage(string controlType, int iarg0 = 0, float farg1 = 0.0, float farg2 = 0.0, float farg3 = 0.0, float farg4 = 0.0, float farg5 = 0.0);
 		void	sendOSCStringMessage(string controlType, int iarg0 = 0, string sarg1 = "", string sarg2 = "", string sarg3 = "", string sarg4 = "", string sarg5 = "");
 
-		Vec4i	skeleton[20];
+		ivec4	skeleton[20];
 	private:
 
 		// parameters
 		ParameterBagRef				mParameterBag;
+		//! Shaders
+		ShadersRef					mShaders;
+		// textures
+		TexturesRef					mTextures;
+		// warps
+		WarpWrapperRef				mWarpings;
 
 		osc::Listener 				mOSCReceiver;
 		osc::Sender					mOSCSender;

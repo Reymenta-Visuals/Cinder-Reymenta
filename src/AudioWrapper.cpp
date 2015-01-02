@@ -53,8 +53,8 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 	// Paul Houx
 	// setup camera
 	mCamera.setPerspective(50.0f, 1.0f, 1.0f, 10000.0f);
-	mCamera.setEyePoint(Vec3f(-kWidth / 4, kHeight / 2, -kWidth / 8));
-	mCamera.setCenterOfInterestPoint(Vec3f(kWidth / 4, -kHeight / 8, kWidth / 4));
+	mCamera.setEyePoint(vec3(-kWidth / 4, kHeight / 2, -kWidth / 8));
+	mCamera.setCenterOfInterestPoint(vec3(kWidth / 4, -kHeight / 8, kWidth / 4));
 
 	// create channels from which we can construct our textures
 	mChannelLeft = Channel32f(kBands, kHistory);
@@ -84,9 +84,9 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 	}
 	currentShaderIndex = 0;
 	// create static mesh (all animation is done in the vertex shader)
-	std::vector<Vec3f>	vertices;
+	std::vector<vec3>	vertices;
 	std::vector<Colorf>	colors;
-	std::vector<Vec2f>	coords;
+	std::vector<vec2>	coords;
 	std::vector<size_t>	indices;
 
 	for (size_t h = 0; h < kHeight; ++h)
@@ -107,7 +107,7 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 			}
 
 			// add vertex
-			vertices.push_back(Vec3f(float(w), 0, float(h)));
+			vertices.push_back(vec3(float(w), 0, float(h)));
 
 			// add texture coordinates
 			// note: we only want to draw the lower part of the frequency bands,
@@ -115,7 +115,7 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 			const float part = 0.5f;
 			float s = w / float(kWidth - 1);
 			float t = h / float(kHeight - 1);
-			coords.push_back(Vec2f(part - part * s, t));
+			coords.push_back(vec2(part - part * s, t));
 
 			// add vertex colors
 			colors.push_back(Color(CM_HSV, s, 0.5f, 0.75f));
@@ -274,12 +274,12 @@ void AudioWrapper::update()
 		float x = 0.5f + 0.5f * math<float>::cos(t * 0.07f);
 		float y = 0.1f - 0.2f * math<float>::sin(t * 0.09f);
 		float z = 0.25f * math<float>::sin(t * 0.05f) - 0.25f;
-		Vec3f eye = Vec3f(kWidth * x, kHeight * y, kHeight * z);
+		vec3 eye = vec3(kWidth * x, kHeight * y, kHeight * z);
 
 		x = 1.0f - x;
 		y = -0.3f;
 		z = 0.6f + 0.2f *  math<float>::sin(t * 0.12f);
-		Vec3f interest = Vec3f(kWidth * x, kHeight * y, kHeight * z);
+		vec3 interest = vec3(kWidth * x, kHeight * y, kHeight * z);
 
 		// gradually move to eye position and center of interest
 		mCamera.setEyePoint(eye.lerp(0.995f, mCamera.getEyePoint()));

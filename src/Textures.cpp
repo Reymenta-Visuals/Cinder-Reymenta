@@ -1,3 +1,11 @@
+/**
+* \file Textures.cpp
+* \author Bruce LANE
+* \date 20 november 2014
+*
+* Manages the textures.
+*
+*/
 #include "Textures.h"
 
 using namespace Reymenta;
@@ -7,669 +15,356 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	mParameterBag = aParameterBag;
 	mShaders = aShadersRef;
 	// instanciate the logger class
-	log = Logger::create("TexturesLog.txt");
+	log = Logger::create("RenderTexturesLog.txt");
 	log->logTimedString("Textures constructor");
 
-	// preview fbo at index 0
-	mFbos.push_back(gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));//640x480
-	mFbos[0].getTexture(0).setFlipped(true);
-	//createPreviewFbo();//mFboWidth/4 or 16
-	// mix fbo at index 1
-	mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
-	mFbos[1].getTexture(0).setFlipped(true);
+	// init texture
+	startupImage = gl::Texture::create(loadImage(loadResource(IMG)), gl::Texture2d::Format().loadTopDown());
 
-	for (size_t m = mFbos.size(); m < 9; m++)
+	// init
+	string pathToStartupFile = (getAssetPath("") / "startup.jpg").string();
+	if (fs::exists(pathToStartupFile))
 	{
-		mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
-		mFbos[mFbos.size() - 1].getTexture(0).setFlipped(true);
+		log->logTimedString("startup.jpg image found, loading");
+		startupImage = gl::Texture::create(loadImage(loadAsset("startup.jpg")), gl::Texture2d::Format().loadTopDown());
+		log->logTimedString("startup.jpg image loaded");
 	}
-	mFbos[mParameterBag->mMeshFboIndex].getTexture(0).setFlipped(false);
-	// audio fbo at index 3
-	mFbos[mParameterBag->mAudioFboIndex] = gl::Fbo(mParameterBag->mFboWidth * 2, mParameterBag->mFboHeight * 2);//1280x960
-	mFbos[mParameterBag->mAudioFboIndex].getTexture(0).setFlipped(true);
+	createTexture("startup image", mParameterBag->mFboWidth, mParameterBag->mFboHeight, startupImage);
+	// if no input received we wait for the 1st one to replace the startup image
+	inputReceived = false;
+	// create a rectangle to be drawn with our shader program
+	// default is from -0.5 to 0.5, so we scale by 2 to get -1.0 to 1.0
+	// coming soon in Cinder? mMesh = gl::VboMesh::create(geom::Rect().scale(vec2(2.0f, 2.0f))); 
+	mMesh = gl::VboMesh::create(geom::Rect(Rectf(-2.0, -2.0, 2.0, 2.0)));
+	selectedShada = 0;
+	selectedInputTexture = 0;
 
-	for (int i = 0; i < 1024; ++i) dTexture[i] = (unsigned char)(Rand::randUint() & 0xFF);
-
-	// store it as a 512x2 texture in the first texture
-	sTextures.push_back(gl::Texture(dTexture, GL_LUMINANCE, 512, 2));
-	for (int j = 0; j < mTexturesCount - 1; j++)
-	{
-		gl::Texture img(loadImage(loadAsset("reymenta.jpg")));
-		sTextures.push_back(img);
-	}
-
+	log->logTimedString("Textures constructor end");
 }
-/*void Textures::createPreviewFbo()
+void Textures::createWarpInput()
 {
-	if (mParameterBag->mPreviewLargeSize)
+	WarpInput newWarpInput;
+	newWarpInput.leftIndex = 0;
+	newWarpInput.leftMode = 0;
+	newWarpInput.rightIndex = 0;
+	newWarpInput.rightMode = 0;
+	newWarpInput.iCrossfade = 0.5;
+	newWarpInput.hasTexture = false;
+	warpInputs.push_back(newWarpInput);
+	// init mixTextures
+	mMixesFbos.push_back(gl::Fbo::create(mParameterBag->mFboWidth, mParameterBag->mFboHeight, fboFormat.depthTexture()));
+}
+void Textures::setShadaIndex(int index)
+{
+	log->logTimedString("setShadaIndex:" + toString(index));
+	selectedShada = index;
+}
+void Textures::setInputTextureIndex(int index)
+{
+	log->logTimedString("setInputTextureIndex:" + toString(index));
+	selectedInputTexture = index;
+}
+
+WarpInput Textures::setInput(int index, bool left, int currentMode)
+{
+	string name;
+	if (currentMode == 0)
 	{
-		mParameterBag->mPreviewFboWidth = mParameterBag->mFboWidth / 4;
-		mParameterBag->mPreviewFboHeight = mParameterBag->mFboHeight / 4;
+		selectedInputTexture = index;
+		// 0 = input texture mode
+		name = "T" + toString(selectedInputTexture);
+		if (left)
+		{
+			warpInputs[mParameterBag->selectedWarp].leftIndex = selectedInputTexture;
+			warpInputs[mParameterBag->selectedWarp].leftMode = 0; // 0 for input texture
+			if (!warpInputs[mParameterBag->selectedWarp].hasTexture)
+			{
+				// put texture on both sides
+				warpInputs[mParameterBag->selectedWarp].hasTexture = true;
+				warpInputs[mParameterBag->selectedWarp].rightIndex = selectedInputTexture;
+				warpInputs[mParameterBag->selectedWarp].rightMode = 0; // 0 for input texture
+			}
+		}
+		else
+		{
+			warpInputs[mParameterBag->selectedWarp].rightIndex = selectedInputTexture;
+			warpInputs[mParameterBag->selectedWarp].rightMode = 0; // 0 for input texture
+			if (!warpInputs[mParameterBag->selectedWarp].hasTexture)
+			{
+				// put texture on both sides
+				warpInputs[mParameterBag->selectedWarp].hasTexture = true;
+				warpInputs[mParameterBag->selectedWarp].leftIndex = selectedInputTexture;
+				warpInputs[mParameterBag->selectedWarp].leftMode = 0; // 0 for input texture
+			}
+		}
 	}
 	else
 	{
-		mParameterBag->mPreviewFboWidth = mParameterBag->mFboWidth / 16;
-		mParameterBag->mPreviewFboHeight = mParameterBag->mFboHeight / 16;
-	}
-	mFbos[mParameterBag->mCurrentPreviewFboIndex] = gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight);
-	mFbos[mParameterBag->mCurrentPreviewFboIndex].getTexture(0).setFlipped(true);
-}*/
-
-void Textures::setAudioTexture(unsigned char *signal)
-{
-	sTextures[0] = gl::Texture(signal, GL_LUMINANCE, 512, 2);
-}
-void Textures::setTexture(int index, string fileName)
-{
-	if (index > mTexturesCount - 1) index = mTexturesCount - 1;
-	if (index > 0)
-	{
-		try
+		// 1 = shader mode
+		selectedShada = index;
+		//??? mShadaFbos[index].shadaIndex = selectedShada;
+		name = "S" + toString(selectedShada);
+		if (left)
 		{
-			string pathToAssetFile = (getAssetPath("") / fileName).string();
-
-			if (!fs::exists(pathToAssetFile))
+			warpInputs[mParameterBag->selectedWarp].leftIndex = selectedShada;
+			warpInputs[mParameterBag->selectedWarp].leftMode = 1; // 1 for shader
+			if (!warpInputs[mParameterBag->selectedWarp].hasTexture)
 			{
-				log->logTimedString("asset file not found: " + fileName);
-			}
-			else
-			{
-				log->logTimedString("asset found file: " + fileName);
-				if (index < sTextures.size())
-				{
-					sTextures[index] = gl::Texture(loadImage(loadAsset(fileName)));
-				}
-				else
-				{
-					sTextures.push_back(gl::Texture(loadImage(loadAsset(fileName))));
-				}
-				log->logTimedString("asset loaded: " + fileName);
+				// put texture on both sides
+				warpInputs[mParameterBag->selectedWarp].hasTexture = true;
+				warpInputs[mParameterBag->selectedWarp].rightIndex = selectedShada;
+				warpInputs[mParameterBag->selectedWarp].rightMode = 1; // 1 for shader
 			}
 		}
-		catch (...)
+		else
 		{
-			log->logTimedString("Load asset error: " + fileName);
+			warpInputs[mParameterBag->selectedWarp].rightIndex = selectedShada;
+			warpInputs[mParameterBag->selectedWarp].rightMode = 1; // 1 for shader
+			if (!warpInputs[mParameterBag->selectedWarp].hasTexture)
+			{
+				// put texture on both sides
+				warpInputs[mParameterBag->selectedWarp].hasTexture = true;
+				warpInputs[mParameterBag->selectedWarp].leftIndex = selectedShada;
+				warpInputs[mParameterBag->selectedWarp].leftMode = 1; // 1 for shader
+			}
+
 		}
 	}
-}
-void Textures::flipMixFbo(bool flip)
-{
-	mFbos[mParameterBag->mMixFboIndex].getTexture(0).setFlipped(flip);
-}
-/*void Textures::setCurrentFboIndex(int aFbo)
-{
-	if (aFbo < mFbos.size()) mParameterBag->mCurrentFboIndex = aFbo;
-}*/
-ci::gl::Texture Textures::getTexture(int index)
-{
-	if (index > sTextures.size() - 1) index = sTextures.size() - 1;
-	return sTextures[index];
-}
-void Textures::setTexture(int index, ci::gl::Texture texture)
-{
-	if (index < sTextures.size())
-	{
-		sTextures[index] = texture;
-	}
-}
-ci::gl::Texture Textures::getFboTexture(int index)
-{
-	if (index > mFbos.size() - 1) index = mFbos.size() - 1;
-	return mFbos[index].getTexture();
-}
-ci::gl::Fbo Textures::getFbo(int index)
-{
-	// fbo
-	return mFbos[index];
+	log->logTimedString(name + " on selected warp: " + toString(mParameterBag->selectedWarp));
+	return warpInputs[mParameterBag->selectedWarp];
 }
 
-void Textures::loadImageFile(int index, string aFile)
+int Textures::addShadaFbo()
 {
+	// add a ShadaFbo
+	ShadaFbo sFbo;
+	//format.setSamples( 4 ); // uncomment this to enable 4x antialiasing
+	sFbo.fbo = gl::Fbo::create(mParameterBag->mFboWidth, mParameterBag->mFboHeight, fboFormat.depthTexture());
+	sFbo.shadaIndex = mShadaFbos.size();
+	mShadaFbos.push_back(sFbo);
+	return mShadaFbos.size() - 1;
+}
+
+int Textures::createSpoutTexture(char name[256], unsigned int width, unsigned int height)
+{
+	if (inputReceived)
+	{
+		log->logTimedString("createSpoutTexture, new: " + toString(name));
+		Sender newTexture;
+		// create new texture
+		memcpy(&newTexture.SenderName[0], name, strlen(name) + 1);
+		newTexture.width = width;
+		newTexture.height = height;
+		newTexture.texture = gl::Texture::create(width, height);
+		//! add to the inputTextures vector
+		inputTextures.push_back(newTexture);
+
+	}
+	else
+	{
+		// replace startup image
+		log->logTimedString("createSpoutTexture, replace: " + toString(name));
+		inputReceived = true;
+		memcpy(&inputTextures[0].SenderName[0], name, strlen(name) + 1);
+		inputTextures[0].width = width;
+		inputTextures[0].height = height;
+		inputTextures[0].texture = gl::Texture::create(width, height);
+	}
+	return inputTextures.size() - 1;
+}
+
+int Textures::createTexture(char name[256], unsigned int width, unsigned int height, gl::TextureRef texture)
+{
+	Sender newTexture;
+	// create new texture
+	memcpy(&newTexture.SenderName[0], name, strlen(name) + 1);
+	newTexture.width = width;
+	newTexture.height = height;
+	newTexture.texture = texture;
+	//! add to the inputTextures vector
+	inputTextures.push_back(newTexture);
+	return inputTextures.size() - 1;
+}
+char* Textures::getSenderName(int index)
+{
+	return &inputTextures[checkedIndex(index)].SenderName[0];
+}
+ci::gl::TextureRef Textures::getSenderTexture(int index)
+{
+	return inputTextures[checkedIndex(index)].texture;
+}
+void Textures::setSenderTextureSize(int index, int width, int height)
+{
+	inputTextures[checkedIndex(index)].width = width;
+	inputTextures[checkedIndex(index)].height = height;
+	inputTextures[checkedIndex(index)].texture = gl::Texture::create(width, height);
+}
+
+void Textures::setAudioTexture(int audioTextureIndex, unsigned char *signal)
+{
+	inputTextures[audioTextureIndex].texture = gl::Texture::create(signal, GL_LUMINANCE16I_EXT, 512, 2);
+}
+int Textures::checkedIndex(int index)
+{
+	int i = min(index, int(inputTextures.size() - 1));
+	return max(i, 0);
+}
+
+void Textures::setTextureFromFile(string fileName)
+{
+	string shortName = "image";
+	char *name;
 	try
 	{
-		// try loading image file
-		if (index > 0) sTextures[index] = gl::Texture(loadImage(aFile));
-		mParameterBag->isUIDirty = true;
+		if (!fs::exists(fileName))
+		{
+			log->logTimedString("asset file not found: " + fileName);
+		}
+		else
+		{
+			log->logTimedString("asset found file: " + fileName);
+			fs::path fr = fileName;
+			string mFile = fr.string();
+			if (mFile.find_last_of("\\") != std::string::npos)
+			{
+				shortName = mFile.substr(mFile.find_last_of("\\") + 1);
+			}
+			name = &shortName[0];
+			gl::TextureRef newTexture = gl::Texture::create(loadImage(fileName));
+			createTexture(name, newTexture->getWidth(), newTexture->getHeight(), newTexture);
+			log->logTimedString("asset loaded: " + fileName);
+		}
 	}
 	catch (...)
 	{
-		log->logTimedString("Error loading image:" + aFile);
+		log->logTimedString("Load asset error: " + fileName);
 	}
 }
 
+void Textures::saveThumb()
+{
+	string filename = mShaders->getFragFileName() + ".jpg";
+	try
+	{
+		mShadaFbos[mParameterBag->mCurrentShadaFboIndex].fbo->bindFramebuffer();
+		// Should get the FBO's pixels since it is bound (instead of the screen's)
+		Surface fboSurf = copyWindowSurface(Area(ivec2(0, 0), ivec2(mParameterBag->mFboWidth, mParameterBag->mFboHeight)));
+		mShadaFbos[mParameterBag->mCurrentShadaFboIndex].fbo->unbindFramebuffer();
+		fs::path path = getAssetPath("") / "thumbs" / filename;
+		writeImage(path, ImageSourceRef(fboSurf));
+		log->logTimedString("saved:" + filename);
+		int i = 0;
+		for (auto &mFbo : mShadaFbos)
+		{
+			filename = mShaders->getFragFileName() + static_cast<ostringstream*>(&(ostringstream() << i))->str() + ".jpg";
+			mFbo.fbo->bindFramebuffer();
+			// Should get the FBO's pixels since it is bound (instead of the screen's)
+			Surface fboSurf = copyWindowSurface(Area(ivec2(0, 0), ivec2(mParameterBag->mFboWidth, mParameterBag->mFboHeight)));
+			mFbo.fbo->unbindFramebuffer();
+			fs::path path = getAssetPath("") / "thumbs" / filename;
+			writeImage(path, ImageSourceRef(fboSurf));
+			i++;
+		}
+	}
+	catch (const std::exception &e)
+	{
+		log->logTimedString("unable to save:" + filename + string(e.what()));
+	}
+}
 
 void Textures::update()
 {
 
 }
+ci::gl::TextureRef Textures::getTexture(int index)
+{
+	return inputTextures[checkedIndex(index)].texture;
+}
+ci::gl::TextureRef Textures::getMixTexture(int index)
+{
+	if (index > mMixesFbos.size() - 1) index = mMixesFbos.size() - 1;
+	return mMixesFbos[index]->getColorTexture();
+}
+ci::gl::TextureRef Textures::getFboTexture(int index)
+{
+	if (index > mShadaFbos.size() - 1) index = mShadaFbos.size() - 1;
+	return mShadaFbos[index].fbo->getColorTexture();
+}
+void Textures::renderShadersToFbo()
+{
+	for (auto &mFbo : mShadaFbos)
+	{
+		// this will restore the old framebuffer binding when we leave this function
+		// on non-OpenGL ES platforms, you can just call mFbo->unbindFramebuffer() at the end of the function
+		// but this will restore the "screen" FBO on OpenGL ES, and does the right thing on both platforms
+		gl::ScopedFramebuffer fbScp(mFbo.fbo);
+		// clear out the FBO with black
+		gl::clear(ColorA(0.0f, 0.0f, 0.0f, 0.0f));
+
+		// setup the viewport to match the dimensions of the FBO
+		gl::ScopedViewport scpVp(ivec2(0.0), mFbo.fbo->getSize());
+
+		gl::ScopedGlslProg shader(mShaders->getShader(mFbo.shadaIndex));
+		getFboTexture(0)->bind(0);
+		getSenderTexture(1)->bind(1);
+		// draw our screen rectangle
+		gl::draw(mMesh);
+	}
+}
+void Textures::renderMixesToFbo()
+{
+	int i = 0;
+	for (auto &mFbo : mMixesFbos)
+	{
+		// this will restore the old framebuffer binding when we leave this function
+		// on non-OpenGL ES platforms, you can just call mFbo->unbindFramebuffer() at the end of the function
+		// but this will restore the "screen" FBO on OpenGL ES, and does the right thing on both platforms
+		gl::ScopedFramebuffer fbScp(mFbo);
+		// clear out the FBO with black
+		gl::clear(ColorA(0.0f, 0.0f, 0.0f, 0.0f));
+
+		// setup the viewport to match the dimensions of the FBO
+		gl::ScopedViewport scpVp(ivec2(0.0), mFbo->getSize());
+
+		gl::ScopedGlslProg shader(mShaders->getMixShader());
+
+		if (warpInputs[i].leftMode == 0)
+		{
+			// 0 for input texture
+			getSenderTexture(warpInputs[i].leftIndex)->bind(0);
+		}
+		else
+		{
+			// 1 for shader
+			getFboTexture(warpInputs[i].leftIndex)->bind(0);
+		}
+		if (warpInputs[i].rightMode == 0)
+		{
+			// 0 for input texture
+			getSenderTexture(warpInputs[i].rightIndex)->bind(1);
+		}
+		else
+		{
+			// 1 for shader
+			getFboTexture(warpInputs[i].rightIndex)->bind(1);
+		}
+		mShaders->getMixShader()->uniform("iCrossfade", warpInputs[i].iCrossfade);
+		//warpInputs[i].iCrossfade += 0.1;
+		//if (warpInputs[i].iCrossfade > 1.0) warpInputs[i].iCrossfade = 0.0;
+		gl::draw(mMesh);
+
+		i++;
+	}
+}
 void Textures::draw()
 {
-	/**********************************************
-	* library FBOs
-	*/
-	// start of mLibraryFbos[mParameterBag->mLeftFboIndex]
-	mFbos[mParameterBag->mLeftFboIndex].bindFramebuffer();
-	gl::setViewport(mFbos[mParameterBag->mLeftFboIndex].getBounds());
-
-	// clear the FBO
-	gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
-	gl::setMatricesWindow(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight, mParameterBag->mOriginUpperLeft);
-
-	aShader = mShaders->getShader(mParameterBag->mLeftFragIndex);
-	aShader->bind();
-	aShader->uniform("iGlobalTime", mParameterBag->iGlobalTime);
-	//aShader->uniform("iResolution", Vec3f(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight, 1.0));
-	aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
-	aShader->uniform("iChannelResolution", mParameterBag->iChannelResolution, 4);
-	aShader->uniform("iMouse", Vec4f(mParameterBag->mRenderPosXY.x, mParameterBag->mRenderPosXY.y, mParameterBag->iMouse.z, mParameterBag->iMouse.z));//iMouse =  Vec3i( event.getX(), mRenderHeight - event.getY(), 1 );
-	aShader->uniform("iChannel0", mParameterBag->iChannels[0]);
-	aShader->uniform("iChannel1", mParameterBag->iChannels[1]);
-	aShader->uniform("iChannel2", mParameterBag->iChannels[2]);
-	aShader->uniform("iChannel3", mParameterBag->iChannels[3]);
-	aShader->uniform("iChannel4", mParameterBag->iChannels[4]);
-	aShader->uniform("iChannel5", mParameterBag->iChannels[5]);
-	aShader->uniform("iChannel6", mParameterBag->iChannels[6]);
-	aShader->uniform("iChannel7", mParameterBag->iChannels[7]);
-	aShader->uniform("iAudio0", 0);
-	aShader->uniform("iFreq0", mParameterBag->iFreqs[0]);
-	aShader->uniform("iFreq1", mParameterBag->iFreqs[1]);
-	aShader->uniform("iFreq2", mParameterBag->iFreqs[2]);
-	aShader->uniform("iFreq3", mParameterBag->iFreqs[3]);
-	aShader->uniform("iChannelTime", mParameterBag->iChannelTime, 4);
-	aShader->uniform("iColor", Vec3f(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3]));// mParameterBag->iColor);
-	aShader->uniform("iBackgroundColor", Vec3f(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));// mParameterBag->iBackgroundColor);
-	aShader->uniform("iSteps", (int)mParameterBag->controlValues[16]);
-	aShader->uniform("iRatio", mParameterBag->controlValues[11]);//check if needed: +1;//mParameterBag->iRatio); 
-	aShader->uniform("width", 1);
-	aShader->uniform("height", 1);
-	aShader->uniform("iRenderXY", mParameterBag->mLeftRenderXY);
-	aShader->uniform("iZoom", mParameterBag->iZoomLeft);
-	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
-	aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[15]);
-	aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
-	aShader->uniform("iCrossfade", mParameterBag->iPreviewCrossfade);
-	aShader->uniform("iPixelate", mParameterBag->controlValues[18]);
-	aShader->uniform("iExposure", mParameterBag->controlValues[14]);
-	aShader->uniform("iDeltaTime", mParameterBag->iDeltaTime);
-	aShader->uniform("iFade", (int)mParameterBag->iFade);
-	aShader->uniform("iToggle", (int)mParameterBag->controlValues[46]);
-	aShader->uniform("iLight", (int)mParameterBag->iLight);
-	aShader->uniform("iLightAuto", (int)mParameterBag->iLightAuto);
-	aShader->uniform("iGreyScale", (int)mParameterBag->iGreyScale);
-	aShader->uniform("iTransition", mParameterBag->iTransition);
-	aShader->uniform("iAnim", mParameterBag->iAnim.value());
-	aShader->uniform("iRepeat", (int)mParameterBag->iRepeat);
-	aShader->uniform("iVignette", (int)mParameterBag->controlValues[47]);
-	aShader->uniform("iInvert", (int)mParameterBag->controlValues[48]);
-	aShader->uniform("iDebug", (int)mParameterBag->iDebug);
-	aShader->uniform("iShowFps", (int)mParameterBag->iShowFps);
-	aShader->uniform("iFps", mParameterBag->iFps);
-	aShader->uniform("iTempoTime", mParameterBag->iTempoTime);
-	aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
-
-	for (size_t m = 0; m < mTexturesCount; m++)
-	{
-		getTexture(m).bind(m);
-	}
-	gl::drawSolidRect(Rectf(0, 0, mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
-	// stop drawing into the FBO
-	mFbos[mParameterBag->mLeftFboIndex].unbindFramebuffer();
-
-	for (size_t m = 0; m < mTexturesCount; m++)
-	{
-		getTexture(m).unbind();
-	}
-
-	aShader->unbind();
-	sTextures[6] = mFbos[mParameterBag->mLeftFboIndex].getTexture();
-	// end of mLibraryFbos[mParameterBag->mLeftFboIndex]
-
-	// start of mLibraryFbos[mParameterBag->mRightFboIndex]
-	mFbos[mParameterBag->mRightFboIndex].bindFramebuffer();
-	gl::setViewport(mFbos[mParameterBag->mRightFboIndex].getBounds());
-
-	// clear the FBO
-	gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
-	gl::setMatricesWindow(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight, mParameterBag->mOriginUpperLeft);
-
-	aShader = mShaders->getShader(mParameterBag->mRightFragIndex);
-	aShader->bind();
-	aShader->uniform("iGlobalTime", mParameterBag->iGlobalTime);
-	//aShader->uniform("iResolution", Vec3f(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight, 1.0));
-	aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
-	aShader->uniform("iChannelResolution", mParameterBag->iChannelResolution, 4);
-	aShader->uniform("iMouse", Vec4f(mParameterBag->mRenderPosXY.x, mParameterBag->mRenderPosXY.y, mParameterBag->iMouse.z, mParameterBag->iMouse.z));//iMouse =  Vec3i( event.getX(), mRenderHeight - event.getY(), 1 );
-	aShader->uniform("iChannel0", mParameterBag->iChannels[0]);
-	aShader->uniform("iChannel1", mParameterBag->iChannels[1]);
-	aShader->uniform("iChannel2", mParameterBag->iChannels[2]);
-	aShader->uniform("iChannel3", mParameterBag->iChannels[3]);
-	aShader->uniform("iChannel4", mParameterBag->iChannels[4]);
-	aShader->uniform("iChannel5", mParameterBag->iChannels[5]);
-	aShader->uniform("iChannel6", mParameterBag->iChannels[6]);
-	aShader->uniform("iChannel7", mParameterBag->iChannels[7]);
-	aShader->uniform("iAudio0", 0);
-	aShader->uniform("iFreq0", mParameterBag->iFreqs[0]);
-	aShader->uniform("iFreq1", mParameterBag->iFreqs[1]);
-	aShader->uniform("iFreq2", mParameterBag->iFreqs[2]);
-	aShader->uniform("iFreq3", mParameterBag->iFreqs[3]);
-	aShader->uniform("iChannelTime", mParameterBag->iChannelTime, 4);
-	aShader->uniform("iColor", Vec3f(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3]));// mParameterBag->iColor);
-	aShader->uniform("iBackgroundColor", Vec3f(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));// mParameterBag->iBackgroundColor);
-	aShader->uniform("iSteps", (int)mParameterBag->controlValues[16]);
-	aShader->uniform("iRatio", mParameterBag->controlValues[11]);//check if needed: +1;//mParameterBag->iRatio); 
-	aShader->uniform("width", 1);
-	aShader->uniform("height", 1);
-	aShader->uniform("iRenderXY", mParameterBag->mRightRenderXY);
-	aShader->uniform("iZoom", mParameterBag->iZoomRight);
-	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
-	aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[15]);
-	aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
-	aShader->uniform("iCrossfade", mParameterBag->iPreviewCrossfade);
-	aShader->uniform("iPixelate", mParameterBag->controlValues[18]);
-	aShader->uniform("iExposure", mParameterBag->controlValues[14]);
-	aShader->uniform("iDeltaTime", mParameterBag->iDeltaTime);
-	aShader->uniform("iFade", (int)mParameterBag->iFade);
-	aShader->uniform("iToggle", (int)mParameterBag->controlValues[46]);
-	aShader->uniform("iLight", (int)mParameterBag->iLight);
-	aShader->uniform("iLightAuto", (int)mParameterBag->iLightAuto);
-	aShader->uniform("iGreyScale", (int)mParameterBag->iGreyScale);
-	aShader->uniform("iTransition", mParameterBag->iTransition);
-	aShader->uniform("iAnim", mParameterBag->iAnim.value());
-	aShader->uniform("iRepeat", (int)mParameterBag->iRepeat);
-	aShader->uniform("iVignette", (int)mParameterBag->controlValues[47]);
-	aShader->uniform("iInvert", (int)mParameterBag->controlValues[48]);
-	aShader->uniform("iDebug", (int)mParameterBag->iDebug);
-	aShader->uniform("iShowFps", (int)mParameterBag->iShowFps);
-	aShader->uniform("iFps", mParameterBag->iFps);
-	aShader->uniform("iTempoTime", mParameterBag->iTempoTime);
-	aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
-
-	for (size_t m = 0; m < mTexturesCount; m++)
-	{
-		getTexture(m).bind(m);
-	}
-	gl::drawSolidRect(Rectf(0, 0, mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
-	// stop drawing into the FBO
-	mFbos[mParameterBag->mRightFboIndex].unbindFramebuffer();
-
-	for (size_t m = 0; m < mTexturesCount; m++)
-	{
-		getTexture(m).unbind();
-	}
-
-	aShader->unbind();
-	sTextures[7] = mFbos[mParameterBag->mRightFboIndex].getTexture();
-
-	// end of mLibraryFbos[mParameterBag->mRightFboLibraryIndex]
-
-	// start of mLibraryFbos[mParameterBag->mCurrentPreviewFboIndex]
-	mFbos[mParameterBag->mCurrentPreviewFboIndex].bindFramebuffer();
-	gl::setViewport(mFbos[mParameterBag->mCurrentPreviewFboIndex].getBounds());
-
-	// clear the FBO
-	gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
-	gl::setMatricesWindow(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight, mParameterBag->mOriginUpperLeft);
-
-	aShader = mShaders->getShader(mParameterBag->mPreviewFragIndex);
-	aShader->bind();
-	aShader->uniform("iGlobalTime", mParameterBag->iGlobalTime);
-	aShader->uniform("iResolution", Vec3f(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight, 1.0));
-	//aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
-	aShader->uniform("iChannelResolution", mParameterBag->iChannelResolution, 4);
-	aShader->uniform("iMouse", Vec4f(mParameterBag->mRenderPosXY.x, mParameterBag->mRenderPosXY.y, mParameterBag->iMouse.z, mParameterBag->iMouse.z));//iMouse =  Vec3i( event.getX(), mRenderHeight - event.getY(), 1 );
-	aShader->uniform("iChannel0", mParameterBag->iChannels[0]);
-	aShader->uniform("iChannel1", mParameterBag->iChannels[1]);
-	aShader->uniform("iChannel2", mParameterBag->iChannels[2]);
-	aShader->uniform("iChannel3", mParameterBag->iChannels[3]);
-	aShader->uniform("iChannel4", mParameterBag->iChannels[4]);
-	aShader->uniform("iChannel5", mParameterBag->iChannels[5]);
-	aShader->uniform("iChannel6", mParameterBag->iChannels[6]);
-	aShader->uniform("iChannel7", mParameterBag->iChannels[7]);
-	aShader->uniform("iAudio0", 0);
-	aShader->uniform("iFreq0", mParameterBag->iFreqs[0]);
-	aShader->uniform("iFreq1", mParameterBag->iFreqs[1]);
-	aShader->uniform("iFreq2", mParameterBag->iFreqs[2]);
-	aShader->uniform("iFreq3", mParameterBag->iFreqs[3]);
-	aShader->uniform("iChannelTime", mParameterBag->iChannelTime, 4);
-	aShader->uniform("iColor", Vec3f(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3]));// mParameterBag->iColor);
-	aShader->uniform("iBackgroundColor", Vec3f(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));// mParameterBag->iBackgroundColor);
-	aShader->uniform("iSteps", (int)mParameterBag->controlValues[16]);
-	aShader->uniform("iRatio", mParameterBag->controlValues[11]);
-	aShader->uniform("width", 1);
-	aShader->uniform("height", 1);
-	aShader->uniform("iRenderXY", mParameterBag->mPreviewFragXY);
-	aShader->uniform("iZoom", mParameterBag->iZoomLeft);
-	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
-	aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[15]);
-	aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
-	aShader->uniform("iCrossfade", mParameterBag->iPreviewCrossfade);
-	aShader->uniform("iPixelate", mParameterBag->controlValues[18]);
-	aShader->uniform("iExposure", mParameterBag->controlValues[14]);
-	aShader->uniform("iDeltaTime", mParameterBag->iDeltaTime);
-	aShader->uniform("iFade", (int)mParameterBag->iFade);
-	aShader->uniform("iToggle", (int)mParameterBag->controlValues[46]);
-	aShader->uniform("iLight", (int)mParameterBag->iLight);
-	aShader->uniform("iLightAuto", (int)mParameterBag->iLightAuto);
-	aShader->uniform("iGreyScale", (int)mParameterBag->iGreyScale);
-	aShader->uniform("iTransition", mParameterBag->iTransition);
-	aShader->uniform("iAnim", mParameterBag->iAnim.value());
-	aShader->uniform("iRepeat", (int)mParameterBag->iRepeat);
-	aShader->uniform("iVignette", (int)mParameterBag->controlValues[47]);
-	aShader->uniform("iInvert", (int)mParameterBag->controlValues[48]);
-	aShader->uniform("iDebug", (int)mParameterBag->iDebug);
-	aShader->uniform("iShowFps", (int)mParameterBag->iShowFps);
-	aShader->uniform("iFps", mParameterBag->iFps);
-	aShader->uniform("iTempoTime", mParameterBag->iTempoTime);
-	aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
-
-	for (size_t m = 0; m < mTexturesCount; m++)
-	{
-		getTexture(m).bind(m);
-	}
-	gl::drawSolidRect(Rectf(0, 0, mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
-	// stop drawing into the FBO
-	mFbos[mParameterBag->mCurrentPreviewFboIndex].unbindFramebuffer();
-
-	for (size_t m = 0; m < mTexturesCount; m++)
-	{
-		getTexture(m).unbind();
-	}
-
-	aShader->unbind();
-	sTextures[4] = mFbos[mParameterBag->mCurrentPreviewFboIndex].getTexture();
-	// end of mLibraryFbos[mParameterBag->mCurrentPreviewFboIndex]
-	/***********************************************
-	* live FBO begin
-	*/
-
-	// draw using the mix shader
-	mFbos[mParameterBag->mLiveFboIndex].bindFramebuffer();
-
-	gl::setViewport(mFbos[mParameterBag->mLiveFboIndex].getBounds());
-
-	// clear the FBO
-	gl::clear();
-	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, mParameterBag->mOriginUpperLeft);
-
-	aShader = mShaders->getLiveShader();
-	aShader->bind();
-	aShader->uniform("iGlobalTime", mParameterBag->iGlobalTime);
-	//20140703 aShader->uniform("iResolution", Vec3f(mParameterBag->mRenderResoXY.x, mParameterBag->mRenderResoXY.y, 1.0));
-	aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
-	aShader->uniform("iChannelResolution", mParameterBag->iChannelResolution, 4);
-	aShader->uniform("iMouse", Vec4f(mParameterBag->mRenderPosXY.x, mParameterBag->mRenderPosXY.y, mParameterBag->iMouse.z, mParameterBag->iMouse.z));//iMouse =  Vec3i( event.getX(), mRenderHeight - event.getY(), 1 );
-	aShader->uniform("iChannel0", 0);
-	aShader->uniform("iChannel1", 1);
-	aShader->uniform("iChannel2", 2);
-	aShader->uniform("iChannel3", 3);
-	aShader->uniform("iChannel4", 4);
-	aShader->uniform("iChannel5", 5);
-	aShader->uniform("iChannel6", 6);
-	aShader->uniform("iChannel7", 7);
-	aShader->uniform("iAudio0", 0);
-	aShader->uniform("iFreq0", mParameterBag->iFreqs[0]);
-	aShader->uniform("iFreq1", mParameterBag->iFreqs[1]);
-	aShader->uniform("iFreq2", mParameterBag->iFreqs[2]);
-	aShader->uniform("iFreq3", mParameterBag->iFreqs[3]);
-	aShader->uniform("iChannelTime", mParameterBag->iChannelTime, 4);
-	aShader->uniform("iColor", Vec3f(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3]));// mParameterBag->iColor);
-	aShader->uniform("iBackgroundColor", Vec3f(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));// mParameterBag->iBackgroundColor);
-	aShader->uniform("iSteps", (int)mParameterBag->controlValues[16]);
-	aShader->uniform("iRatio", mParameterBag->controlValues[11]);//check if needed: +1;//mParameterBag->iRatio); 
-	aShader->uniform("width", 1);
-	aShader->uniform("height", 1);
-	aShader->uniform("iRenderXY", mParameterBag->mRenderXY);
-	aShader->uniform("iZoom", mParameterBag->controlValues[13]);
-	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
-	aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[15]);
-	aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
-	aShader->uniform("iCrossfade", mParameterBag->iCrossfade);
-	aShader->uniform("iPixelate", mParameterBag->controlValues[18]);
-	aShader->uniform("iExposure", mParameterBag->controlValues[14]);
-	aShader->uniform("iDeltaTime", mParameterBag->iDeltaTime);
-	aShader->uniform("iFade", (int)mParameterBag->iFade);
-	aShader->uniform("iToggle", (int)mParameterBag->controlValues[46]);
-	aShader->uniform("iLight", (int)mParameterBag->iLight);
-	aShader->uniform("iLightAuto", (int)mParameterBag->iLightAuto);
-	aShader->uniform("iGreyScale", (int)mParameterBag->iGreyScale);
-	aShader->uniform("iTransition", mParameterBag->iTransition);
-	aShader->uniform("iAnim", mParameterBag->iAnim.value());
-	aShader->uniform("iRepeat", (int)mParameterBag->iRepeat);
-	aShader->uniform("iVignette", (int)mParameterBag->controlValues[47]);
-	aShader->uniform("iInvert", (int)mParameterBag->controlValues[48]);
-	aShader->uniform("iDebug", (int)mParameterBag->iDebug);
-	aShader->uniform("iShowFps", (int)mParameterBag->iShowFps);
-	aShader->uniform("iFps", mParameterBag->iFps);
-	aShader->uniform("iTempoTime", mParameterBag->iTempoTime);
-	aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
-
-	sTextures[6].bind(0);
-	sTextures[7].bind(1);
-	gl::drawSolidRect(Rectf(0, 0, mParameterBag->mFboWidth, mParameterBag->mFboHeight));
-	// stop drawing into the FBO
-	mFbos[mParameterBag->mLiveFboIndex].unbindFramebuffer();
-	sTextures[6].unbind();
-	sTextures[7].unbind();
-
-	aShader->unbind();
-	sTextures[3] = mFbos[mParameterBag->mLiveFboIndex].getTexture();
-
-	/***********************************************
-	* live FBO end
-	*/
-
-	/***********************************************
-	* mix 2 FBOs begin
-	* first render the 2 frags to fbos (done before)
-	* then use them as textures for the mix shader
-	*/
-
-	// draw using the mix shader
-	mFbos[mParameterBag->mMixFboIndex].bindFramebuffer();
-
-	gl::setViewport(mFbos[mParameterBag->mMixFboIndex].getBounds());
-
-	// clear the FBO
-	gl::clear();
-	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, mParameterBag->mOriginUpperLeft);
-
-	aShader = mShaders->getMixShader();
-	aShader->bind();
-	aShader->uniform("iGlobalTime", mParameterBag->iGlobalTime);
-	//20140703 aShader->uniform("iResolution", Vec3f(mParameterBag->mRenderResoXY.x, mParameterBag->mRenderResoXY.y, 1.0));
-	aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
-	aShader->uniform("iChannelResolution", mParameterBag->iChannelResolution, 4);
-	aShader->uniform("iMouse", Vec4f(mParameterBag->mRenderPosXY.x, mParameterBag->mRenderPosXY.y, mParameterBag->iMouse.z, mParameterBag->iMouse.z));//iMouse =  Vec3i( event.getX(), mRenderHeight - event.getY(), 1 );
-	aShader->uniform("iChannel0", 0);
-	aShader->uniform("iChannel1", 1);
-	aShader->uniform("iChannel2", 2);
-	aShader->uniform("iChannel3", 3);
-	aShader->uniform("iChannel4", 4);
-	aShader->uniform("iChannel5", 5);
-	aShader->uniform("iChannel6", 6);
-	aShader->uniform("iChannel7", 7);
-	aShader->uniform("iAudio0", 0);
-	aShader->uniform("iFreq0", mParameterBag->iFreqs[0]);
-	aShader->uniform("iFreq1", mParameterBag->iFreqs[1]);
-	aShader->uniform("iFreq2", mParameterBag->iFreqs[2]);
-	aShader->uniform("iFreq3", mParameterBag->iFreqs[3]);
-	aShader->uniform("iChannelTime", mParameterBag->iChannelTime, 4);
-	aShader->uniform("iColor", Vec3f(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3]));// mParameterBag->iColor);
-	aShader->uniform("iBackgroundColor", Vec3f(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));// mParameterBag->iBackgroundColor);
-	aShader->uniform("iSteps", (int)mParameterBag->controlValues[16]);
-	aShader->uniform("iRatio", mParameterBag->controlValues[11]);//check if needed: +1;//mParameterBag->iRatio); 
-	aShader->uniform("width", 1);
-	aShader->uniform("height", 1);
-	aShader->uniform("iRenderXY", mParameterBag->mRenderXY);
-	aShader->uniform("iZoom", mParameterBag->controlValues[13]);
-	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
-	aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[15]);
-	aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
-	aShader->uniform("iCrossfade", mParameterBag->iCrossfade);
-	aShader->uniform("iPixelate", mParameterBag->controlValues[18]);
-	aShader->uniform("iExposure", mParameterBag->controlValues[14]);
-	aShader->uniform("iDeltaTime", mParameterBag->iDeltaTime);
-	aShader->uniform("iFade", (int)mParameterBag->iFade);
-	aShader->uniform("iToggle", (int)mParameterBag->controlValues[46]);
-	aShader->uniform("iLight", (int)mParameterBag->iLight);
-	aShader->uniform("iLightAuto", (int)mParameterBag->iLightAuto);
-	aShader->uniform("iGreyScale", (int)mParameterBag->iGreyScale);
-	aShader->uniform("iTransition", mParameterBag->iTransition);
-	aShader->uniform("iAnim", mParameterBag->iAnim.value());
-	aShader->uniform("iRepeat", (int)mParameterBag->iRepeat);
-	aShader->uniform("iVignette", (int)mParameterBag->controlValues[47]);
-	aShader->uniform("iInvert", (int)mParameterBag->controlValues[48]);
-	aShader->uniform("iDebug", (int)mParameterBag->iDebug);
-	aShader->uniform("iShowFps", (int)mParameterBag->iShowFps);
-	aShader->uniform("iFps", mParameterBag->iFps);
-	aShader->uniform("iTempoTime", mParameterBag->iTempoTime);
-	aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
-
-	sTextures[6].bind(0);
-	sTextures[7].bind(1);
-	gl::drawSolidRect(Rectf(0, 0, mParameterBag->mFboWidth, mParameterBag->mFboHeight));
-	// stop drawing into the FBO
-	mFbos[mParameterBag->mMixFboIndex].unbindFramebuffer();
-	sTextures[6].unbind();
-	sTextures[7].unbind();
-
-	aShader->unbind();
-	sTextures[5] = mFbos[mParameterBag->mMixFboIndex].getTexture();
-
-	//}
-	/***********************************************
-	* mix 2 FBOs end
-	*/
+	//! 1 render the active shaders to Fbos
+	renderShadersToFbo();
+	//! 2 render mixes of shader Fbos as texture, images, Spout sources as Fbos
+	renderMixesToFbo();
 }
 
-/*void Textures::updateSequence()
+void Textures::shutdown()
 {
-// sequence
-previousTexture = getCurrentSequenceTexture();
-//timeline().apply( &mAlpha, 1.0f, 2.0f ).finishFn( [&]{ textureSequence.update(); mAlpha= 1.0f; } );
-
-// Call on each frame to update the playhead
-
-if (!paused && playing)
-{
-int newPosition = playheadPosition + playheadFrameInc;
-if (newPosition > totalFrames - 1)
-{
-if (looping)
-{
-complete = false;
-playheadPosition = newPosition - totalFrames;
+	//TODO for inputTextures sTextures.clear();
 }
-else {
-complete = true;
-}
-
-}
-else if (newPosition < 0) {
-if (looping)
-{
-complete = false;
-playheadPosition = totalFrames - abs(newPosition);
-}
-else {
-complete = true;
-}
-
-}
-else {
-complete = false;
-playheadPosition = newPosition;
-}
-}
-sTextures[7] = getCurrentSequenceTexture();
-currentTexture = getCurrentSequenceTexture();
-}*/
-Textures::~Textures()
-{
-	log->logTimedString("Textures destructor");
-	sTextures.clear();
-	//sequenceTextures.clear();
-}
-
-// sequence
-
-/*
-//Begins playback of sequence
-void Textures::play()
-{
-paused = false;
-playing = true;
-}
-
-// Pauses playback
-void Textures::pause()
-{
-paused = true;
-playing = false;
-}
-
-// Stops playback and resets the playhead to zero
-void Textures::stop()
-{
-playheadPosition = 0;
-playing = false;
-paused = false;
-}
-
-// Seek to a new position in the sequence
-void Textures::setPlayheadPosition(int newPosition)
-{
-playheadPosition = max(0, min(newPosition, totalFrames));
-}*/
-
-/**
-*  -- Loads all files contained in the supplied folder and creates Textures from them
-*/
-/*void Textures::createFromDir(string filePath)
-{
-bool noValidFile = true; // if no valid files in the folder, we keep existing vector
-int i = 0;
-string ext = "";
-fs::path p(filePath);
-for (fs::directory_iterator it(p); it != fs::directory_iterator(); ++it)
-{
-if (fs::is_regular_file(*it))
-{
-string fileName = it->path().filename().string();
-if (fileName.find_last_of(".") != std::string::npos) ext = fileName.substr(fileName.find_last_of(".") + 1);
-if (ext == "png" || ext == "jpg")
-{
-if (noValidFile)
-{
-// we found a valid file
-noValidFile = false;
-sequenceTextures.clear();
-// reset playhead to the start
-playheadPosition = 0;
-}
-sequenceTextures.push_back(ci::gl::Texture(loadImage(filePath + fileName)));
-}
-}
-}
-
-totalFrames = sequenceTextures.size();
-}
-
-// Loads all of the images in the supplied list of file paths
-
-void Textures::createFromPathList(vector<string> paths)
-{
-sequenceTextures.clear();
-for (int i = 0; i < paths.size(); ++i)
-{
-sequenceTextures.push_back(ci::gl::Texture(loadImage(paths[i])));
-}
-totalFrames = sequenceTextures.size();
-}
-
-void Textures::createFromTextureList(vector<ci::gl::Texture> textureList)
-{
-sequenceTextures.clear();
-sequenceTextures = textureList;
-totalFrames = sequenceTextures.size();
-}*/

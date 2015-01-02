@@ -160,7 +160,7 @@ bool ParameterBag::restore()
 					XmlTree RenderY = settings.getChild("RenderY");
 					mRenderY = RenderY.getAttributeValue<int>("value");
 				}
-				iResolution = Vec3f(mRenderWidth, mRenderHeight, 1.0);
+				iResolution = vec3(mRenderWidth, mRenderHeight, 1.0);
 
 			}
 			return true;
@@ -187,11 +187,11 @@ void ParameterBag::reset()
 	// render widths
 	mRenderWidth = 1024;
 	mRenderHeight = 768;
-	mRenderXY = mLeftRenderXY = mRightRenderXY = mPreviewRenderXY = Vec2f::zero();
-	mRenderPosXY = Vec2f(0.0, 320.0);
-	mRenderResoXY = Vec2f(mRenderWidth, mRenderHeight);
-	mRenderResolution = Vec2i(mRenderWidth, mRenderHeight);
-	mPreviewFragXY = Vec2f(0.0, 0.0);
+	mRenderXY = mLeftRenderXY = mRightRenderXY = mPreviewRenderXY = vec2(0.0);
+	mRenderPosXY = vec2(0.0, 320.0);
+	mRenderResoXY = vec2(mRenderWidth, mRenderHeight);
+	mRenderResolution = ivec2(mRenderWidth, mRenderHeight);
+	mPreviewFragXY = vec2(0.0, 0.0);
 	mFboWidth = 640;
 	mFboHeight = 480;
 	mPreviewFboWidth = mFboWidth/4;
@@ -216,7 +216,7 @@ void ParameterBag::reset()
 	OSCMsg = "OSC listening on port 7000";
 	InfoMsg = "";// "Host: " + mOSCDestinationHost;
 
-	mCamPosXY = Vec2f::zero();
+	mCamPosXY = vec2(0.0);
 	mCount = 1;
 	mZPosition = -0.7f;
 	mLockFR = mLockFG = mLockFB = mLockFA = mLockBR = mLockBG = mLockBB = mLockBA = false;
@@ -252,20 +252,20 @@ void ParameterBag::reset()
 	iTimeFactor = 1.0;
 	// shader uniforms
 	iGlobalTime = 1.0f;
-	iResolution = Vec3f(mRenderWidth, mRenderHeight, 1.0);
+	iResolution = vec3(mRenderWidth, mRenderHeight, 1.0);
 	for (int i = 0; i < 4; i++)
 	{
 		iChannelTime[i] = i;
 	}
 	for (int i = 0; i < 4; i++)
 	{
-		iChannelResolution[i] = Vec3f(mRenderWidth, mRenderHeight, 1.0);
+		iChannelResolution[i] = vec3(mRenderWidth, mRenderHeight, 1.0);
 	}	
 	iCrossfade = iPreviewCrossfade = 1.0;
 	iDebug = iFade = mSendToOutput = iLight = iLightAuto = iRepeat = false;
 	iFps = 60.0;
 	iShowFps = true;
-	iMouse = Vec4f(mRenderWidth / 2, mRenderHeight / 2, 1.0, 1.0);
+	iMouse = vec4(mRenderWidth / 2, mRenderHeight / 2, 1.0, 1.0);
 	iGreyScale = false;
 
 	// transition
@@ -304,11 +304,10 @@ void ParameterBag::reset()
 
 	mOptimizeUI = false;
 	// spout
-	mOutputResolution = Vec2f(630, 345);
+	mOutputResolution = vec2(630, 345);
 	// meshes
 	mMeshIndex = 0;
 	// fbo indexes for warp
-
 	mFboResolution = 2048;
 	mCurrentPreviewFboIndex = 0;
 	mMixFboIndex = 1;
@@ -325,12 +324,13 @@ void ParameterBag::reset()
 	mLeftFragIndex = 0;
 	mRightFragIndex = 1;
 
+	selectedWarp = 0;
 	mWarpCount = 3;
 	// initialize our camera
-	mCamEyePointXY = Vec2f(0.f, 0.f);
+	mCamEyePointXY = vec2(0.f, 0.f);
 	mCamEyePointZ = -400.f;
-	mCamera.setEyePoint(Vec3f(mCamEyePointXY.x, mCamEyePointXY.y, mCamEyePointZ));
-	mCamera.setCenterOfInterestPoint(Vec3f(0.f, 0.f, 0.f));
+	mCamera.setEyePoint(vec3(mCamEyePointXY.x, mCamEyePointXY.y, mCamEyePointZ));
+	mCamera.setCenterOfInterestPoint(vec3(0.f, 0.f, 0.f));
 
 	mUIRefresh = 1;
 
