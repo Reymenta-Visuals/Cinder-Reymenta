@@ -92,6 +92,7 @@ namespace Reymenta {
 		int							multFactor;
 		// windows and params
 		int							mMainDisplayWidth;
+		int							mMainDisplayHeight;
 		int							mRenderX;
 		int							mRenderY;
 		int							mDisplayCount;
