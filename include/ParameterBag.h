@@ -157,6 +157,7 @@ namespace Reymenta {
 		map<int, int>				iChannels;
 		// fbo indexes for warping
 		map<int, int>				iWarpFboChannels;
+		int							selectedWarp;
 		int							mWarpCount;
 		bool						mOptimizeUI;//mDirectRender, 
 		int							mUIRefresh;

@@ -39,21 +39,19 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	}
 
 }
-/*void Textures::createPreviewFbo()
+void Textures::createWarpInput()
 {
-	if (mParameterBag->mPreviewLargeSize)
-	{
-		mParameterBag->mPreviewFboWidth = mParameterBag->mFboWidth / 4;
-		mParameterBag->mPreviewFboHeight = mParameterBag->mFboHeight / 4;
-	}
-	else
-	{
-		mParameterBag->mPreviewFboWidth = mParameterBag->mFboWidth / 16;
-		mParameterBag->mPreviewFboHeight = mParameterBag->mFboHeight / 16;
-	}
-	mFbos[mParameterBag->mCurrentPreviewFboIndex] = gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight);
-	mFbos[mParameterBag->mCurrentPreviewFboIndex].getTexture(0).setFlipped(true);
-}*/
+	WarpInput newWarpInput;
+	newWarpInput.leftIndex = 0;
+	newWarpInput.leftMode = 0;
+	newWarpInput.rightIndex = 0;
+	newWarpInput.rightMode = 0;
+	newWarpInput.iCrossfade = 0.5;
+	newWarpInput.hasTexture = false;
+	warpInputs.push_back(newWarpInput);
+	// init mixTextures
+	mMixesFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
+}
 
 void Textures::setAudioTexture(unsigned char *signal)
 {
