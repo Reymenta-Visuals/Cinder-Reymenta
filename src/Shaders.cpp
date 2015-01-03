@@ -60,7 +60,19 @@ gl::GlslProgRef Shaders::getShader(int aIndex)
 	if (aIndex > mFragmentShaders.size() - 1) aIndex = mFragmentShaders.size() - 1;
 	if (aIndex < 0) aIndex = 0;
 	return mFragmentShaders[aIndex].prog;
-};
+}
+
+bool Shaders::loadFragmentShaderString(string incompleteFs, string fileName)
+{
+	bool rtn = false;
+	// reset 
+	mParameterBag->iFade = false;
+	mParameterBag->controlValues[13] = 1.0f;
+	mFragFileName = fileName;
+	std::string fs = header + incompleteFs;
+	rtn = setGLSLString(fs, mFragFileName);
+	return rtn;
+}
 
 bool Shaders::loadPixelFragmentShader(const fs::path &fragment_path)
 {

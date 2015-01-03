@@ -156,6 +156,11 @@ void OSC::update()
 		{
 			mParameterBag->controlValues[iargs[0]] = fargs[1];
 		}
+		else if (oscAddress == "/fs")
+		{
+			mShaders->loadFragmentShaderString(sargs[1], sargs[2]);
+			mTextures->addShadaFbo();
+		}
 		else if (oscAddress == "/fspath")
 		{
 			mShaders->loadPixelFragmentShader(sargs[1]);

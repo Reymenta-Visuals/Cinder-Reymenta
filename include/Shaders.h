@@ -46,6 +46,7 @@ namespace Reymenta
 		string						getFragError();
 		gl::GlslProgRef				getShader(int aIndex);
 		gl::GlslProgRef				getMixShader() { return mMixShader; };
+		bool						loadFragmentShaderString(string incompleteFs, string fileName);
 		bool						loadPixelFragmentShader(const fs::path &fragment_path);
 		string						getFragFileName() { return mFragFileName; };
 		string						getShaderName(int aIndex) { return mFragmentShaders[aIndex].name; };
