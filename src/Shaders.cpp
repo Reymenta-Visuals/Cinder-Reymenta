@@ -28,12 +28,13 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	localFile = getAssetPath("") / fileName;
 	loadPixelFragmentShader(localFile.string());
 	//! init some shaders
+	/* can't do it without creating the associated fbo
 	for (size_t m = 0; m < 8; m++)
 	{
 		fileName = toString(m) + ".glsl";
 		localFile = getAssetPath("") / fileName;
 		loadPixelFragmentShader(localFile.string());
-	}
+	}*/
 }
 
 void Shaders::resize()
@@ -45,6 +46,7 @@ void Shaders::resize()
 		if (map.find("iResolution") != map.end())
 		{
 			shader.prog->uniform("iResolution", vec3(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 0.0f));
+			//shader.prog->uniform("iResolution", vec3(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, 0.0f));
 		}
 	}
 	auto mixMap = mMixShader->getActiveUniformTypes();

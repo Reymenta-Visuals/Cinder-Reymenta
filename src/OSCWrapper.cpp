@@ -159,7 +159,10 @@ void OSC::update()
 		else if (oscAddress == "/fs")
 		{
 			mShaders->loadFragmentShaderString(sargs[1], sargs[2]);
-			mTextures->addShadaFbo();
+			int sIndex = mTextures->addShadaFbo();
+			mTextures->warpInputs[0].rightIndex = sIndex;
+			mTextures->warpInputs[0].rightMode = 1;
+			mTextures->warpInputs[0].iCrossfade = 1.0;
 		}
 		else if (oscAddress == "/fspath")
 		{

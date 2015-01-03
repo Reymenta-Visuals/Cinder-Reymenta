@@ -140,7 +140,7 @@ int Textures::addShadaFbo()
 	ShadaFbo sFbo;
 	//format.setSamples( 4 ); // uncomment this to enable 4x antialiasing
 	sFbo.fbo = gl::Fbo::create(mParameterBag->mFboWidth, mParameterBag->mFboHeight, fboFormat.depthTexture());
-	sFbo.shadaIndex = mShadaFbos.size();
+	sFbo.shadaIndex = mShadaFbos.size();// can't be -1 !!!
 	mShadaFbos.push_back(sFbo);
 	return mShadaFbos.size() - 1;
 }
