@@ -273,9 +273,9 @@ void OSC::update()
 			unsigned found = oscAddress.find_last_of("/");
 			int name = atoi(oscAddress.substr(found + 1).c_str());
 		}
-		string oscString = "osc from:" + message.getRemoteIp() + " adr:" + oscAddress + " 0: " + sargs[0] + " 1: " + sargs[1];
+		//string oscString = "osc from:" + message.getRemoteIp() + " adr:" + oscAddress + " 0: " + sargs[0] + " 1: " + sargs[1];
 		stringstream ss;
-		ss << message.getRemoteIp() << " adr:" << oscAddress << " 0: " << sargs[0] << " 1: " << sargs[1] << std::endl;
+		ss << message.getRemoteIp() << " adr:" << oscAddress << " 0: " << sargs[0] << " 1: " << sargs[1] << " 2: " << sargs[2] << " 3: " << sargs[3] << " 4: " << sargs[4] << " 5: " << sargs[5] << std::endl;
 		mParameterBag->OSCMsg = ss.str();
 		mParameterBag->newOSCMsg = true;
 	}

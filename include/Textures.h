@@ -98,6 +98,7 @@ namespace Reymenta
 		void						setInputTextureIndex(int index);
 		int							getInputTextureIndex() { return selectedInputTexture; };
 		WarpInput					setInput(int index, bool left, int currentMode);
+		WarpInput					getWarpInput(int index) { return warpInputs[min(((int)warpInputs.size())-1, index)]; };;
 		int							getShadaFbosSize() { return mShadaFbos.size(); };
 		int							addShadaFbo();
 		void						createWarpInput();

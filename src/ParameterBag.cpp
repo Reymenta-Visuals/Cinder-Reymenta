@@ -93,6 +93,10 @@ bool ParameterBag::save()
 	ShowUI.setAttribute("value", toString(mShowUI));
 	settings.push_back(ShowUI);
 
+	XmlTree CursorVisible("CursorVisible", "");
+	CursorVisible.setAttribute("value", toString(mCursorVisible));
+	settings.push_back(CursorVisible);
+
 	// write XML file
 	settings.write(writeFile(path));
 
@@ -149,6 +153,10 @@ bool ParameterBag::restore()
 				XmlTree ShowUI = settings.getChild("ShowUI");
 				mShowUI = ShowUI.getAttributeValue<bool>("value");
 			}
+			if (settings.hasChild("CursorVisible")) {
+				XmlTree CursorVisible = settings.getChild("CursorVisible");
+				mCursorVisible = CursorVisible.getAttributeValue<bool>("value");
+			}
 			// if AutoLayout is false we have to read the custom screen layout
 			if (!mAutoLayout)
 			{
@@ -186,6 +194,7 @@ void ParameterBag::reset()
 	mMIDIOpenAllInputPorts = true;
 	mAutoLayout = true;
 	mShowUI = true;
+	mCursorVisible = true;
 	mOutputVideoResolution = 1024;
 
 	// parameters not exposed in XML
