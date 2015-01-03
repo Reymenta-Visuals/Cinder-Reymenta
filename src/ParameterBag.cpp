@@ -89,7 +89,11 @@ bool ParameterBag::save()
 	MIDIOpenAllInputPorts.setAttribute("value", toString(mMIDIOpenAllInputPorts));
 	settings.push_back(MIDIOpenAllInputPorts);
 
-	// TODO: test for successful writing of XML
+	XmlTree ShowUI("ShowUI", "");
+	ShowUI.setAttribute("value", toString(mShowUI));
+	settings.push_back(ShowUI);
+
+	// write XML file
 	settings.write(writeFile(path));
 
 	return true;
@@ -141,6 +145,10 @@ bool ParameterBag::restore()
 				XmlTree MIDIOpenAllInputPorts = settings.getChild("MIDIOpenAllInputPorts");
 				mMIDIOpenAllInputPorts = MIDIOpenAllInputPorts.getAttributeValue<bool>("value");
 			}
+			if (settings.hasChild("ShowUI")) {
+				XmlTree ShowUI = settings.getChild("ShowUI");
+				mShowUI = ShowUI.getAttributeValue<bool>("value");
+			}
 			// if AutoLayout is false we have to read the custom screen layout
 			if (!mAutoLayout)
 			{
@@ -177,6 +185,7 @@ void ParameterBag::reset()
 	// parameters exposed in XML
 	mMIDIOpenAllInputPorts = true;
 	mAutoLayout = true;
+	mShowUI = true;
 	mOutputVideoResolution = 1024;
 
 	// parameters not exposed in XML

@@ -57,7 +57,7 @@ namespace Reymenta {
 
 		// code editor
 		Vec2f						mRenderCodeEditorXY;
-
+		bool						mShowUI;
 		bool						isUIDirty;
 		bool						mMIDIOpenAllInputPorts;
 		int							mCount;

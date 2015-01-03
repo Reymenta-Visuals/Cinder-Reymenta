@@ -253,7 +253,6 @@ bool Shaders::loadPixelFragmentShader(string aFilePath)
 		{
 			validFrag = false;
 			std::string fs = inc + loadString(loadFile(aFilePath));
-
 			rtn = setGLSLString(fs);
 		}
 		else
@@ -339,19 +338,13 @@ bool Shaders::setGLSLString(string pixelFrag)
 		else
 		{
 			bool indexFound = false;
-			/*if (mParameterBag->mDirectRender)
-			{
-			foundIndex = mParameterBag->mRightFragIndex;
-			}
-			else
-			{*/
+			/*if (mParameterBag->mDirectRender){foundIndex = mParameterBag->mRightFragIndex;}else{*/
 			while (!indexFound)
 			{
 				foundIndex++;
 				if (foundIndex != mParameterBag->mLeftFragIndex && foundIndex != mParameterBag->mRightFragIndex && foundIndex != mParameterBag->mPreviewFragIndex) indexFound = true;
 				if (foundIndex > mFragmentShaders.size() - 1) indexFound = true;
 			}
-
 			//}
 			// load the new shader
 			mFragmentShaders[foundIndex] = gl::GlslProg::create(NULL, currentFrag.c_str());
