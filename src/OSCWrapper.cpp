@@ -221,7 +221,7 @@ void OSC::update()
 			// green
 			mParameterBag->controlValues[2] = x;
 		}
-		
+
 		else if (oscAddress == "/joint")
 		{
 			skeletonIndex = iargs[0];
@@ -269,9 +269,10 @@ void OSC::update()
 			int name = atoi(oscAddress.substr(found + 1).c_str());
 		}
 		string oscString = "osc from:" + message.getRemoteIp() + " adr:" + oscAddress + " 0: " + sargs[0] + " 1: " + sargs[1];
-		//mUserInterface->labelOSC->setName( oscString );
-		mParameterBag->OSCMsg = oscString;
-
+		stringstream ss;
+		ss << message.getRemoteIp() << " adr:" << oscAddress << " 0: " << sargs[0] << " 1: " << sargs[1] << std::endl;
+		mParameterBag->OSCMsg = ss.str();
+		mParameterBag->newOSCMsg = true;
 	}
 }
 

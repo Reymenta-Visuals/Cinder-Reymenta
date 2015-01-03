@@ -213,7 +213,8 @@ void ParameterBag::reset()
 	mOSCDestinationHost = "127.0.0.1";
 	mOSCDestinationPort = 7001;
 	mOSCReceiverPort = 7000;
-	OSCMsg = "OSC listening on port 7000";
+	OSCMsg = "";
+	newOSCMsg = false;
 	InfoMsg = "";// "Host: " + mOSCDestinationHost;
 
 	mCamPosXY = vec2(0.0);
