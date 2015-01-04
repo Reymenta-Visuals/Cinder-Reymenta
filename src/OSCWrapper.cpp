@@ -101,6 +101,7 @@ void OSC::update()
 	{
 		osc::Message message;
 		mOSCReceiver.getNextMessage(&message);
+		if (mParameterBag->mIsOSCSender) mOSCSender.sendMessage(message);
 		for (int a = 0; a < 6; a++)
 		{
 			iargs[a] = 0;
