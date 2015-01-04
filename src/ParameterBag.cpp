@@ -138,7 +138,7 @@ bool ParameterBag::restore()
 				mOSCReceiverPort = OSCReceiverPort.getAttributeValue<int>("value");
 			}
 			if (settings.hasChild("IsOSCSender")) {
-				XmlTree IsOSCSender = settings.getChild("OSCReceiverPort");
+				XmlTree IsOSCSender = settings.getChild("IsOSCSender");
 				mIsOSCSender = IsOSCSender.getAttributeValue<bool>("value");
 			}
 			if (settings.hasChild("OSCDestinationPort")) {
