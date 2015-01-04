@@ -64,6 +64,10 @@ void Textures::setInputTextureIndex(int index)
 	log->logTimedString("setInputTextureIndex:" + toString(index));
 	selectedInputTexture = index;
 }
+void Textures::setWarpInputModeRight(int index, bool shaderMode) 
+{ 
+	warpInputs[min(((int)warpInputs.size()) - 1, index)].rightMode = shaderMode; 
+}
 
 WarpInput Textures::setInput(int index, bool left, int currentMode)
 {

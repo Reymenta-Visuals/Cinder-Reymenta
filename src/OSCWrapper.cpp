@@ -24,6 +24,12 @@ OSCRef OSC::create(ParameterBagRef aParameterBag, ShadersRef aShadersRef, Textur
 	return shared_ptr<OSC>(new OSC(aParameterBag, aShadersRef, aTextures, aWarpings));
 }
 
+void OSC::setupSender()
+{
+	// OSC sender
+	mOSCSender.setup(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort);
+}
+
 void OSC::update()
 {
 	/*	while( receiver.hasWaitingMessages() ) {
@@ -105,6 +111,7 @@ void OSC::update()
 	{
 		osc::Message message;
 		mOSCReceiver.getNextMessage(&message);
+		if (mParameterBag->mIsOSCSender) mOSCSender.sendMessage(message);
 		for (int a = 0; a < 6; a++)
 		{
 			iargs[a] = 0;

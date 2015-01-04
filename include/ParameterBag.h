@@ -46,6 +46,7 @@ namespace Reymenta {
 		std::string					OSCMsg;
 		bool						newOSCMsg;
 		std::string					InfoMsg;
+		bool						mIsOSCSender;
 		// render windows
 		int							mRenderWidth;
 		int							mRenderHeight;

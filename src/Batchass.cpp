@@ -9,6 +9,14 @@ Batchass::Batchass(ParameterBagRef aParameterBag)
 	log = Logger::create("BatchassLog.txt");
 	log->logTimedString("Batchass constructor");
 }
+float Batchass::formatFloat(float f)
+{
+	int i;
+	f *= 100;
+	i = (int)f;
+	//f = (float)();
+	return (float)i;
+}
 void Batchass::getWindowsResolution()
 {
 	mParameterBag->mDisplayCount = 0;

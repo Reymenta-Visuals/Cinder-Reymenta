@@ -97,6 +97,10 @@ bool ParameterBag::save()
 	CursorVisible.setAttribute("value", toString(mCursorVisible));
 	settings.push_back(CursorVisible);
 
+	XmlTree IsOSCSender("IsOSCSender", "");
+	IsOSCSender.setAttribute("value", toString(mIsOSCSender));
+	settings.push_back(IsOSCSender);
+
 	// write XML file
 	settings.write(writeFile(path));
 
@@ -117,10 +121,6 @@ bool ParameterBag::restore()
 		else {
 			const XmlTree settings = xml.getChild("settings");
 
-			if (settings.hasChild("OSCReceiverPort")) {
-				XmlTree OSCReceiverPort = settings.getChild("OSCReceiverPort");
-				mOSCReceiverPort = OSCReceiverPort.getAttributeValue<int>("value");
-			}
 			if (settings.hasChild("AutoLayout")) {
 				XmlTree AutoLayout = settings.getChild("AutoLayout");
 				mAutoLayout = AutoLayout.getAttributeValue<bool>("value");
@@ -136,6 +136,10 @@ bool ParameterBag::restore()
 			if (settings.hasChild("OSCReceiverPort")) {
 				XmlTree OSCReceiverPort = settings.getChild("OSCReceiverPort");
 				mOSCReceiverPort = OSCReceiverPort.getAttributeValue<int>("value");
+			}
+			if (settings.hasChild("IsOSCSender")) {
+				XmlTree IsOSCSender = settings.getChild("OSCReceiverPort");
+				mIsOSCSender = IsOSCSender.getAttributeValue<bool>("value");
 			}
 			if (settings.hasChild("OSCDestinationPort")) {
 				XmlTree OSCDestinationPort = settings.getChild("OSCDestinationPort");
@@ -233,6 +237,7 @@ void ParameterBag::reset()
 	mOSCReceiverPort = 7000;
 	OSCMsg = "";
 	newOSCMsg = false;
+	mIsOSCSender = false;
 	InfoMsg = "";// "Host: " + mOSCDestinationHost;
 
 	mCamPosXY = vec2(0.0);
