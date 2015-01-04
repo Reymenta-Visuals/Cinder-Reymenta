@@ -41,6 +41,43 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 
 	log->logTimedString("Textures constructor end");
 }
+void Textures::loadMovie(const fs::path &movie_path)
+{
+	try {
+		mMovie.reset();
+		// load up the movie, set it to loop, and begin playing
+		mMovie = qtime::MovieGlHap::create(movie_path);
+		mMovie->setLoop();
+		mMovie->play();
+
+	}
+	catch (...) {
+		log->logTimedString("Unable to load the movie.");
+	}
+}
+void Textures::fileDrop(string mFile)
+{
+	string ext = "";
+	if (mFile.find_last_of(".") != std::string::npos) ext = mFile.substr(mFile.find_last_of(".") + 1);
+	log->logTimedString(mFile + " dropped");
+
+	if (ext == "glsl")
+	{
+		if (mShaders->loadPixelFragmentShader(mFile))
+		{
+			mParameterBag->controlValues[13] = 1.0f;
+			int sIndex = addShadaFbo();
+			warpInputs[0].rightIndex = sIndex;
+			warpInputs[0].rightMode = 1;
+			warpInputs[0].iCrossfade = 1.0;
+		}
+	}
+	else if (ext == "mov")
+	{
+		loadMovie(mFile);
+	}
+}
+
 void Textures::createWarpInput()
 {
 	WarpInput newWarpInput;
@@ -366,6 +403,9 @@ void Textures::draw()
 	renderShadersToFbo();
 	//! 2 render mixes of shader Fbos as texture, images, Spout sources as Fbos
 	renderMixesToFbo();
+	if (mMovie) {
+		mMovie->draw();
+	}
 }
 
 void Textures::shutdown()

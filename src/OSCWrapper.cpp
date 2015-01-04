@@ -192,6 +192,15 @@ void OSC::update()
 		{
 			mParameterBag->maxVolume = fargs[2];
 		}
+		else if (oscAddress == "/live/name/track")
+		{
+			mTextures->loadMovie(sargs[1]);
+		}
+		else if (oscAddress == "/live/name/trackblock")
+		{
+			mTextures->loadMovie(sargs[0]);
+
+		}
 		else if (oscAddress == "/texture")
 		{
 			mTextures->setInput(iargs[0], iargs[1], iargs[2]);

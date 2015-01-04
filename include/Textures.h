@@ -31,6 +31,8 @@
 #include "Shaders.h"
 // log to file
 #include "Logger.h"
+// HAP codec movie
+#include "MovieHap.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -106,6 +108,10 @@ namespace Reymenta
 		//! warpInputs: vector of warp input textures/shader fbo texture
 		vector<WarpInput>			warpInputs;
 		void						setCrossfade(int value) { warpInputs[mParameterBag->selectedWarp].iCrossfade = value; };
+		// load hap movie
+		void						loadMovie(const fs::path &movie_path);
+		// manage fileDrop
+		void						fileDrop(string mFile);
 	private:
 		//! Logger
 		LoggerRef					log;
@@ -132,6 +138,8 @@ namespace Reymenta
 		int							selectedInputTexture;
 		//! mesh for shader drawing
 		gl::VboMeshRef				mMesh;
+		// hap codec movie
+		qtime::MovieGlHapRef		mMovie;
 
 	};
 }
