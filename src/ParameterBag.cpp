@@ -138,7 +138,7 @@ bool ParameterBag::restore()
 				mOSCReceiverPort = OSCReceiverPort.getAttributeValue<int>("value");
 			}
 			if (settings.hasChild("IsOSCSender")) {
-				XmlTree IsOSCSender = settings.getChild("OSCReceiverPort");
+				XmlTree IsOSCSender = settings.getChild("IsOSCSender");
 				mIsOSCSender = IsOSCSender.getAttributeValue<bool>("value");
 			}
 			if (settings.hasChild("OSCDestinationPort")) {
@@ -235,8 +235,9 @@ void ParameterBag::reset()
 	mOSCDestinationHost = "127.0.0.1";
 	mOSCDestinationPort = 7001;
 	mOSCReceiverPort = 7000;
-	OSCMsg = "OSC listening on port 7000";
-	InfoMsg = "";// "Host: " + mOSCDestinationHost;
+	OSCMsg = "";
+	newOSCMsg = false;
+	InfoMsg = "";
 	mIsOSCSender = false;
 
 	mCamPosXY = Vec2f::zero();

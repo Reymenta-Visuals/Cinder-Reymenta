@@ -9,8 +9,8 @@ OSC::OSC(ParameterBagRef aParameterBag)
 	{
 		skeleton[i] = Vec4i::zero();
 	}
-	// OSC sender
-	mOSCSender.setup(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort);
+	// OSC sender with broadcast = true
+	mOSCSender.setup(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort, true);
 	// OSC receiver
 	mOSCReceiver.setup(mParameterBag->mOSCReceiverPort);
 }
@@ -19,7 +19,11 @@ OSCRef OSC::create(ParameterBagRef aParameterBag)
 {
 	return shared_ptr<OSC>(new OSC(aParameterBag));
 }
-
+void OSC::setupSender()
+{
+	// OSC sender with broadcast = true
+	mOSCSender.setup(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort, true);
+}
 void OSC::update()
 {
 	/*	while( receiver.hasWaitingMessages() ) {
@@ -240,9 +244,10 @@ void OSC::update()
 			unsigned found = oscAddress.find_last_of("/");
 			int name = atoi(oscAddress.substr(found + 1).c_str());
 		}
-		string oscString = "osc from:" + message.getRemoteIp() + " adr:" + oscAddress + " 0: " + sargs[0] + " 1: " + sargs[1];
-		//mUserInterface->labelOSC->setName( oscString );
-		mParameterBag->OSCMsg = oscString;
+		stringstream ss;
+		ss << message.getRemoteIp() << " adr:" << oscAddress << " 0: " << sargs[0] << " 1: " << sargs[1] << " 2: " << sargs[2] << " 3: " << sargs[3] << " 4: " << sargs[4] << " 5: " << sargs[5] << std::endl;
+		mParameterBag->OSCMsg = ss.str();
+		mParameterBag->newOSCMsg = true;
 
 	}
 }
