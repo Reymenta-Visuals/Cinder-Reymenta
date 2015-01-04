@@ -169,6 +169,22 @@ void OSC::update()
 			mShaders->loadPixelFragmentShader(sargs[1]);
 			mTextures->addShadaFbo();
 		}
+		else if (oscAddress == "/live/beat")
+		{
+			mParameterBag->mBeat = iargs[0];
+		}
+		else if (oscAddress == "/live/tempo")
+		{
+			mParameterBag->mTempo = fargs[0];
+		}
+		else if (oscAddress == "/live/play")
+		{
+			mParameterBag->mIsPlaying = (iargs[0] == 2);
+		}
+		else if (oscAddress == "/live/track/meter")
+		{
+			mParameterBag->maxVolume = fargs[2];
+		}
 		else if (oscAddress == "/texture")
 		{
 			mTextures->setInput(iargs[0], iargs[1], iargs[2]);
@@ -241,7 +257,7 @@ void OSC::update()
 		}
 		else
 		{
-			console() << "OSC message received: " << oscAddress << std::endl;
+			//console() << "OSC message received: " << oscAddress << std::endl;
 			// is it a layer msg?
 			int layer = 0;
 			unsigned layerFound = oscAddress.find("layer");
@@ -275,12 +291,12 @@ void OSC::update()
 
 			unsigned found = oscAddress.find_last_of("/");
 			int name = atoi(oscAddress.substr(found + 1).c_str());
-		}
 		//string oscString = "osc from:" + message.getRemoteIp() + " adr:" + oscAddress + " 0: " + sargs[0] + " 1: " + sargs[1];
 		stringstream ss;
 		ss << message.getRemoteIp() << " adr:" << oscAddress << " 0: " << sargs[0] << " 1: " << sargs[1] << " 2: " << sargs[2] << " 3: " << sargs[3] << " 4: " << sargs[4] << " 5: " << sargs[5] << std::endl;
 		mParameterBag->OSCMsg = ss.str();
 		mParameterBag->newOSCMsg = true;
+		}
 	}
 }
 

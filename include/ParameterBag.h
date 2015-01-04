@@ -129,9 +129,10 @@ namespace Reymenta {
 		float						*mData;
 		float						maxVolume;
 		bool						mUseLineIn;
+		bool						mIsPlaying;
 		float						mAudioMultFactor;
 		float						iFreqs[4];
-
+		int							mBeat;
 		// z EyePointZ
 		float						defaultEyePointZ;
 		float						minEyePointZ;

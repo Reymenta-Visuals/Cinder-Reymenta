@@ -252,6 +252,8 @@ void ParameterBag::reset()
 	// audio in multiplication factor
 	mAudioMultFactor = 1.0;
 	mUseLineIn = true;
+	mIsPlaying = false;
+	mBeat = 0;
 	maxVolume = 0.0f;
 	mData = new float[1024];
 	for (int i = 0; i < 1024; i++)
