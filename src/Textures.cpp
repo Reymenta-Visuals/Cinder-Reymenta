@@ -65,11 +65,18 @@ void Textures::loadFileFromAssets(string &fileName)
 			mMovie = qtime::MovieGlHap::create(mFile);
 			mMovie->setLoop(false);
 			mMovie->play();
-			//mMovie->stop();
 		}
 		catch (...) {
 			log->logTimedString("loadMovieFromAssets: Unable to load the movie.");
 		}
+	}
+}
+void Textures::stopMovie(bool remove)
+{
+	if (mMovie)
+	{
+		mMovie->stop();
+		if (remove) mMovie.reset();
 	}
 }
 
@@ -347,13 +354,7 @@ void Textures::saveThumb()
 
 void Textures::update()
 {
-	/*if (mMovie)
-	{
-	if (mParameterBag->mBeat == 23)
-	{
-	mMovie->play();
-	}
-	}*/
+
 }
 ci::gl::TextureRef Textures::getTexture(int index)
 {

@@ -13,6 +13,11 @@ OSC::OSC(ParameterBagRef aParameterBag, ShadersRef aShadersRef, TexturesRef aTex
 	{
 		skeleton[i] = ivec4(0);
 	}
+	// ableton liveOSC
+	for (int a = 0; a < MAX; a++)
+	{
+		tracks[a] = "default.glsl";
+	}
 	// OSC sender
 	mOSCSender.setup(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort);
 	// OSC receiver
@@ -179,6 +184,15 @@ void OSC::update()
 		else if (oscAddress == "/live/beat")
 		{
 			mParameterBag->mBeat = iargs[0];
+			if (mParameterBag->mBeat == 20)
+			{
+				mTextures->loadFileFromAssets(tracks[0]);
+			}
+			if (mParameterBag->mBeat == 476)
+			{
+				// stop movie and remove it
+				mTextures->stopMovie(true);
+			}
 		}
 		else if (oscAddress == "/live/tempo")
 		{
@@ -194,8 +208,11 @@ void OSC::update()
 		}
 		else if (oscAddress == "/live/name/trackblock")
 		{
-			mTextures->loadFileFromAssets(sargs[0]);
-			mTextures->loadFileFromAssets(sargs[1]);
+			// ableton liveOSC
+			for (int a = 0; a < MAX; a++)
+			{
+				tracks[a] = sargs[a];
+			}
 		}
 		else if (oscAddress == "/texture")
 		{

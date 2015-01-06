@@ -114,6 +114,7 @@ namespace Reymenta
 		// load hap movie
 		void						loadMovie(const fs::path &movie_path);
 		void						loadFileFromAssets(string &fileName);
+		void						stopMovie(bool remove = false);
 		// manage fileDrop
 		void						fileDrop(string mFile);
 	private:

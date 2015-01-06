@@ -54,6 +54,8 @@ namespace Reymenta
 		int							iargs[MAX];
 		float						fargs[MAX];
 		string						sargs[MAX];
+		// ableton liveOSC
+		string						tracks[MAX];
 
 	};
 }
