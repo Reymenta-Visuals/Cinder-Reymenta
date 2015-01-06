@@ -42,7 +42,7 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	// init mixTextures
 	for (int a = 0; a < MAX; a++)
 	{
-		mMixesFbos[a] = gl::Fbo::create(mParameterBag->mFboWidth, mParameterBag->mFboHeight, fboFormat.depthTexture());
+		mMixesFbos[a] = gl::Fbo::create(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, fboFormat.depthTexture());
 	}
 	createWarpInputs();
 	createWarpFbos();
@@ -55,7 +55,7 @@ void Textures::createWarpFbos()
 		WarpFbo newWarpFbo;
 		newWarpFbo.textureIndex = 0;
 		newWarpFbo.textureMode = 1;
-		newWarpFbo.fbo = gl::Fbo::create(mParameterBag->mFboWidth, mParameterBag->mFboHeight, fboFormat.depthTexture());
+		newWarpFbo.fbo = gl::Fbo::create(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, fboFormat.depthTexture());
 		if (a == 0) newWarpFbo.active = true; else newWarpFbo.active = false;
 		mWarpFbos[a] = newWarpFbo;
 	}
@@ -241,7 +241,7 @@ void Textures::addShadaFbos()
 {
 	for (int a = 0; a < MAX; a++)
 	{
-		mShadaFbos[a].fbo = gl::Fbo::create(mParameterBag->mFboWidth, mParameterBag->mFboHeight, fboFormat.depthTexture());
+		mShadaFbos[a].fbo = gl::Fbo::create(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, fboFormat.depthTexture());
 		mShadaFbos[a].shadaIndex = a;
 		if ( a == 0 ) mShadaFbos[a].active = true; else mShadaFbos[a].active = false;
 	}
@@ -482,7 +482,10 @@ void Textures::renderWarpFbos()
 			gl::ScopedViewport scpVp(ivec2(0.0), mWarp.fbo->getSize());
 
 			gl::ScopedGlslProg shader(mShaders->getWarpShader());
-
+			if (mMovie && mMovie->isPlaying())
+			{
+				mMovie->getTexture();
+			}
 			if (mWarp.textureMode == 0)
 			{
 				// 0 for input texture

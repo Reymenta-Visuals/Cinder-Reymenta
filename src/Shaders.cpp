@@ -55,14 +55,14 @@ void Shaders::resize()
 		auto map = shader.prog->getActiveUniformTypes();
 		if (map.find("iResolution") != map.end())
 		{
-			shader.prog->uniform("iResolution", vec3(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 0.0f));
-			//shader.prog->uniform("iResolution", vec3(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, 0.0f));
+			//shader.prog->uniform("iResolution", vec3(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 0.0f));
+			shader.prog->uniform("iResolution", vec3(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, 0.0f));
 		}
 	}
 	auto mixMap = mMixShader->getActiveUniformTypes();
 	if (mixMap.find("iResolution") != mixMap.end())
 	{
-		mMixShader->uniform("iResolution", vec3(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 0.0f));
+		mMixShader->uniform("iResolution", vec3(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, 0.0f));
 	}
 	auto warpMap = mWarpShader->getActiveUniformTypes();
 	if (warpMap.find("iResolution") != warpMap.end())
@@ -202,7 +202,7 @@ bool Shaders::setGLSLString(string pixelFrag, string fileName)
 			{
 				log->logTimedString(pair.first);
 			}
-			if (mixMap.find("iResolution") != mixMap.end()) mMixShader->uniform("iResolution", vec3(getWindowWidth(), getWindowHeight(), 0.0f));
+			if (mixMap.find("iResolution") != mixMap.end()) mMixShader->uniform("iResolution", vec3(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, 0.0f));
 			
 		}
 		else if (fileName == "warp.glsl")
@@ -214,7 +214,7 @@ bool Shaders::setGLSLString(string pixelFrag, string fileName)
 			{
 				log->logTimedString(pair.first);
 			}
-			if (warpMap.find("iResolution") != warpMap.end()) mWarpShader->uniform("iResolution", vec3(getWindowWidth(), getWindowHeight(), 0.0f));
+			if (warpMap.find("iResolution") != warpMap.end()) mWarpShader->uniform("iResolution", vec3(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, 0.0f));
 
 		}
 		else
