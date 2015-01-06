@@ -150,7 +150,7 @@ void Textures::setInputTextureIndex(int index)
 }
 void Textures::setWarpInputModeRight(int index, bool shaderMode)
 {
-	warpInputs[min((MAX) - 1, index)].rightMode = shaderMode;
+	warpInputs[min((MAX)-1, index)].rightMode = shaderMode;
 }
 
 WarpInput Textures::setInput(int index, bool left, int currentMode)
@@ -381,21 +381,25 @@ void Textures::renderShadersToFbo()
 {
 	for (auto &mFbo : mShadaFbos)
 	{
-		// this will restore the old framebuffer binding when we leave this function
-		// on non-OpenGL ES platforms, you can just call mFbo->unbindFramebuffer() at the end of the function
-		// but this will restore the "screen" FBO on OpenGL ES, and does the right thing on both platforms
-		gl::ScopedFramebuffer fbScp(mFbo.fbo);
-		// clear out the FBO with black
-		gl::clear(ColorA(0.0f, 0.0f, 0.0f, 0.0f));
+		if (mFbo.active)
+		{
+			// this will restore the old framebuffer binding when we leave this function
+			// on non-OpenGL ES platforms, you can just call mFbo->unbindFramebuffer() at the end of the function
+			// but this will restore the "screen" FBO on OpenGL ES, and does the right thing on both platforms
+			gl::ScopedFramebuffer fbScp(mFbo.fbo);
+			// clear out the FBO with black
+			gl::clear(ColorA(0.0f, 0.0f, 0.0f, 0.0f));
 
-		// setup the viewport to match the dimensions of the FBO
-		gl::ScopedViewport scpVp(ivec2(0.0), mFbo.fbo->getSize());
+			// setup the viewport to match the dimensions of the FBO
+			gl::ScopedViewport scpVp(ivec2(0.0), mFbo.fbo->getSize());
 
-		gl::ScopedGlslProg shader(mShaders->getShader(mFbo.shadaIndex));
-		getFboTexture(0)->bind(0);
-		getSenderTexture(1)->bind(1);
-		// draw our screen rectangle
-		gl::draw(mMesh);
+			gl::ScopedGlslProg shader(mShaders->getShader(mFbo.shadaIndex));
+			getFboTexture(0)->bind(0);
+			getSenderTexture(1)->bind(1);
+			// draw our screen rectangle
+			gl::draw(mMesh);
+
+		}
 	}
 }
 void Textures::renderMixesToFbo()
@@ -403,44 +407,47 @@ void Textures::renderMixesToFbo()
 	int i = 0;
 	for (auto &mFbo : mMixesFbos)
 	{
-		// this will restore the old framebuffer binding when we leave this function
-		// on non-OpenGL ES platforms, you can just call mFbo->unbindFramebuffer() at the end of the function
-		// but this will restore the "screen" FBO on OpenGL ES, and does the right thing on both platforms
-		gl::ScopedFramebuffer fbScp(mFbo);
-		// clear out the FBO with black
-		gl::clear(ColorA(0.0f, 0.0f, 0.0f, 0.0f));
-
-		// setup the viewport to match the dimensions of the FBO
-		gl::ScopedViewport scpVp(ivec2(0.0), mFbo->getSize());
-
-		gl::ScopedGlslProg shader(mShaders->getMixShader());
-
-		if (warpInputs[i].leftMode == 0)
+		if (mFbo.active)
 		{
-			// 0 for input texture
-			getSenderTexture(warpInputs[i].leftIndex)->bind(0);
-		}
-		else
-		{
-			// 1 for shader
-			getFboTexture(warpInputs[i].leftIndex)->bind(0);
-		}
-		if (warpInputs[i].rightMode == 0)
-		{
-			// 0 for input texture
-			getSenderTexture(warpInputs[i].rightIndex)->bind(1);
-		}
-		else
-		{
-			// 1 for shader
-			getFboTexture(warpInputs[i].rightIndex)->bind(1);
-		}
-		mShaders->getMixShader()->uniform("iCrossfade", warpInputs[i].iCrossfade);
-		//warpInputs[i].iCrossfade += 0.1;
-		//if (warpInputs[i].iCrossfade > 1.0) warpInputs[i].iCrossfade = 0.0;
-		gl::draw(mMesh);
+			// this will restore the old framebuffer binding when we leave this function
+			// on non-OpenGL ES platforms, you can just call mFbo->unbindFramebuffer() at the end of the function
+			// but this will restore the "screen" FBO on OpenGL ES, and does the right thing on both platforms
+			gl::ScopedFramebuffer fbScp(mFbo);
+			// clear out the FBO with black
+			gl::clear(ColorA(0.0f, 0.0f, 0.0f, 0.0f));
 
-		i++;
+			// setup the viewport to match the dimensions of the FBO
+			gl::ScopedViewport scpVp(ivec2(0.0), mFbo->getSize());
+
+			gl::ScopedGlslProg shader(mShaders->getMixShader());
+
+			if (warpInputs[i].leftMode == 0)
+			{
+				// 0 for input texture
+				getSenderTexture(warpInputs[i].leftIndex)->bind(0);
+			}
+			else
+			{
+				// 1 for shader
+				getFboTexture(warpInputs[i].leftIndex)->bind(0);
+			}
+			if (warpInputs[i].rightMode == 0)
+			{
+				// 0 for input texture
+				getSenderTexture(warpInputs[i].rightIndex)->bind(1);
+			}
+			else
+			{
+				// 1 for shader
+				getFboTexture(warpInputs[i].rightIndex)->bind(1);
+			}
+			mShaders->getMixShader()->uniform("iCrossfade", warpInputs[i].iCrossfade);
+			//warpInputs[i].iCrossfade += 0.1;
+			//if (warpInputs[i].iCrossfade > 1.0) warpInputs[i].iCrossfade = 0.0;
+			gl::draw(mMesh);
+
+			i++;
+		}
 	}
 }
 void Textures::draw()

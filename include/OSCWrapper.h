@@ -36,6 +36,8 @@ namespace Reymenta
 		void	sendOSCStringMessage(string controlType, int iarg0 = 0, string sarg1 = "", string sarg2 = "", string sarg3 = "", string sarg4 = "", string sarg5 = "");
 
 		ivec4	skeleton[20];
+		// ableton liveOSC
+		string						tracks[MAX];
 	private:
 
 		// parameters
@@ -54,8 +56,6 @@ namespace Reymenta
 		int							iargs[MAX];
 		float						fargs[MAX];
 		string						sargs[MAX];
-		// ableton liveOSC
-		string						tracks[MAX];
 
 	};
 }

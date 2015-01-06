@@ -186,10 +186,6 @@ void OSC::update()
 		else if (oscAddress == "/live/beat")
 		{
 			mParameterBag->mBeat = iargs[0];
-			if (mParameterBag->mBeat == 20)
-			{
-				mTextures->loadFileFromAssets(tracks[0]);
-			}
 			if (mParameterBag->mBeat == 476)
 			{
 				// stop movie and remove it
@@ -199,6 +195,11 @@ void OSC::update()
 		else if (oscAddress == "/live/tempo")
 		{
 			mParameterBag->mTempo = fargs[0];
+			if (mParameterBag->mTempo == 88.0)
+			{
+				mTextures->loadFileFromAssets(tracks[0]);
+			}
+
 		}
 		else if (oscAddress == "/live/play")
 		{
@@ -211,6 +212,14 @@ void OSC::update()
 		else if (oscAddress == "/live/name/trackblock")
 		{
 			// ableton liveOSC
+			for (int a = 0; a < MAX; a++)
+			{
+				tracks[a] = sargs[a];
+			}
+		}
+		else if (oscAddress == "/reymenta/tracklist")
+		{
+			// from midi2OSC
 			for (int a = 0; a < MAX; a++)
 			{
 				tracks[a] = sargs[a];
