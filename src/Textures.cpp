@@ -142,6 +142,9 @@ void Textures::fileDrop(string mFile)
 			warpInputs[0].rightMode = 1;
 			warpInputs[0].iCrossfade = 1.0;
 			warpInputs[0].active = true;
+			mWarpFbos[0].textureIndex = 0;
+			mWarpFbos[0].textureMode = 1;
+			mWarpFbos[0].active = true;
 		}
 	}
 	else if (ext == "mov")
@@ -240,7 +243,7 @@ void Textures::addShadaFbos()
 	{
 		mShadaFbos[a].fbo = gl::Fbo::create(mParameterBag->mFboWidth, mParameterBag->mFboHeight, fboFormat.depthTexture());
 		mShadaFbos[a].shadaIndex = a;
-		mShadaFbos[a].active = false;
+		if ( a == 0 ) mShadaFbos[a].active = true; else mShadaFbos[a].active = false;
 	}
 }
 

@@ -34,16 +34,16 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	//! init some shaders
 	for (size_t m = 0; m < MAX; m++)
 	{
-		mFragmentShaders[m].name = "def";
+		mFragmentShaders[m].name = "default.glsl";
 		if (m==0) mFragmentShaders[m].active = true; else mFragmentShaders[m].active = false;
 		mFragmentShaders[m].prog = gl::GlslProg::create(gl::GlslProg::Format().vertex(defaultVertexShader.c_str()).fragment(defaultFragmentShader.c_str()));
-		fileName = toString(m) + ".glsl";
+		/*fileName = toString(m) + ".glsl";
 		localFile = getAssetPath("") / fileName;
 		if (!loadPixelFragmentShader(localFile.string()))
 		{
 			//does not exist or compile TODO 0.glsl MUST EXIST FOR NOW
 			loadPixelFragmentShader(getAssetPath("") / "0.glsl");
-		}
+		}*/
 	}
 }
 
@@ -220,13 +220,12 @@ bool Shaders::setGLSLString(string pixelFrag, string fileName)
 		else
 		{
 			int foundIndex = 0;
-			for (int a = 0; a < MAX; a++)
+			/* returns MAX-1! for (int a = 0; a < MAX; a++)
 			{
 				if (!mFragmentShaders[a].active) foundIndex = a;				
-			}
+			}*/
 			// load the new shader
 			mFragmentShaders[foundIndex] = newShada;
-			mFragmentShaders[foundIndex].active = false;
 			//preview the new loaded shader
 			mParameterBag->mCurrentShadaFboIndex = foundIndex;
 			// lol log->logTimedString("setGLSLString success, mFragmentShaders foundIndex " + static_cast<ostringstream*>(&(ostringstream() << foundIndex))->str());
