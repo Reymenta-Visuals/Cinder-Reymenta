@@ -38,21 +38,53 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	mMesh = gl::VboMesh::create(geom::Rect(Rectf(-2.0, -2.0, 2.0, 2.0)));
 	selectedShada = 0;
 	selectedInputTexture = 0;
-
+	addShadaFbos();
+	// init mixTextures
+	for (int a = 0; a < MAX; a++)
+	{
+		mMixesFbos[a] = gl::Fbo::create(mParameterBag->mFboWidth, mParameterBag->mFboHeight, fboFormat.depthTexture());
+	}
+	createWarpInputs();
 	log->logTimedString("Textures constructor end");
 }
+
+void Textures::loadFileFromAssets(string &fileName)
+{
+	string ext = "";
+	// use the last of the dropped files
+	boost::filesystem::path mPath = getAssetPath("") / fileName;
+	string mFile = mPath.string();
+	if (mFile.find_last_of(".") != std::string::npos) ext = mFile.substr(mFile.find_last_of(".") + 1);
+	log->logTimedString("loading: " + mFile + " ext: " + ext);
+
+	if (ext == "mov")
+	{
+		try {
+			mMovie.reset();
+			// load up the movie, set it to loop, and begin playing
+			mMovie = qtime::MovieGlHap::create(mFile);
+			mMovie->setLoop(false);
+			mMovie->play();
+			//mMovie->stop();
+		}
+		catch (...) {
+			log->logTimedString("loadMovieFromAssets: Unable to load the movie.");
+		}
+	}
+}
+
 void Textures::loadMovie(const fs::path &movie_path)
 {
 	try {
 		mMovie.reset();
 		// load up the movie, set it to loop, and begin playing
 		mMovie = qtime::MovieGlHap::create(movie_path);
-		mMovie->setLoop();
+		mMovie->setLoop(false);
 		mMovie->play();
 
 	}
 	catch (...) {
-		log->logTimedString("Unable to load the movie.");
+		log->logTimedString("loadMovie: Unable to load the movie.");
 	}
 }
 void Textures::fileDrop(string mFile)
@@ -66,10 +98,10 @@ void Textures::fileDrop(string mFile)
 		if (mShaders->loadPixelFragmentShader(mFile))
 		{
 			mParameterBag->controlValues[13] = 1.0f;
-			int sIndex = addShadaFbo();
-			warpInputs[0].rightIndex = sIndex;
+			warpInputs[0].rightIndex = 0;
 			warpInputs[0].rightMode = 1;
 			warpInputs[0].iCrossfade = 1.0;
+			warpInputs[0].active = true;
 		}
 	}
 	else if (ext == "mov")
@@ -78,18 +110,19 @@ void Textures::fileDrop(string mFile)
 	}
 }
 
-void Textures::createWarpInput()
+void Textures::createWarpInputs()
 {
-	WarpInput newWarpInput;
-	newWarpInput.leftIndex = 0;
-	newWarpInput.leftMode = 0;
-	newWarpInput.rightIndex = 0;
-	newWarpInput.rightMode = 0;
-	newWarpInput.iCrossfade = 0.5;
-	newWarpInput.hasTexture = false;
-	warpInputs.push_back(newWarpInput);
-	// init mixTextures
-	mMixesFbos.push_back(gl::Fbo::create(mParameterBag->mFboWidth, mParameterBag->mFboHeight, fboFormat.depthTexture()));
+	for (int a = 0; a < MAX; a++)
+	{
+		WarpInput newWarpInput;
+		newWarpInput.leftIndex = 0;
+		newWarpInput.leftMode = 0;
+		newWarpInput.rightIndex = 0;
+		newWarpInput.rightMode = 0;
+		newWarpInput.iCrossfade = 0.5;
+		newWarpInput.hasTexture = false;
+		warpInputs[a] = newWarpInput;
+	}
 }
 void Textures::setShadaIndex(int index)
 {
@@ -101,9 +134,9 @@ void Textures::setInputTextureIndex(int index)
 	log->logTimedString("setInputTextureIndex:" + toString(index));
 	selectedInputTexture = index;
 }
-void Textures::setWarpInputModeRight(int index, bool shaderMode) 
-{ 
-	warpInputs[min(((int)warpInputs.size()) - 1, index)].rightMode = shaderMode; 
+void Textures::setWarpInputModeRight(int index, bool shaderMode)
+{
+	warpInputs[min((MAX) - 1, index)].rightMode = shaderMode;
 }
 
 WarpInput Textures::setInput(int index, bool left, int currentMode)
@@ -175,15 +208,14 @@ WarpInput Textures::setInput(int index, bool left, int currentMode)
 	return warpInputs[mParameterBag->selectedWarp];
 }
 
-int Textures::addShadaFbo()
+void Textures::addShadaFbos()
 {
-	// add a ShadaFbo
-	ShadaFbo sFbo;
-	//format.setSamples( 4 ); // uncomment this to enable 4x antialiasing
-	sFbo.fbo = gl::Fbo::create(mParameterBag->mFboWidth, mParameterBag->mFboHeight, fboFormat.depthTexture());
-	sFbo.shadaIndex = mShadaFbos.size();// can't be -1 !!!
-	mShadaFbos.push_back(sFbo);
-	return mShadaFbos.size() - 1;
+	for (int a = 0; a < MAX; a++)
+	{
+		mShadaFbos[a].fbo = gl::Fbo::create(mParameterBag->mFboWidth, mParameterBag->mFboHeight, fboFormat.depthTexture());
+		mShadaFbos[a].shadaIndex = a;
+		mShadaFbos[a].active = false;
+	}
 }
 
 int Textures::createSpoutTexture(char name[256], unsigned int width, unsigned int height)
@@ -315,7 +347,13 @@ void Textures::saveThumb()
 
 void Textures::update()
 {
-
+	/*if (mMovie)
+	{
+	if (mParameterBag->mBeat == 23)
+	{
+	mMovie->play();
+	}
+	}*/
 }
 ci::gl::TextureRef Textures::getTexture(int index)
 {
@@ -323,12 +361,12 @@ ci::gl::TextureRef Textures::getTexture(int index)
 }
 ci::gl::TextureRef Textures::getMixTexture(int index)
 {
-	if (index > mMixesFbos.size() - 1) index = mMixesFbos.size() - 1;
+	if (index > MAX - 1) index = MAX - 1;
 	return mMixesFbos[index]->getColorTexture();
 }
 ci::gl::TextureRef Textures::getFboTexture(int index)
 {
-	if (index > mShadaFbos.size() - 1) index = mShadaFbos.size() - 1;
+	if (index > MAX - 1) index = MAX - 1;
 	return mShadaFbos[index].fbo->getColorTexture();
 }
 void Textures::renderShadersToFbo()
@@ -403,7 +441,8 @@ void Textures::draw()
 	renderShadersToFbo();
 	//! 2 render mixes of shader Fbos as texture, images, Spout sources as Fbos
 	renderMixesToFbo();
-	if (mMovie) {
+	if (mMovie)
+	{
 		mMovie->draw();
 	}
 }

@@ -28,13 +28,19 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	localFile = getAssetPath("") / fileName;
 	loadPixelFragmentShader(localFile.string());
 	//! init some shaders
-	/* can't do it without creating the associated fbo
-	for (size_t m = 0; m < 8; m++)
+	for (size_t m = 0; m < MAX; m++)
 	{
+		mFragmentShaders[m].name = "def";
+		mFragmentShaders[m].active = false;
+		mFragmentShaders[m].prog = gl::GlslProg::create(gl::GlslProg::Format().vertex(defaultVertexShader.c_str()).fragment(defaultFragmentShader.c_str()));
 		fileName = toString(m) + ".glsl";
 		localFile = getAssetPath("") / fileName;
-		loadPixelFragmentShader(localFile.string());
-	}*/
+		if (!loadPixelFragmentShader(localFile.string()))
+		{
+			//does not exist or compile TODO 0.glsl MUST EXIST FOR NOW
+			loadPixelFragmentShader(getAssetPath("") / "0.glsl");
+		}
+	}
 }
 
 void Shaders::resize()
@@ -59,7 +65,7 @@ void Shaders::resize()
 
 gl::GlslProgRef Shaders::getShader(int aIndex)
 {
-	if (aIndex > mFragmentShaders.size() - 1) aIndex = mFragmentShaders.size() - 1;
+	if (aIndex > MAX - 1) aIndex = MAX - 1;
 	if (aIndex < 0) aIndex = 0;
 	return mFragmentShaders[aIndex].prog;
 }
@@ -189,21 +195,20 @@ bool Shaders::setGLSLString(string pixelFrag, string fileName)
 		}
 		else
 		{
-			// searching first index of not running shader
-			if (mFragmentShaders.size() < mParameterBag->MAX)
+			int foundIndex = 0;
+			for (int a = 0; a < MAX; a++)
 			{
-				mFragmentShaders.push_back(newShada);
+				if (!mFragmentShaders[a].active) foundIndex = a;				
 			}
-			else
-			{
-				// load the new shader
-				mFragmentShaders[mFragmentShaders.size() - 1] = newShada;
-			}
+			// load the new shader
+			mFragmentShaders[foundIndex] = newShada;
+			mFragmentShaders[foundIndex].active = false;
 			//preview the new loaded shader
-			mParameterBag->mCurrentShadaFboIndex = mFragmentShaders.size() - 1;
-			log->logTimedString("setGLSLString success, mFragmentShaders size " + static_cast<ostringstream*>(&(ostringstream() << mFragmentShaders.size() - 1))->str());
+			mParameterBag->mCurrentShadaFboIndex = foundIndex;
+			// lol log->logTimedString("setGLSLString success, mFragmentShaders foundIndex " + static_cast<ostringstream*>(&(ostringstream() << foundIndex))->str());
+			log->logTimedString("setGLSLString success, mFragmentShaders foundIndex " + toString( foundIndex));
 			// check that uniforms exist before setting the constant uniforms
-			auto map = mFragmentShaders[mFragmentShaders.size() - 1].prog->getActiveUniformTypes();
+			auto map = mFragmentShaders[foundIndex].prog->getActiveUniformTypes();
 
 			log->logTimedString("Found uniforms for " + fileName);
 			for (const auto &pair : map)
@@ -211,7 +216,7 @@ bool Shaders::setGLSLString(string pixelFrag, string fileName)
 				log->logTimedString(pair.first);
 			}
 			console() << endl;
-			if (map.find("iResolution") != map.end()) mFragmentShaders[mFragmentShaders.size() - 1].prog->uniform("iResolution", vec3(getWindowWidth(), getWindowHeight(), 0.0f));
+			if (map.find("iResolution") != map.end()) mFragmentShaders[foundIndex].prog->uniform("iResolution", vec3(getWindowWidth(), getWindowHeight(), 0.0f));
 
 		}
 		mError = "";

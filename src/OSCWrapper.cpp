@@ -112,7 +112,7 @@ void OSC::update()
 		osc::Message message;
 		mOSCReceiver.getNextMessage(&message);
 		if (mParameterBag->mIsOSCSender) mOSCSender.sendMessage(message);
-		for (int a = 0; a < 6; a++)
+		for (int a = 0; a < MAX; a++)
 		{
 			iargs[a] = 0;
 			fargs[a] = 0.0;
@@ -126,35 +126,37 @@ void OSC::update()
 		// get arguments
 		for (int i = 0; i < message.getNumArgs(); i++)
 		{
-			cout << "-- Argument " << i << std::endl;
-			cout << "---- type: " << message.getArgTypeName(i) << std::endl;
-			if (message.getArgType(i) == osc::TYPE_INT32) {
-				try
-				{
-					iargs[i] = message.getArgAsInt32(i);
-					sargs[i] = toString(iargs[i]);
+			if (i < MAX)
+			{
+
+				if (message.getArgType(i) == osc::TYPE_INT32) {
+					try
+					{
+						iargs[i] = message.getArgAsInt32(i);
+						sargs[i] = toString(iargs[i]);
+					}
+					catch (...) {
+						cout << "Exception reading argument as int32" << std::endl;
+					}
 				}
-				catch (...) {
-					cout << "Exception reading argument as int32" << std::endl;
+				if (message.getArgType(i) == osc::TYPE_FLOAT) {
+					try
+					{
+						fargs[i] = message.getArgAsFloat(i);
+						sargs[i] = toString(fargs[i]);
+					}
+					catch (...) {
+						cout << "Exception reading argument as float" << std::endl;
+					}
 				}
-			}
-			if (message.getArgType(i) == osc::TYPE_FLOAT) {
-				try
-				{
-					fargs[i] = message.getArgAsFloat(i);
-					sargs[i] = toString(fargs[i]);
-				}
-				catch (...) {
-					cout << "Exception reading argument as float" << std::endl;
-				}
-			}
-			if (message.getArgType(i) == osc::TYPE_STRING) {
-				try
-				{
-					sargs[i] = message.getArgAsString(i);
-				}
-				catch (...) {
-					cout << "Exception reading argument as string" << std::endl;
+				if (message.getArgType(i) == osc::TYPE_STRING) {
+					try
+					{
+						sargs[i] = message.getArgAsString(i);
+					}
+					catch (...) {
+						cout << "Exception reading argument as string" << std::endl;
+					}
 				}
 			}
 		}
@@ -166,15 +168,13 @@ void OSC::update()
 		else if (oscAddress == "/fs")
 		{
 			mShaders->loadFragmentShaderString(sargs[1], sargs[2]);
-			int sIndex = mTextures->addShadaFbo();
-			mTextures->warpInputs[0].rightIndex = sIndex;
+			mTextures->warpInputs[0].rightIndex = 0;
 			mTextures->warpInputs[0].rightMode = 1;
 			mTextures->warpInputs[0].iCrossfade = 1.0;
 		}
 		else if (oscAddress == "/fspath")
 		{
 			mShaders->loadPixelFragmentShader(sargs[1]);
-			mTextures->addShadaFbo();
 		}
 		else if (oscAddress == "/live/beat")
 		{
@@ -192,14 +192,10 @@ void OSC::update()
 		{
 			mParameterBag->maxVolume = fargs[2];
 		}
-		else if (oscAddress == "/live/name/track")
-		{
-			mTextures->loadMovie(sargs[1]);
-		}
 		else if (oscAddress == "/live/name/trackblock")
 		{
-			mTextures->loadMovie(sargs[0]);
-
+			mTextures->loadFileFromAssets(sargs[0]);
+			mTextures->loadFileFromAssets(sargs[1]);
 		}
 		else if (oscAddress == "/texture")
 		{

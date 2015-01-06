@@ -28,10 +28,11 @@ namespace Reymenta
 {
 	// stores the pointer to the Shaders instance
 	typedef std::shared_ptr<class Shaders> ShadersRef;
-	struct Shada {
-		string name;
+	struct Shada 
+	{
+		string			name;
 		gl::GlslProgRef prog;
-		bool active;
+		bool			active;
 	};
 	class Shaders {
 	public:		
@@ -51,7 +52,7 @@ namespace Reymenta
 		string						getFragFileName() { return mFragFileName; };
 		string						getShaderName(int aIndex) { return mFragmentShaders[aIndex].name; };
 		bool						setGLSLString(string pixelFrag, string fileName);
-		int							getShaderCount() { return mFragmentShaders.size(); };
+		//int							getShaderCount() { return mFragmentShaders.size(); };
 	private:
 		// Logger
 		LoggerRef					log;
@@ -68,7 +69,8 @@ namespace Reymenta
 		// current frag string
 		string						currentFrag;
 		//! vector of fragment shaders
-		vector<Shada>				mFragmentShaders;
+		static const int			MAX = 16;
+		Shada						mFragmentShaders[MAX];
 		bool						validFrag;
 		//! parameters
 		ParameterBagRef				mParameterBag;

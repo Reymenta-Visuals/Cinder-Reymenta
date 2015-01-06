@@ -43,6 +43,7 @@ namespace Reymenta
 	// stores the pointer to the Textures instance
 	typedef std::shared_ptr<class Textures> TexturesRef;
 
+	static const int			MAX = 16;
 	//! struct to keep track of the texture names for spout senders and shader fbo-rendered textures
 	//typedef 
 	struct Sender
@@ -56,6 +57,7 @@ namespace Reymenta
 	{
 		ci::gl::FboRef				fbo;
 		int							shadaIndex;
+		bool						active;
 	};
 	struct WarpInput
 	{
@@ -65,6 +67,7 @@ namespace Reymenta
 		int							rightMode;		// 0 for input texture, 1 for shader
 		float						iCrossfade;		// from 0 left to 1 right
 		bool						hasTexture;		// has already a texture? if not the first one is put on left and right
+		bool						active;
 	};
 	class Textures {
 	public:
@@ -100,16 +103,17 @@ namespace Reymenta
 		void						setInputTextureIndex(int index);
 		int							getInputTextureIndex() { return selectedInputTexture; };
 		WarpInput					setInput(int index, bool left, int currentMode);
-		WarpInput					getWarpInput(int index) { return warpInputs[min(((int)warpInputs.size())-1, index)]; };
+		WarpInput					getWarpInput(int index) { return warpInputs[min((MAX)-1, index)]; };
 		void						setWarpInputModeRight(int index, bool shaderMode);
-		int							getShadaFbosSize() { return mShadaFbos.size(); };
-		int							addShadaFbo();
-		void						createWarpInput();
+		//int							getShadaFbosSize() { return mShadaFbos.size(); };
+		void						addShadaFbos();
+		void						createWarpInputs();
 		//! warpInputs: vector of warp input textures/shader fbo texture
-		vector<WarpInput>			warpInputs;
+		WarpInput					warpInputs[MAX];
 		void						setCrossfade(int value) { warpInputs[mParameterBag->selectedWarp].iCrossfade = value; };
 		// load hap movie
 		void						loadMovie(const fs::path &movie_path);
+		void						loadFileFromAssets(string &fileName);
 		// manage fileDrop
 		void						fileDrop(string mFile);
 	private:
@@ -124,9 +128,9 @@ namespace Reymenta
 		//! parameters
 		ParameterBagRef				mParameterBag;
 		//! mixes fbos
-		vector<gl::FboRef>			mMixesFbos;
+		gl::FboRef					mMixesFbos[MAX];
 		//! shader fbos
-		vector<ShadaFbo>			mShadaFbos;
+		ShadaFbo					mShadaFbos[MAX];
 		//! Shaders
 		ShadersRef					mShaders;
 		//! shader
