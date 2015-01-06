@@ -38,9 +38,13 @@ namespace Reymenta
 		osc::Listener 				mOSCReceiver;
 		osc::Sender					mOSCSender;
 
-		int							iargs[6];
-		float						fargs[6];
-		string						sargs[6];
+		static const int			MAX = 16;
+
+		int							iargs[MAX];
+		float						fargs[MAX];
+		string						sargs[MAX];
+		// ableton liveOSC
+		string						tracks[MAX];
 
 	};
 }

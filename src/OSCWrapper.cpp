@@ -106,7 +106,7 @@ void OSC::update()
 		osc::Message message;
 		mOSCReceiver.getNextMessage(&message);
 		if (mParameterBag->mIsOSCSender) mOSCSender.sendMessage(message);
-		for (int a = 0; a < 6; a++)
+		for (int a = 0; a < MAX; a++)
 		{
 			iargs[a] = 0;
 			fargs[a] = 0.0;
@@ -120,35 +120,36 @@ void OSC::update()
 		// get arguments
 		for (int i = 0; i < message.getNumArgs(); i++)
 		{
-			cout << "-- Argument " << i << std::endl;
-			cout << "---- type: " << message.getArgTypeName(i) << std::endl;
-			if (message.getArgType(i) == osc::TYPE_INT32) {
-				try
-				{
-					iargs[i] = message.getArgAsInt32(i);
-					sargs[i] = toString(iargs[i]);
+			if (i < MAX)
+			{
+				if (message.getArgType(i) == osc::TYPE_INT32) {
+					try
+					{
+						iargs[i] = message.getArgAsInt32(i);
+						sargs[i] = toString(iargs[i]);
+					}
+					catch (...) {
+						cout << "Exception reading argument as int32" << std::endl;
+					}
 				}
-				catch (...) {
-					cout << "Exception reading argument as int32" << std::endl;
+				if (message.getArgType(i) == osc::TYPE_FLOAT) {
+					try
+					{
+						fargs[i] = message.getArgAsFloat(i);
+						sargs[i] = toString(fargs[i]);
+					}
+					catch (...) {
+						cout << "Exception reading argument as float" << std::endl;
+					}
 				}
-			}
-			if (message.getArgType(i) == osc::TYPE_FLOAT) {
-				try
-				{
-					fargs[i] = message.getArgAsFloat(i);
-					sargs[i] = toString(fargs[i]);
-				}
-				catch (...) {
-					cout << "Exception reading argument as float" << std::endl;
-				}
-			}
-			if (message.getArgType(i) == osc::TYPE_STRING) {
-				try
-				{
-					sargs[i] = message.getArgAsString(i);
-				}
-				catch (...) {
-					cout << "Exception reading argument as string" << std::endl;
+				if (message.getArgType(i) == osc::TYPE_STRING) {
+					try
+					{
+						sargs[i] = message.getArgAsString(i);
+					}
+					catch (...) {
+						cout << "Exception reading argument as string" << std::endl;
+					}
 				}
 			}
 		}
@@ -156,6 +157,14 @@ void OSC::update()
 		if (oscAddress == "/cc")
 		{
 			mParameterBag->controlValues[iargs[0]] = fargs[1];
+		}
+		else if (oscAddress == "/live/name/trackblock")
+		{
+			for (int a = 0; a < MAX; a++)
+			{
+				tracks[a] = sargs[a];
+			}
+
 		}
 		else if (oscAddress == "/sumMovement")
 		{
@@ -197,7 +206,7 @@ void OSC::update()
 			// green
 			mParameterBag->controlValues[2] = x;
 		}
-		
+
 		else if (oscAddress == "/joint")
 		{
 			skeletonIndex = iargs[0];
@@ -245,7 +254,12 @@ void OSC::update()
 			int name = atoi(oscAddress.substr(found + 1).c_str());
 		}
 		stringstream ss;
-		ss << message.getRemoteIp() << " adr:" << oscAddress << " 0: " << sargs[0] << " 1: " << sargs[1] << " 2: " << sargs[2] << " 3: " << sargs[3] << " 4: " << sargs[4] << " 5: " << sargs[5] << std::endl;
+		ss << message.getRemoteIp() << " adr:" << oscAddress;
+		for (int a = 0; a < MAX; a++)
+		{
+			ss << a << ": " << sargs[a];
+		}
+		ss << std::endl;
 		mParameterBag->OSCMsg = ss.str();
 		mParameterBag->newOSCMsg = true;
 
