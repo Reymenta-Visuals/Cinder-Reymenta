@@ -59,6 +59,13 @@ namespace Reymenta
 		int							shadaIndex;
 		bool						active;
 	};
+	struct WarpFbo
+	{
+		ci::gl::FboRef				fbo;
+		int							textureIndex;
+		int							textureMode;	// 0 for input texture, 1 for shader
+		bool						active;
+	};
 	struct WarpInput
 	{
 		int							leftIndex;
@@ -79,6 +86,8 @@ namespace Reymenta
 		//! Returns Texture at index
 		ci::gl::TextureRef			getTexture(int index);
 		ci::gl::TextureRef			getMixTexture(int index);
+		ci::gl::TextureRef			getWarpTexture(int index);
+		WarpFbo						getWarpFbo(int index) { return mWarpFbos[min((MAX)-1, index)]; };
 		ci::gl::TextureRef			getFboTexture(int index);
 		int							getInputTexturesCount() { return inputTextures.size(); };
 		ci::gl::TextureRef			getSenderTexture(int index);
@@ -98,6 +107,7 @@ namespace Reymenta
 		char*						getSenderName(int index);
 		void						renderShadersToFbo();
 		void						renderMixesToFbo();
+		void						renderWarpFbos();
 		void						saveThumb();
 		void						setShadaIndex(int index);
 		void						setInputTextureIndex(int index);
@@ -107,6 +117,7 @@ namespace Reymenta
 		void						setWarpInputModeRight(int index, bool shaderMode);
 		//int							getShadaFbosSize() { return mShadaFbos.size(); };
 		void						addShadaFbos();
+		void						createWarpFbos();
 		void						createWarpInputs();
 		//! warpInputs: vector of warp input textures/shader fbo texture
 		WarpInput					warpInputs[MAX];
@@ -131,6 +142,8 @@ namespace Reymenta
 		ParameterBagRef				mParameterBag;
 		//! mixes fbos
 		gl::FboRef					mMixesFbos[MAX];
+		//! warp fbos
+		WarpFbo						mWarpFbos[MAX];
 		//! shader fbos
 		ShadaFbo					mShadaFbos[MAX];
 		//! Shaders

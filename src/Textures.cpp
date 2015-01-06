@@ -45,9 +45,35 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 		mMixesFbos[a] = gl::Fbo::create(mParameterBag->mFboWidth, mParameterBag->mFboHeight, fboFormat.depthTexture());
 	}
 	createWarpInputs();
+	createWarpFbos();
 	log->logTimedString("Textures constructor end");
 }
-
+void Textures::createWarpFbos()
+{
+	for (int a = 0; a < MAX; a++)
+	{
+		WarpFbo newWarpFbo;
+		newWarpFbo.textureIndex = 0;
+		newWarpFbo.textureMode = 1;
+		newWarpFbo.fbo = gl::Fbo::create(mParameterBag->mFboWidth, mParameterBag->mFboHeight, fboFormat.depthTexture());
+		if (a == 0) newWarpFbo.active = true; else newWarpFbo.active = false;
+		mWarpFbos[a] = newWarpFbo;
+	}
+}
+void Textures::createWarpInputs()
+{
+	for (int a = 0; a < MAX; a++)
+	{
+		WarpInput newWarpInput;
+		newWarpInput.leftIndex = 0;
+		newWarpInput.leftMode = 1;
+		newWarpInput.rightIndex = 0;
+		newWarpInput.rightMode = 1;
+		newWarpInput.iCrossfade = 0.5;
+		newWarpInput.hasTexture = false;
+		warpInputs[a] = newWarpInput;
+	}
+}
 void Textures::loadFileFromAssets(string &fileName)
 {
 	string ext = "";
@@ -124,20 +150,6 @@ void Textures::fileDrop(string mFile)
 	}
 }
 
-void Textures::createWarpInputs()
-{
-	for (int a = 0; a < MAX; a++)
-	{
-		WarpInput newWarpInput;
-		newWarpInput.leftIndex = 0;
-		newWarpInput.leftMode = 0;
-		newWarpInput.rightIndex = 0;
-		newWarpInput.rightMode = 0;
-		newWarpInput.iCrossfade = 0.5;
-		newWarpInput.hasTexture = false;
-		warpInputs[a] = newWarpInput;
-	}
-}
 void Textures::setShadaIndex(int index)
 {
 	log->logTimedString("setShadaIndex:" + toString(index));
@@ -372,6 +384,11 @@ ci::gl::TextureRef Textures::getMixTexture(int index)
 	if (index > MAX - 1) index = MAX - 1;
 	return mMixesFbos[index]->getColorTexture();
 }
+ci::gl::TextureRef Textures::getWarpTexture(int index)
+{
+	if (index > MAX - 1) index = MAX - 1;
+	return mWarpFbos[index].fbo->getColorTexture();
+}
 ci::gl::TextureRef Textures::getFboTexture(int index)
 {
 	if (index > MAX - 1) index = MAX - 1;
@@ -407,43 +424,73 @@ void Textures::renderMixesToFbo()
 	int i = 0;
 	for (auto &mFbo : mMixesFbos)
 	{
-		if (mFbo.active)
+		// this will restore the old framebuffer binding when we leave this function
+		// on non-OpenGL ES platforms, you can just call mFbo->unbindFramebuffer() at the end of the function
+		// but this will restore the "screen" FBO on OpenGL ES, and does the right thing on both platforms
+		gl::ScopedFramebuffer fbScp(mFbo);
+		// clear out the FBO with black
+		gl::clear(ColorA(0.0f, 0.0f, 0.0f, 0.0f));
+
+		// setup the viewport to match the dimensions of the FBO
+		gl::ScopedViewport scpVp(ivec2(0.0), mFbo->getSize());
+
+		gl::ScopedGlslProg shader(mShaders->getMixShader());
+
+		if (warpInputs[i].leftMode == 0)
 		{
-			// this will restore the old framebuffer binding when we leave this function
-			// on non-OpenGL ES platforms, you can just call mFbo->unbindFramebuffer() at the end of the function
-			// but this will restore the "screen" FBO on OpenGL ES, and does the right thing on both platforms
-			gl::ScopedFramebuffer fbScp(mFbo);
+			// 0 for input texture
+			getSenderTexture(warpInputs[i].leftIndex)->bind(0);
+		}
+		else
+		{
+			// 1 for shader
+			getFboTexture(warpInputs[i].leftIndex)->bind(0);
+		}
+		if (warpInputs[i].rightMode == 0)
+		{
+			// 0 for input texture
+			getSenderTexture(warpInputs[i].rightIndex)->bind(1);
+		}
+		else
+		{
+			// 1 for shader
+			getFboTexture(warpInputs[i].rightIndex)->bind(1);
+		}
+		mShaders->getMixShader()->uniform("iCrossfade", warpInputs[i].iCrossfade);
+		//warpInputs[i].iCrossfade += 0.1;
+		//if (warpInputs[i].iCrossfade > 1.0) warpInputs[i].iCrossfade = 0.0;
+		gl::draw(mMesh);
+
+		i++;
+	}
+}
+void Textures::renderWarpFbos()
+{
+	int i = 0;
+	for (auto &mWarp : mWarpFbos)
+	{
+		if (mWarp.active)
+		{
+			gl::ScopedFramebuffer fbScp(mWarp.fbo);
 			// clear out the FBO with black
 			gl::clear(ColorA(0.0f, 0.0f, 0.0f, 0.0f));
 
 			// setup the viewport to match the dimensions of the FBO
-			gl::ScopedViewport scpVp(ivec2(0.0), mFbo->getSize());
+			gl::ScopedViewport scpVp(ivec2(0.0), mWarp.fbo->getSize());
 
-			gl::ScopedGlslProg shader(mShaders->getMixShader());
+			gl::ScopedGlslProg shader(mShaders->getWarpShader());
 
-			if (warpInputs[i].leftMode == 0)
+			if (mWarp.textureMode == 0)
 			{
 				// 0 for input texture
-				getSenderTexture(warpInputs[i].leftIndex)->bind(0);
+				getSenderTexture(mWarp.textureIndex)->bind(0);
 			}
 			else
 			{
 				// 1 for shader
-				getFboTexture(warpInputs[i].leftIndex)->bind(0);
+				getFboTexture(mWarp.textureIndex)->bind(0);
 			}
-			if (warpInputs[i].rightMode == 0)
-			{
-				// 0 for input texture
-				getSenderTexture(warpInputs[i].rightIndex)->bind(1);
-			}
-			else
-			{
-				// 1 for shader
-				getFboTexture(warpInputs[i].rightIndex)->bind(1);
-			}
-			mShaders->getMixShader()->uniform("iCrossfade", warpInputs[i].iCrossfade);
-			//warpInputs[i].iCrossfade += 0.1;
-			//if (warpInputs[i].iCrossfade > 1.0) warpInputs[i].iCrossfade = 0.0;
+			mShaders->getWarpShader()->uniform("iAlpha", mParameterBag->controlValues[4]);
 			gl::draw(mMesh);
 
 			i++;
@@ -455,7 +502,10 @@ void Textures::draw()
 	//! 1 render the active shaders to Fbos
 	renderShadersToFbo();
 	//! 2 render mixes of shader Fbos as texture, images, Spout sources as Fbos
-	renderMixesToFbo();
+	//renderMixesToFbo();
+	//! 3 render warp Fbos as texture, images, Spout sources as Fbos
+	renderWarpFbos();
+
 	if (mMovie)
 	{
 		mMovie->draw();

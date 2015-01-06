@@ -27,11 +27,15 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	fileName = "mix.glsl";
 	localFile = getAssetPath("") / fileName;
 	loadPixelFragmentShader(localFile.string());
+	//! load warp shader
+	fileName = "warp.glsl";
+	localFile = getAssetPath("") / fileName;
+	loadPixelFragmentShader(localFile.string());
 	//! init some shaders
 	for (size_t m = 0; m < MAX; m++)
 	{
 		mFragmentShaders[m].name = "def";
-		mFragmentShaders[m].active = false;
+		if (m==0) mFragmentShaders[m].active = true; else mFragmentShaders[m].active = false;
 		mFragmentShaders[m].prog = gl::GlslProg::create(gl::GlslProg::Format().vertex(defaultVertexShader.c_str()).fragment(defaultFragmentShader.c_str()));
 		fileName = toString(m) + ".glsl";
 		localFile = getAssetPath("") / fileName;
@@ -59,6 +63,11 @@ void Shaders::resize()
 	if (mixMap.find("iResolution") != mixMap.end())
 	{
 		mMixShader->uniform("iResolution", vec3(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 0.0f));
+	}
+	auto warpMap = mWarpShader->getActiveUniformTypes();
+	if (warpMap.find("iResolution") != warpMap.end())
+	{
+		mWarpShader->uniform("iResolution", vec3(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, 0.0f));
 	}
 
 }
@@ -170,6 +179,9 @@ void Shaders::update()
 	if (mixMap.find("iAlpha") != mixMap.end())				mMixShader->uniform("iAlpha", mParameterBag->controlValues[4]);
 	if (mixMap.find("iChannel0") != mixMap.end())			mMixShader->uniform("iChannel0", 0);
 	if (mixMap.find("iChannel1") != mixMap.end())			mMixShader->uniform("iChannel1", 1);
+	auto warpMap = mWarpShader->getActiveUniformTypes();
+	if (warpMap.find("iAlpha") != warpMap.end())			mWarpShader->uniform("iAlpha", mParameterBag->controlValues[4]);
+	if (warpMap.find("iChannel0") != warpMap.end())			mWarpShader->uniform("iChannel0", 0);
 }
 bool Shaders::setGLSLString(string pixelFrag, string fileName)
 {
@@ -192,6 +204,18 @@ bool Shaders::setGLSLString(string pixelFrag, string fileName)
 			}
 			if (mixMap.find("iResolution") != mixMap.end()) mMixShader->uniform("iResolution", vec3(getWindowWidth(), getWindowHeight(), 0.0f));
 			
+		}
+		else if (fileName == "warp.glsl")
+		{
+			mWarpShader = gl::GlslProg::create(gl::GlslProg::Format().vertex(defaultVertexShader.c_str()).fragment(currentFrag.c_str()));
+			log->logTimedString("setGLSLString success for mWarpShader ");
+			auto warpMap = mWarpShader->getActiveUniformTypes();
+			for (const auto &pair : warpMap)
+			{
+				log->logTimedString(pair.first);
+			}
+			if (warpMap.find("iResolution") != warpMap.end()) mWarpShader->uniform("iResolution", vec3(getWindowWidth(), getWindowHeight(), 0.0f));
+
 		}
 		else
 		{

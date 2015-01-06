@@ -222,7 +222,14 @@ void OSC::update()
 			// from midi2OSC
 			for (int a = 0; a < MAX; a++)
 			{
-				tracks[a] = sargs[a];
+				if (sargs[a] == "")
+				{
+					tracks[a] = "default.glsl";
+				}
+				else
+				{
+					tracks[a] = sargs[a];
+				}
 			}
 		}
 		else if (oscAddress == "/texture")
