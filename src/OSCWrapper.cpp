@@ -169,6 +169,8 @@ void OSC::update()
 		if (oscAddress == "/cc")
 		{
 			mParameterBag->controlValues[iargs[0]] = fargs[1];
+			if (iargs[0] == 41) mTextures->playMovie();
+			if (iargs[0] == 42) mTextures->stopMovie();
 		}
 		else if (oscAddress == "/fs")
 		{

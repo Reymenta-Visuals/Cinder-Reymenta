@@ -79,6 +79,13 @@ void Textures::stopMovie(bool remove)
 		if (remove) mMovie.reset();
 	}
 }
+void Textures::playMovie()
+{
+	if (mMovie)
+	{
+		mMovie->play();
+	}
+}
 
 void Textures::loadMovie(const fs::path &movie_path)
 {

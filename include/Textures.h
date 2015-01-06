@@ -115,6 +115,7 @@ namespace Reymenta
 		void						loadMovie(const fs::path &movie_path);
 		void						loadFileFromAssets(string &fileName);
 		void						stopMovie(bool remove = false);
+		void						playMovie();
 		// manage fileDrop
 		void						fileDrop(string mFile);
 	private:
