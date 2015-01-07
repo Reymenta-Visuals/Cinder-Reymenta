@@ -243,7 +243,7 @@ void Textures::addShadaFbos()
 	{
 		mShadaFbos[a].fbo = gl::Fbo::create(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, fboFormat.depthTexture());
 		mShadaFbos[a].shadaIndex = a;
-		if ( a == 0 ) mShadaFbos[a].active = true; else mShadaFbos[a].active = false;
+		if (a == 0) mShadaFbos[a].active = true; else mShadaFbos[a].active = false;
 	}
 }
 
@@ -482,11 +482,11 @@ void Textures::renderWarpFbos()
 			gl::ScopedViewport scpVp(ivec2(0.0), mWarp.fbo->getSize());
 
 			gl::ScopedGlslProg shader(mShaders->getWarpShader());
-			if (mMovie && mMovie->isPlaying())
+			if (mMovie && mMovie->isPlaying() && mMovie->getTexture())
 			{
-				mMovie->getTexture();
+				mMovie->getTexture()->bind(0);
 			}
-			if (mWarp.textureMode == 0)
+			else if (mWarp.textureMode == 0)
 			{
 				// 0 for input texture
 				getSenderTexture(mWarp.textureIndex)->bind(0);
@@ -514,7 +514,7 @@ void Textures::draw()
 
 	if (mMovie)
 	{
-		mMovie->draw();
+		//mMovie->draw();
 	}
 }
 
