@@ -48,9 +48,11 @@ namespace Reymenta
 	};
 	struct ShadaFbo
 	{
-		ci::gl::Fbo				fbo;
+		ci::gl::Fbo					fbo;
 		int							shadaIndex;
+		bool						active;
 	};
+
 	struct WarpInput
 	{
 		int							leftIndex;
@@ -59,6 +61,7 @@ namespace Reymenta
 		int							rightMode;		// 0 for input texture, 1 for shader
 		float						iCrossfade;		// from 0 left to 1 right
 		bool						hasTexture;		// has already a texture? if not the first one is put on left and right
+		bool						active;
 	};
 
 	class Textures {
@@ -71,6 +74,9 @@ namespace Reymenta
 		}
 		void						setTexture( int index, string fileName );
 		ci::gl::Texture				getTexture(int index);
+		ci::gl::Texture				getWarpTexture(int index);
+		WarpFbo						getWarpFbo(int index) { return mParameterBag->mWarpFbos[min((mParameterBag->MAX)-1, index)]; };
+		void						renderWarpFbos();
 		void						setTexture(int index, ci::gl::Texture texture);
 		ci::gl::Texture				getFboTexture(int index);
 		
@@ -103,7 +109,7 @@ namespace Reymenta
 		// fbo
 		vector<gl::Fbo>				mFbos;
 		//! mixes fbos
-		vector<gl::Fbo>			mMixesFbos;
+		vector<gl::Fbo>				mMixesFbos;
 		//! shader fbos
 		vector<ShadaFbo>			mShadaFbos;
 		// shaders

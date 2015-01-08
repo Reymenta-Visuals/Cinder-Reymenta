@@ -107,8 +107,9 @@ void OSC::update()
 	{
 		osc::Message message;
 		mOSCReceiver.getNextMessage(&message);
-		if (mParameterBag->mIsOSCSender) mOSCSender.sendMessage(message);
-		if (mParameterBag->mIsOSCSender) mOSCSender2.sendMessage(message);
+		// avoid LiveOSC infinite loop
+		if (mParameterBag->mIsOSCSender && mParameterBag->mOSCDestinationPort != 9000) mOSCSender.sendMessage(message);
+		if (mParameterBag->mIsOSCSender && mParameterBag->mOSCDestinationPort2 != 9000) mOSCSender2.sendMessage(message);
 		for (int a = 0; a < MAX; a++)
 		{
 			iargs[a] = 0;
@@ -160,6 +161,31 @@ void OSC::update()
 		if (oscAddress == "/cc")
 		{
 			mParameterBag->controlValues[iargs[0]] = fargs[1];
+			
+			if (iargs[0] > 19 && iargs[0] < 29)
+			{
+				//select index
+				mParameterBag->selectedWarp = iargs[0];
+			}
+			if (iargs[0]>29 && iargs[0] < 39)
+			{
+				//select input
+				mParameterBag->mWarpFbos[mParameterBag->selectedWarp].textureIndex = iargs[0] - 30;
+				// activate
+				mParameterBag->mWarpFbos[mParameterBag->selectedWarp].active = !mParameterBag->mWarpFbos[mParameterBag->selectedWarp].active;
+			}
+		}
+		else if (oscAddress == "/live/beat")
+		{
+			mParameterBag->mBeat = iargs[0];
+		}
+		else if (oscAddress == "/live/tempo")
+		{
+			mParameterBag->mTempo = fargs[0];
+		}
+		else if (oscAddress == "/live/track/meter")
+		{
+			mParameterBag->maxVolume = fargs[2];
 		}
 		else if (oscAddress == "/live/name/trackblock")
 		{

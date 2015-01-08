@@ -5,6 +5,7 @@
 #include "cinder/Timeline.h"
 #include "cinder/Json.h"
 #include "cinder/Xml.h"
+#include "cinder/gl/Fbo.h"
 
 // webcam
 #include "cinder/Capture.h"
@@ -21,12 +22,22 @@ namespace Reymenta {
 
 	typedef std::shared_ptr<class ParameterBag> ParameterBagRef;
 
+
+	struct WarpFbo
+	{
+		ci::gl::Fbo					fbo;
+		int							textureIndex;
+		int							textureMode;	// 0 for input texture, 1 for shader
+		bool						active;
+	};
+
 	class ParameterBag
 	{
 	public:
 		ParameterBag();
 		static ParameterBagRef create();
 
+		static const int			MAX = 16;
 		bool save();
 		bool restore();
 		void reset();
@@ -132,8 +143,10 @@ namespace Reymenta {
 		float						*mData;
 		float						maxVolume;
 		bool						mUseLineIn;
+		bool						mIsPlaying;
 		float						mAudioMultFactor;
 		float						iFreqs[4];
+		int							mBeat;
 
 		// z EyePointZ
 		float						defaultEyePointZ;
@@ -162,7 +175,9 @@ namespace Reymenta {
 		// indexes for textures
 		map<int, int>				iChannels;
 		// fbo indexes for warping
-		map<int, int>				iWarpFboChannels;
+		//map<int, int>				iWarpFboChannels;
+		//! warp fbos
+		WarpFbo						mWarpFbos[MAX];
 		int							selectedWarp;
 		int							mWarpCount;
 		bool						mOptimizeUI;//mDirectRender, 

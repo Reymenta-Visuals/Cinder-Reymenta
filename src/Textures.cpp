@@ -28,6 +28,7 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	mFbos[mParameterBag->mAudioFboIndex] = gl::Fbo(mParameterBag->mFboWidth * 2, mParameterBag->mFboHeight * 2);//1280x960
 	mFbos[mParameterBag->mAudioFboIndex].getTexture(0).setFlipped(true);
 
+
 	for (int i = 0; i < 1024; ++i) dTexture[i] = (unsigned char)(Rand::randUint() & 0xFF);
 
 	// store it as a 512x2 texture in the first texture
@@ -39,6 +40,7 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	}
 
 }
+
 void Textures::createWarpInput()
 {
 	WarpInput newWarpInput;
@@ -103,6 +105,11 @@ ci::gl::Texture Textures::getTexture(int index)
 	if (index > sTextures.size() - 1) index = sTextures.size() - 1;
 	return sTextures[index];
 }
+ci::gl::Texture Textures::getWarpTexture(int index)
+{
+	if (index > mParameterBag->MAX - 1) index = mParameterBag->MAX - 1;
+	return mParameterBag->mWarpFbos[index].fbo.getTexture();
+}
 void Textures::setTexture(int index, ci::gl::Texture texture)
 {
 	if (index < sTextures.size())
@@ -140,8 +147,26 @@ void Textures::update()
 {
 
 }
+void Textures::renderWarpFbos()
+{
+/*TODO	mShaders->getWarpShader();
+			if (mWarp.textureMode == 0)
+			{
+				// 0 for input texture
+				getSenderTexture(mWarp.textureIndex)->bind(0);
+			}
+			else
+			{
+				// 1 for shader
+				getFboTexture(mWarp.textureIndex)->bind(0);
+			}
+			mShaders->getWarpShader()->uniform("iAlpha", mParameterBag->controlValues[4]);
+			gl::draw(mMesh);
+*/
+}
 void Textures::draw()
 {
+	renderWarpFbos();
 	/**********************************************
 	* library FBOs
 	*/

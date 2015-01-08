@@ -28,7 +28,10 @@ namespace Reymenta
 		{
 			return shared_ptr<Batchass>(new Batchass(aParameterBag));
 		}
+		void						createWarpFbos();
 		void						getWindowsResolution();
+		float						formatFloat(float f);
+
 	private:
 		// parameters
 		ParameterBagRef				mParameterBag;
