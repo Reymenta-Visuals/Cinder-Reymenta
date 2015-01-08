@@ -63,7 +63,7 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 	memset(mChannelRight.getData(), 0, mChannelRight.getRowBytes() * kHistory);
 
 	// create texture format (wrap the y-axis, clamp the x-axis)
-	mTextureFormat.setWrapS(GL_CLAMP);
+	/*mTextureFormat.setWrapS(GL_CLAMP);
 	mTextureFormat.setWrapT(GL_REPEAT);
 	mTextureFormat.setMinFilter(GL_LINEAR);
 	mTextureFormat.setMagFilter(GL_LINEAR);
@@ -81,7 +81,7 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 	catch (const std::exception& e) {
 		log->logTimedString("Could not compile shaders/spectrum2.frag-vert");
 
-	}
+	}*/
 	currentShaderIndex = 0;
 	// create static mesh (all animation is done in the vertex shader)
 	std::vector<vec3>	vertices;
@@ -122,7 +122,7 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 		}
 	}
 
-	gl::VboMesh::Layout layout;
+	/*gl::VboMesh::Layout layout;
 	layout.setStaticPositions();
 	layout.setStaticColorsRGB();
 	layout.setStaticIndices();
@@ -132,7 +132,7 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 	mMesh.bufferPositions(vertices);
 	mMesh.bufferColorsRGB(colors);
 	mMesh.bufferIndices(indices);
-	mMesh.bufferTexCoords2d(0, coords);
+	mMesh.bufferTexCoords2d(0, coords);*/
 
 
 	mIsMouseDown = false;
@@ -246,7 +246,7 @@ void AudioWrapper::update()
 
 		}
 		// store it as a 512x2 texture in UPDATE only!!
-		mTextures->setAudioTexture(signal);
+		mTextures->setAudioTexture(0, signal);
 	}
 
 	// Paul Houx
@@ -282,10 +282,9 @@ void AudioWrapper::update()
 		vec3 interest = vec3(kWidth * x, kHeight * y, kHeight * z);
 
 		// gradually move to eye position and center of interest
-		mCamera.setEyePoint(eye.lerp(0.995f, mCamera.getEyePoint()));
-		mCamera.setCenterOfInterestPoint(interest.lerp(0.990f, mCamera.getCenterOfInterestPoint()));
-		//mParameterBag->mCamera.setEyePoint(eye.lerp(0.995f, mCamera.getEyePoint()));
-		//mParameterBag->mCamera.setCenterOfInterestPoint(interest.lerp(0.990f, mCamera.getCenterOfInterestPoint()));
+		//mCamera.setEyePoint(eye.lerp(0.995f, mCamera.getEyePoint()));
+		//mCamera.setCenterOfInterestPoint(interest.lerp(0.990f, mCamera.getCenterOfInterestPoint()));
+
 	}
 
 }
@@ -293,7 +292,7 @@ void AudioWrapper::update()
 void AudioWrapper::draw()
 {
 	// Set up window	
-	mTextures->getFbo(mParameterBag->mAudioFboIndex).bindFramebuffer();
+	/*mTextures->getFbo(mParameterBag->mAudioFboIndex).bindFramebuffer();
 	gl::setViewport(mTextures->getFbo(mParameterBag->mAudioFboIndex).getBounds());	
 
 	gl::clear();
@@ -341,7 +340,7 @@ void AudioWrapper::draw()
 		mShaders[currentShaderIndex].unbind();
 	}
 	gl::popMatrices();
-	mTextures->getFbo(mParameterBag->mAudioFboIndex).unbindFramebuffer();
+	mTextures->getFbo(mParameterBag->mAudioFboIndex).unbindFramebuffer();*/
 }
 
 void AudioWrapper::mouseDown(MouseEvent event)

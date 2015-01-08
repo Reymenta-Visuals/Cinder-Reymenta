@@ -45,10 +45,10 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 		mMixesFbos[a] = gl::Fbo::create(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, fboFormat.depthTexture());
 	}
 	createWarpInputs();
-	createWarpFbos();
+	//createWarpFbos();
 	log->logTimedString("Textures constructor end");
 }
-void Textures::createWarpFbos()
+/*void Textures::createWarpFbos()
 {
 	for (int a = 0; a < MAX; a++)
 	{
@@ -59,7 +59,7 @@ void Textures::createWarpFbos()
 		if (a == 0) newWarpFbo.active = true; else newWarpFbo.active = false;
 		mWarpFbos[a] = newWarpFbo;
 	}
-}
+}*/
 void Textures::createWarpInputs()
 {
 	for (int a = 0; a < MAX; a++)
@@ -142,9 +142,9 @@ void Textures::fileDrop(string mFile)
 			warpInputs[0].rightMode = 1;
 			warpInputs[0].iCrossfade = 1.0;
 			warpInputs[0].active = true;
-			mWarpFbos[0].textureIndex = 0;
-			mWarpFbos[0].textureMode = 1;
-			mWarpFbos[0].active = true;
+			mParameterBag->mWarpFbos[0].textureIndex = 0;
+			mParameterBag->mWarpFbos[0].textureMode = 1;
+			mParameterBag->mWarpFbos[0].active = true;
 		}
 	}
 	else if (ext == "mov")
@@ -390,7 +390,7 @@ ci::gl::TextureRef Textures::getMixTexture(int index)
 ci::gl::TextureRef Textures::getWarpTexture(int index)
 {
 	if (index > MAX - 1) index = MAX - 1;
-	return mWarpFbos[index].fbo->getColorTexture();
+	return mParameterBag->mWarpFbos[index].fbo->getColorTexture();
 }
 ci::gl::TextureRef Textures::getFboTexture(int index)
 {
@@ -470,7 +470,7 @@ void Textures::renderMixesToFbo()
 void Textures::renderWarpFbos()
 {
 	int i = 0;
-	for (auto &mWarp : mWarpFbos)
+	for (auto &mWarp : mParameterBag->mWarpFbos)
 	{
 		if (mWarp.active)
 		{

@@ -7,7 +7,8 @@
 
 // parameters
 #include "ParameterBag.h"
-// shaders
+// textures
+#include "Textures.h"// shaders
 #include "Shaders.h"
 // logger
 #include "Logger.h"
@@ -28,6 +29,7 @@ namespace Reymenta
 		{
 			return shared_ptr<Batchass>(new Batchass(aParameterBag));
 		}
+		void						setup();
 		void						getWindowsResolution();
 		float						formatFloat(float f);
 
@@ -36,8 +38,14 @@ namespace Reymenta
 		ParameterBagRef				mParameterBag;
 		// Shaders
 		ShadersRef					mShaders;
+		// Textures
+		TexturesRef					mTextures;
 		// Logger
 		LoggerRef					log;
+		//! fboFormat
+		gl::Fbo::Format				fboFormat;
+		void						createWarpFbos();
+
 	};
 }
 

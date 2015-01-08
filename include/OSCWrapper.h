@@ -13,8 +13,6 @@ using namespace std;
 #include "Shaders.h"
 // textures
 #include "Textures.h"
-// Warps
-#include "WarpWrapper.h"
 
 namespace Reymenta 
 {
@@ -25,8 +23,8 @@ namespace Reymenta
 	{
 
 	public:
-		OSC(ParameterBagRef aParameterBag, ShadersRef aShadersRef, TexturesRef aTextures, WarpWrapperRef aWarpings);
-		static	OSCRef create(ParameterBagRef aParameterBag, ShadersRef aShadersRef, TexturesRef aTextures, WarpWrapperRef aWarpings);
+		OSC(ParameterBagRef aParameterBag, ShadersRef aShadersRef, TexturesRef aTextures);
+		static	OSCRef create(ParameterBagRef aParameterBag, ShadersRef aShadersRef, TexturesRef aTextures);
 
 		void	update();
 
@@ -46,8 +44,6 @@ namespace Reymenta
 		ShadersRef					mShaders;
 		// textures
 		TexturesRef					mTextures;
-		// warps
-		WarpWrapperRef				mWarpings;
 
 		osc::Listener 				mOSCReceiver;
 		osc::Sender					mOSCSender;

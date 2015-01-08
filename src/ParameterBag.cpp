@@ -303,11 +303,11 @@ void ParameterBag::reset()
 	multFactor = 126.0;
 	currentSelectedIndex = 0;
 	iChannels[0] = 1;
-	iWarpFboChannels[0] = 0;
+	//iWarpFboChannels[0] = 0;
 	for (int a = 1; a < 8; a++)
 	{
 		iChannels[a] = a;
-		iWarpFboChannels[a] = a;
+		//iWarpFboChannels[a] = a;
 	}
 
 	//iWarpFboChannels[2] = 1;

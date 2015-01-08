@@ -13,9 +13,30 @@ float Batchass::formatFloat(float f)
 {
 	int i;
 	f *= 100;
-	i = (int)f;
-	//f = (float)();
+	i = ((int)f) / 100;
 	return (float)i;
+}
+void Batchass::setup()
+{
+	// instanciate the Shaders class, must not be in prepareSettings
+	mShaders = Shaders::create(mParameterBag);
+
+	// instanciate the textures class
+	mTextures = Textures::create(mParameterBag, mShaders);
+
+	createWarpFbos();
+}
+void Batchass::createWarpFbos()
+{
+	for (int a = 0; a < mParameterBag->MAX; a++)
+	{
+		WarpFbo newWarpFbo;
+		newWarpFbo.textureIndex = 0;
+		newWarpFbo.textureMode = 1;
+		newWarpFbo.fbo = gl::Fbo::create(mParameterBag->mFboWidth, mParameterBag->mFboHeight, fboFormat.depthTexture());
+		if (a == 0) newWarpFbo.active = true; else newWarpFbo.active = false;
+		mParameterBag->mWarpFbos[a] = newWarpFbo;
+	}
 }
 void Batchass::getWindowsResolution()
 {

@@ -75,10 +75,10 @@ namespace Reymenta
 		MayaCamUI			mMayaCam;
 		vector<gl::GlslProg> mShaders;
 		int					currentShaderIndex;
-		gl::Texture			mTextureLeft;
+		/*gl::Texture			mTextureLeft;
 		gl::Texture			mTextureRight;
 		gl::Texture::Format	mTextureFormat;
-		gl::VboMesh			mMesh;
+		gl::VboMesh			mMesh;*/
 		uint32_t			mOffset;
 		bool				mIsMouseDown;
 		bool				mIsAudioPlaying;

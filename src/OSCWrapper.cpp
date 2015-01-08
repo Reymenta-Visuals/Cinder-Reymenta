@@ -2,12 +2,11 @@
 
 using namespace Reymenta;
 
-OSC::OSC(ParameterBagRef aParameterBag, ShadersRef aShadersRef, TexturesRef aTextures, WarpWrapperRef aWarpings)
+OSC::OSC(ParameterBagRef aParameterBag, ShadersRef aShadersRef, TexturesRef aTextures)
 {
 	mParameterBag = aParameterBag;
 	mShaders = aShadersRef;
 	mTextures = aTextures;
-	mWarpings = aWarpings;
 	mParameterBag = aParameterBag;
 	for (int i = 0; i < 20; i++)
 	{
@@ -24,9 +23,9 @@ OSC::OSC(ParameterBagRef aParameterBag, ShadersRef aShadersRef, TexturesRef aTex
 	mOSCReceiver.setup(mParameterBag->mOSCReceiverPort);
 }
 
-OSCRef OSC::create(ParameterBagRef aParameterBag, ShadersRef aShadersRef, TexturesRef aTextures, WarpWrapperRef aWarpings)
+OSCRef OSC::create(ParameterBagRef aParameterBag, ShadersRef aShadersRef, TexturesRef aTextures)
 {
-	return shared_ptr<OSC>(new OSC(aParameterBag, aShadersRef, aTextures, aWarpings));
+	return shared_ptr<OSC>(new OSC(aParameterBag, aShadersRef, aTextures));
 }
 
 void OSC::setupSender()
@@ -235,8 +234,8 @@ void OSC::update()
 		else if (oscAddress == "/texture")
 		{
 			mTextures->setInput(iargs[0], iargs[1], iargs[2]);
-		}
-		else if (oscAddress == "/createwarps")
+			/*
+					else if (oscAddress == "/createwarps")
 		{
 			mWarpings->createWarps(iargs[0]);
 		}
@@ -251,6 +250,9 @@ void OSC::update()
 		else if (oscAddress == "/crossfade")
 		{
 			mWarpings->setCrossfadeForSelectedWarp(fargs[0]);
+		}
+
+			*/
 		}
 		else if (oscAddress == "/sumMovement")
 		{

@@ -21,15 +21,26 @@ namespace Reymenta {
 
 	typedef std::shared_ptr<class ParameterBag> ParameterBagRef;
 
+	struct WarpFbo
+	{
+		ci::gl::FboRef				fbo;
+		int							textureIndex;
+		int							textureMode;	// 0 for input texture, 1 for shader
+		bool						active;
+	};
+
 	class ParameterBag
 	{
 	public:
 		ParameterBag();
 		static ParameterBagRef create();
 
-		bool save();
-		bool restore();
-		void reset();
+		//! maximum number of fbos, shaders, textures
+		static const int			MAX = 16;
+
+		bool						save();
+		bool						restore();
+		void						reset();
 
 		std::string mParamString;
 		//fonts
@@ -161,7 +172,9 @@ namespace Reymenta {
 		// indexes for textures
 		map<int, int>				iChannels;
 		// fbo indexes for warping
-		map<int, int>				iWarpFboChannels;
+		//! warp fbos
+		WarpFbo						mWarpFbos[MAX];
+		//map<int, int>				iWarpFboChannels;
 		int							mCurrentShadaFboIndex;
 		int							selectedWarp;
 		int							mWarpCount;
@@ -179,8 +192,7 @@ namespace Reymenta {
 		MayaCamUI					mMayaCam;
 		vec2						mCamEyePointXY;
 		float						mCamEyePointZ;
-		//! maximum number of fbos, shaders, textures
-		static const int			MAX = 16;
+
 	private:
 		const string settingsFileName = "Settings.xml";
 	};
