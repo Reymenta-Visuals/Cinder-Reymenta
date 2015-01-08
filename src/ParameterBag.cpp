@@ -85,6 +85,14 @@ bool ParameterBag::save()
 	OSCDestinationHost.setAttribute("value", toString(mOSCDestinationHost));
 	settings.push_back(OSCDestinationHost);
 
+	XmlTree OSCDestinationPort2("OSCDestinationPort2", "");
+	OSCDestinationPort2.setAttribute("value", toString(mOSCDestinationPort2));
+	settings.push_back(OSCDestinationPort2);
+
+	XmlTree OSCDestinationHost2("OSCDestinationHost2", "");
+	OSCDestinationHost2.setAttribute("value", toString(mOSCDestinationHost2));
+	settings.push_back(OSCDestinationHost2);
+
 	XmlTree MIDIOpenAllInputPorts("MIDIOpenAllInputPorts", "");
 	MIDIOpenAllInputPorts.setAttribute("value", toString(mMIDIOpenAllInputPorts));
 	settings.push_back(MIDIOpenAllInputPorts);
@@ -148,6 +156,14 @@ bool ParameterBag::restore()
 			if (settings.hasChild("OSCDestinationHost")) {
 				XmlTree OSCDestinationHost = settings.getChild("OSCDestinationHost");
 				mOSCDestinationHost = OSCDestinationHost.getAttributeValue<string>("value");
+			}
+			if (settings.hasChild("OSCDestinationPort2")) {
+				XmlTree OSCDestinationPort2 = settings.getChild("OSCDestinationPort2");
+				mOSCDestinationPort2 = OSCDestinationPort2.getAttributeValue<int>("value");
+			}
+			if (settings.hasChild("OSCDestinationHost2")) {
+				XmlTree OSCDestinationHost2 = settings.getChild("OSCDestinationHost2");
+				mOSCDestinationHost2 = OSCDestinationHost2.getAttributeValue<string>("value");
 			}
 			if (settings.hasChild("MIDIOpenAllInputPorts")) {
 				XmlTree MIDIOpenAllInputPorts = settings.getChild("MIDIOpenAllInputPorts");
@@ -234,6 +250,8 @@ void ParameterBag::reset()
 	// OSC
 	mOSCDestinationHost = "127.0.0.1";
 	mOSCDestinationPort = 7001;
+	mOSCDestinationHost = "127.0.0.1";
+	mOSCDestinationPort = 7002;
 	mOSCReceiverPort = 7000;
 	OSCMsg = "";
 	newOSCMsg = false;

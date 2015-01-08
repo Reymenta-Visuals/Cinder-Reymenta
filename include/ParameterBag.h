@@ -42,6 +42,8 @@ namespace Reymenta {
 		float						mCodeEditorWidth, mCodeEditorHeight;
 		std::string					mOSCDestinationHost;
 		int							mOSCDestinationPort;
+		std::string					mOSCDestinationHost2;
+		int							mOSCDestinationPort2;
 		int							mOSCReceiverPort;
 		std::string					OSCMsg;
 		bool						newOSCMsg;

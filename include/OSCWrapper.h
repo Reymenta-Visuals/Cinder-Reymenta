@@ -37,6 +37,7 @@ namespace Reymenta
 
 		osc::Listener 				mOSCReceiver;
 		osc::Sender					mOSCSender;
+		osc::Sender					mOSCSender2;
 
 		static const int			MAX = 16;
 

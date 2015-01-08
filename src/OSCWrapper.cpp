@@ -11,6 +11,7 @@ OSC::OSC(ParameterBagRef aParameterBag)
 	}
 	// OSC sender with broadcast = true
 	mOSCSender.setup(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort, true);
+	mOSCSender2.setup(mParameterBag->mOSCDestinationHost2, mParameterBag->mOSCDestinationPort2, true);
 	// OSC receiver
 	mOSCReceiver.setup(mParameterBag->mOSCReceiverPort);
 }
@@ -23,6 +24,7 @@ void OSC::setupSender()
 {
 	// OSC sender with broadcast = true
 	mOSCSender.setup(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort, true);
+	mOSCSender2.setup(mParameterBag->mOSCDestinationHost2, mParameterBag->mOSCDestinationPort2, true);
 }
 void OSC::update()
 {
@@ -106,6 +108,7 @@ void OSC::update()
 		osc::Message message;
 		mOSCReceiver.getNextMessage(&message);
 		if (mParameterBag->mIsOSCSender) mOSCSender.sendMessage(message);
+		if (mParameterBag->mIsOSCSender) mOSCSender2.sendMessage(message);
 		for (int a = 0; a < MAX; a++)
 		{
 			iargs[a] = 0;
@@ -277,6 +280,7 @@ void OSC::sendOSCIntMessage(string controlType, int iarg0, int iarg1, int iarg2,
 	m.addIntArg(iarg4);
 	m.addIntArg(iarg5);
 	mOSCSender.sendMessage(m);
+	mOSCSender2.sendMessage(m);
 }
 void OSC::sendOSCStringMessage(string controlType, int iarg0, string sarg1, string sarg2, string sarg3, string sarg4, string sarg5)
 {
@@ -289,6 +293,7 @@ void OSC::sendOSCStringMessage(string controlType, int iarg0, string sarg1, stri
 	if (sarg4 != "") m.addStringArg(sarg4);
 	if (sarg5 != "") m.addStringArg(sarg5);
 	mOSCSender.sendMessage(m);
+	mOSCSender2.sendMessage(m);
 }
 void OSC::sendOSCFloatMessage(string controlType, int iarg0, float farg1, float farg2, float farg3, float farg4, float farg5)
 {
@@ -301,4 +306,5 @@ void OSC::sendOSCFloatMessage(string controlType, int iarg0, float farg1, float 
 	m.addFloatArg(farg4);
 	m.addFloatArg(farg5);
 	mOSCSender.sendMessage(m);
+	mOSCSender2.sendMessage(m);
 }
