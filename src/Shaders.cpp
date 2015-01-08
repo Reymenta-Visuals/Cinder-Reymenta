@@ -39,6 +39,30 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 		mError = string(e.what());
 		log->logTimedString("unable to load shader:" + string(e.what()));
 	}
+	//load warp shader
+	try
+	{
+		fs::path warpFragFile = getAssetPath("") / "passthru.frag";
+		if (fs::exists(warpFragFile))
+		{
+			mWarpShader = gl::GlslProg::create(loadAsset("passthru.vert"), loadFile(warpFragFile));
+		}
+		else
+		{
+			log->logTimedString("passthru.frag does not exist, should quit");
+
+		}
+	}
+	catch (gl::GlslProgCompileExc &exc)
+	{
+		mError = string(exc.what());
+		log->logTimedString("unable to load/compile shader:" + string(exc.what()));
+	}
+	catch (const std::exception &e)
+	{
+		mError = string(e.what());
+		log->logTimedString("unable to load shader:" + string(e.what()));
+	}
 	//load live shader
 	try
 	{
@@ -105,7 +129,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 		loadPixelFragmentShader(localFile.string());
 	}
 	// init with passthru shader if something goes wrong	
-	for (size_t m = mFragmentShaders.size(); m < 8; m++)
+	for (size_t m = mFragmentShaders.size(); m < mParameterBag->MAX; m++)
 	{
 		mFragmentShaders.push_back(gl::GlslProg::create(loadAsset("passthru.vert"), loadAsset("passthru.frag")));
 	}

@@ -9,6 +9,8 @@
 #include "ParameterBag.h"
 // shaders
 #include "Shaders.h"
+// textures
+#include "Textures.h"
 // logger
 #include "Logger.h"
 
@@ -28,6 +30,8 @@ namespace Reymenta
 		{
 			return shared_ptr<Batchass>(new Batchass(aParameterBag));
 		}
+		void						setup();
+		// TODO move to private when shadamixa upgraded
 		void						createWarpFbos();
 		void						getWindowsResolution();
 		float						formatFloat(float f);
@@ -37,6 +41,8 @@ namespace Reymenta
 		ParameterBagRef				mParameterBag;
 		// Shaders
 		ShadersRef					mShaders;
+		// Textures
+		TexturesRef					mTextures;
 		// Logger
 		LoggerRef					log;
 	};

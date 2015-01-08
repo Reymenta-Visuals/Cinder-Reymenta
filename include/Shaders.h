@@ -60,6 +60,7 @@ namespace Reymenta
 		bool isValidVert() { return validVert; };
 
 		gl::GlslProgRef getMixShader() { return mMixShader; };
+		gl::GlslProgRef	getWarpShader() { return mWarpShader; };
 		gl::GlslProgRef getLiveShader() { return mLiveShader; };
 		gl::GlslProgRef getShader(int aIndex) { return mFragmentShaders[aIndex]; };
 
@@ -126,6 +127,8 @@ namespace Reymenta
 		gl::GlslProgRef mMixShader;
 		// live coding shader
 		gl::GlslProgRef mLiveShader;
+		//! warp shader
+		gl::GlslProgRef				mWarpShader;
 
 	};
 }
