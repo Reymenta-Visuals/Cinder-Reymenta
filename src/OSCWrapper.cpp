@@ -161,19 +161,8 @@ void OSC::update()
 		if (oscAddress == "/cc")
 		{
 			mParameterBag->controlValues[iargs[0]] = fargs[1];
-			
-			if (iargs[0] > 19 && iargs[0] < 29)
-			{
-				//select index
-				mParameterBag->selectedWarp = iargs[0];
-			}
-			if (iargs[0]>29 && iargs[0] < 39)
-			{
-				//select input
-				mParameterBag->mWarpFbos[mParameterBag->selectedWarp].textureIndex = iargs[0] - 30;
-				// activate
-				mParameterBag->mWarpFbos[mParameterBag->selectedWarp].active = !mParameterBag->mWarpFbos[mParameterBag->selectedWarp].active;
-			}
+			updateParams(iargs[0]);
+
 		}
 		else if (oscAddress == "/live/beat")
 		{
@@ -193,6 +182,18 @@ void OSC::update()
 			{
 				tracks[a] = sargs[a];
 			}
+
+		}
+		else if (oscAddress == "/live/play")
+		{
+			osc::Message m;
+			m.setAddress("/reymenta/tracklist");
+
+			for (int a = 0; a < MAX; a++)
+			{
+				if (tracks[a] != "") m.addStringArg(tracks[a]);
+			}
+			mOSCSender.sendMessage(m);
 
 		}
 		else if (oscAddress == "/sumMovement")
@@ -333,4 +334,24 @@ void OSC::sendOSCFloatMessage(string controlType, int iarg0, float farg1, float 
 	m.addFloatArg(farg5);
 	mOSCSender.sendMessage(m);
 	mOSCSender2.sendMessage(m);
+}
+void OSC::updateAndSendOSCFloatMessage(string controlType, int iarg0, float farg1, float farg2, float farg3, float farg4, float farg5)
+{
+	updateParams(iarg0);
+	sendOSCFloatMessage(controlType, iarg0, farg1, farg2);
+}
+void OSC::updateParams(int iarg0)
+{
+	if (iarg0 > 20 && iarg0 < 29)
+	{
+		//select index
+		mParameterBag->selectedWarp = iarg0 - 21;
+	}
+	if (iarg0 >30 && iarg0 < 39)
+	{
+		//select input
+		mParameterBag->mWarpFbos[mParameterBag->selectedWarp].textureIndex = iarg0 - 31;
+		// activate
+		mParameterBag->mWarpFbos[mParameterBag->selectedWarp].active = !mParameterBag->mWarpFbos[mParameterBag->selectedWarp].active;
+	}
 }

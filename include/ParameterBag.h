@@ -22,7 +22,6 @@ namespace Reymenta {
 
 	typedef std::shared_ptr<class ParameterBag> ParameterBagRef;
 
-
 	struct WarpFbo
 	{
 		ci::gl::Fbo					fbo;
@@ -37,10 +36,12 @@ namespace Reymenta {
 		ParameterBag();
 		static ParameterBagRef create();
 
+		//! maximum number of fbos, shaders, textures
 		static const int			MAX = 16;
-		bool save();
-		bool restore();
-		void reset();
+
+		bool						save();
+		bool						restore();
+		void						reset();
 
 		std::string mParamString;
 		//fonts

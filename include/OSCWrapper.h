@@ -27,6 +27,7 @@ namespace Reymenta
 		void	setupSender();
 		void	sendOSCIntMessage(string controlType, int iarg0 = 0, int iarg1 = 0, int iarg2 = 0, int iarg3 = 0, int iarg4 = 0, int iarg5 = 0);
 		void	sendOSCFloatMessage(string controlType, int iarg0 = 0, float farg1 = 0.0, float farg2 = 0.0, float farg3 = 0.0, float farg4 = 0.0, float farg5 = 0.0);
+		void	updateAndSendOSCFloatMessage(string controlType, int iarg0 = 0, float farg1 = 0.0, float farg2 = 0.0, float farg3 = 0.0, float farg4 = 0.0, float farg5 = 0.0);
 		void	sendOSCStringMessage(string controlType, int iarg0 = 0, string sarg1 = "", string sarg2 = "", string sarg3 = "", string sarg4 = "", string sarg5 = "");
 
 		Vec4i	skeleton[20];
@@ -38,6 +39,7 @@ namespace Reymenta
 		osc::Listener 				mOSCReceiver;
 		osc::Sender					mOSCSender;
 		osc::Sender					mOSCSender2;
+		void						updateParams(int iarg0);
 
 		static const int			MAX = 16;
 
