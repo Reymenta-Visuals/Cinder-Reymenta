@@ -238,7 +238,7 @@ void ParameterBag::reset()
 	OSCMsg = "";
 	newOSCMsg = false;
 	mIsOSCSender = false;
-	InfoMsg = "";// "Host: " + mOSCDestinationHost;
+	InfoMsg = "";
 
 	mCamPosXY = vec2(0.0);
 	mCount = 1;
@@ -303,19 +303,10 @@ void ParameterBag::reset()
 	multFactor = 126.0;
 	currentSelectedIndex = 0;
 	iChannels[0] = 1;
-	//iWarpFboChannels[0] = 0;
 	for (int a = 1; a < 8; a++)
 	{
 		iChannels[a] = a;
-		//iWarpFboChannels[a] = a;
 	}
-
-	//iWarpFboChannels[2] = 1;
-	//iWarpFboChannels[3] = 3;
-	//iWarpFboChannels[4] = 4;
-	//iWarpFboChannels[5] = 5;
-	//iWarpFboChannels[6] = 6;
-	//iWarpFboChannels[7] = 7;
 
 	FPSColor = ColorA(0.0f, 1.0f, 0.0f, 1.0f);
 	ColorGreen = ColorA(0.0f, 1.0f, 0.0f, 1.0f);

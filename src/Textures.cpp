@@ -241,7 +241,7 @@ void Textures::addShadaFbos()
 {
 	for (int a = 0; a < MAX; a++)
 	{
-		mShadaFbos[a].fbo = gl::Fbo::create(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, fboFormat.depthTexture());
+		mShadaFbos[a].fbo = gl::Fbo::create(mParameterBag->mFboWidth, mParameterBag->mFboHeight, fboFormat.depthTexture());
 		mShadaFbos[a].shadaIndex = a;
 		if (a == 0) mShadaFbos[a].active = true; else mShadaFbos[a].active = false;
 	}
@@ -260,7 +260,6 @@ int Textures::createSpoutTexture(char name[256], unsigned int width, unsigned in
 		newTexture.texture = gl::Texture::create(width, height);
 		//! add to the inputTextures vector
 		inputTextures.push_back(newTexture);
-
 	}
 	else
 	{
@@ -480,6 +479,7 @@ void Textures::renderWarpFbos()
 
 			// setup the viewport to match the dimensions of the FBO
 			gl::ScopedViewport scpVp(ivec2(0.0), mWarp.fbo->getSize());
+			//gl::ScopedViewport scpVp(ivec2(0.0), ivec2(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
 
 			gl::ScopedGlslProg shader(mShaders->getWarpShader());
 			if (mMovie && mMovie->isPlaying() && mMovie->getTexture())

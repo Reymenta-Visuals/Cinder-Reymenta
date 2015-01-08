@@ -32,14 +32,14 @@ namespace Reymenta
 		void						setup();
 		void						getWindowsResolution();
 		float						formatFloat(float f);
-
-	private:
-		// parameters
-		ParameterBagRef				mParameterBag;
 		// Shaders
 		ShadersRef					mShaders;
 		// Textures
 		TexturesRef					mTextures;
+
+	private:
+		// parameters
+		ParameterBagRef				mParameterBag;
 		// Logger
 		LoggerRef					log;
 		//! fboFormat
