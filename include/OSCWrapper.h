@@ -39,7 +39,7 @@ namespace Reymenta
 		osc::Listener 				mOSCReceiver;
 		osc::Sender					mOSCSender;
 		osc::Sender					mOSCSender2;
-		void						updateParams(int iarg0);
+		void						updateParams(int iarg0, float farg1);
 
 		static const int			MAX = 16;
 
