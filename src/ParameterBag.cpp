@@ -322,11 +322,9 @@ void ParameterBag::reset()
 	currentSelectedIndex = 0;
 	selectedWarp = 0;
 	iChannels[0] = 1;
-	//iWarpFboChannels[0] = 1;
 	for (int a = 1; a < 8; a++)
 	{
 		iChannels[a] = a;
-		//iWarpFboChannels[a] = a;
 	}
 
 	FPSColor = ColorA(0.0f, 1.0f, 0.0f, 1.0f);

@@ -28,13 +28,7 @@ void OSC::setupSender()
 }
 void OSC::update()
 {
-	/*	while( receiver.hasWaitingMessages() ) {
-	osc::Message m;
-	receiver.getNextMessage( &m );
-
-	console() << "New message received" << std::endl;
-	console() << "Address: " << m.getAddress() << std::endl;
-	console() << "Num Arg: " << m.getNumArgs() << std::endl;
+	/*	
 	// check for mouse moved message
 	if(m.getAddress() == "/mouse/position"){
 	// both the arguments are int32's
