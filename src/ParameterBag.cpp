@@ -321,7 +321,7 @@ void ParameterBag::reset()
 
 	mOptimizeUI = false;
 	// spout
-	mOutputResolution = vec2(630, 345);
+	mOutputResolution = vec2(640, 480);
 	// meshes
 	mMeshIndex = 0;
 	// fbo indexes for warp

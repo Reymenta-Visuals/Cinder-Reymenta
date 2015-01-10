@@ -34,7 +34,7 @@ void Batchass::createWarpFbos()
 		newWarpFbo.textureIndex = 0;
 		newWarpFbo.textureMode = 1;
 		newWarpFbo.fbo = gl::Fbo::create(mParameterBag->mFboWidth, mParameterBag->mFboHeight, fboFormat.depthTexture());
-		if (a == 0) newWarpFbo.active = true; else newWarpFbo.active = false;
+		if (a == 0 ) newWarpFbo.active = true; else newWarpFbo.active = false;
 		mParameterBag->mWarpFbos[a] = newWarpFbo;
 	}
 }
