@@ -106,10 +106,8 @@ void OSC::update()
 	while (mOSCReceiver.hasWaitingMessages())
 	{
 		osc::Message message;
+		bool routeMessage = false;
 		mOSCReceiver.getNextMessage(&message);
-		// avoid LiveOSC infinite loop
-		if (mParameterBag->mIsOSCSender && mParameterBag->mOSCDestinationPort != 9000) mOSCSender.sendMessage(message);
-		if (mParameterBag->mIsOSCSender && mParameterBag->mOSCDestinationPort2 != 9000) mOSCSender2.sendMessage(message);
 		for (int a = 0; a < MAX; a++)
 		{
 			iargs[a] = 0;
@@ -162,19 +160,21 @@ void OSC::update()
 		{
 			mParameterBag->controlValues[iargs[0]] = fargs[1];
 			updateParams(iargs[0], fargs[1]);
-
 		}
 		else if (oscAddress == "/live/beat")
 		{
 			mParameterBag->mBeat = iargs[0];
+			routeMessage = true;
 		}
 		else if (oscAddress == "/live/tempo")
 		{
 			mParameterBag->mTempo = fargs[0];
+			routeMessage = true;
 		}
 		else if (oscAddress == "/live/track/meter")
 		{
 			mParameterBag->maxVolume = fargs[2];
+			routeMessage = true;
 		}
 		else if (oscAddress == "/live/name/trackblock")
 		{
@@ -292,6 +292,14 @@ void OSC::update()
 		ss << std::endl;
 		mParameterBag->OSCMsg = ss.str();
 		mParameterBag->newOSCMsg = true;
+		// filter messages
+		if (routeMessage)
+		{
+			// avoid LiveOSC infinite loop
+			if (mParameterBag->mIsOSCSender && mParameterBag->mOSCDestinationPort != 9000) mOSCSender.sendMessage(message);
+			if (mParameterBag->mIsOSCSender && mParameterBag->mOSCDestinationPort2 != 9000) mOSCSender2.sendMessage(message);
+
+		}
 
 	}
 }
