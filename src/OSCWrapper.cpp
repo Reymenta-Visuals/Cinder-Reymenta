@@ -308,7 +308,9 @@ void OSC::sendOSCIntMessage(string controlType, int iarg0, int iarg1, int iarg2,
 	m.addIntArg(iarg3);
 	m.addIntArg(iarg4);
 	m.addIntArg(iarg5);
+	m.setRemoteEndpoint(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort);
 	mOSCSender.sendMessage(m);
+	m.setRemoteEndpoint(mParameterBag->mOSCDestinationHost2, mParameterBag->mOSCDestinationPort2);
 	mOSCSender2.sendMessage(m);
 }
 void OSC::sendOSCStringMessage(string controlType, int iarg0, string sarg1, string sarg2, string sarg3, string sarg4, string sarg5)
@@ -321,7 +323,9 @@ void OSC::sendOSCStringMessage(string controlType, int iarg0, string sarg1, stri
 	if (sarg3 != "") m.addStringArg(sarg3);
 	if (sarg4 != "") m.addStringArg(sarg4);
 	if (sarg5 != "") m.addStringArg(sarg5);
+	m.setRemoteEndpoint(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort);
 	mOSCSender.sendMessage(m);
+	m.setRemoteEndpoint(mParameterBag->mOSCDestinationHost2, mParameterBag->mOSCDestinationPort2);
 	mOSCSender2.sendMessage(m);
 }
 void OSC::sendOSCFloatMessage(string controlType, int iarg0, float farg1, float farg2, float farg3, float farg4, float farg5)
@@ -334,7 +338,9 @@ void OSC::sendOSCFloatMessage(string controlType, int iarg0, float farg1, float 
 	m.addFloatArg(farg3);
 	m.addFloatArg(farg4);
 	m.addFloatArg(farg5);
+	m.setRemoteEndpoint(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort);
 	mOSCSender.sendMessage(m);
+	m.setRemoteEndpoint(mParameterBag->mOSCDestinationHost2, mParameterBag->mOSCDestinationPort2);
 	mOSCSender2.sendMessage(m);
 }
 void OSC::updateAndSendOSCFloatMessage(string controlType, int iarg0, float farg1, float farg2, float farg3, float farg4, float farg5)
