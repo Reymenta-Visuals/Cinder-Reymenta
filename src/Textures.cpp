@@ -29,6 +29,16 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 		startupImage = gl::Texture::create(loadImage(loadAsset("startup.jpg")), gl::Texture2d::Format().loadTopDown());
 		log->logTimedString("startup.jpg image loaded");
 	}
+	else
+	{
+		pathToStartupFile = (getAssetPath("") / "reymenta.jpg").string();
+		if (fs::exists(pathToStartupFile))
+		{
+			log->logTimedString("reymenta.jpg image found, loading");
+			startupImage = gl::Texture::create(loadImage(loadAsset("reymenta.jpg")), gl::Texture2d::Format().loadTopDown());
+			log->logTimedString("reymenta.jpg image loaded");
+		}
+	}
 	createTexture("startup image", mParameterBag->mFboWidth, mParameterBag->mFboHeight, startupImage);
 	// if no input received we wait for the 1st one to replace the startup image
 	inputReceived = false;
