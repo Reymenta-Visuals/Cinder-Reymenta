@@ -406,7 +406,7 @@ void ParameterBag::reset()
 	// Pixelate
 	controlValues[18] = 1.0f;
 	// RotationSpeed
-	controlValues[19] = 1.0f;
+	controlValues[19] = 0.0f;
 	// glitch
 	controlValues[45] = 0.0f;
 	// toggle

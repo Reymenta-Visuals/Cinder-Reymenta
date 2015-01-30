@@ -185,6 +185,7 @@ void Textures::draw()
 	aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
 	aShader->uniform("iChannelResolution", mParameterBag->iChannelResolution, 4);
 	aShader->uniform("iMouse", Vec4f(mParameterBag->mRenderPosXY.x, mParameterBag->mRenderPosXY.y, mParameterBag->iMouse.z, mParameterBag->iMouse.z));//iMouse =  Vec3i( event.getX(), mRenderHeight - event.getY(), 1 );
+	aShader->uniform("iZoom", mParameterBag->iZoomLeft);
 	aShader->uniform("iChannel0", mParameterBag->iChannels[0]);
 	aShader->uniform("iChannel1", mParameterBag->iChannels[1]);
 	aShader->uniform("iChannel2", mParameterBag->iChannels[2]);
@@ -206,7 +207,6 @@ void Textures::draw()
 	aShader->uniform("width", 1);
 	aShader->uniform("height", 1);
 	aShader->uniform("iRenderXY", mParameterBag->mLeftRenderXY);
-	aShader->uniform("iZoom", mParameterBag->iZoomLeft);
 	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
 	aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[15]);
 	aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
@@ -262,6 +262,7 @@ void Textures::draw()
 	aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
 	aShader->uniform("iChannelResolution", mParameterBag->iChannelResolution, 4);
 	aShader->uniform("iMouse", Vec4f(mParameterBag->mRenderPosXY.x, mParameterBag->mRenderPosXY.y, mParameterBag->iMouse.z, mParameterBag->iMouse.z));//iMouse =  Vec3i( event.getX(), mRenderHeight - event.getY(), 1 );
+	aShader->uniform("iZoom", mParameterBag->iZoomRight);
 	aShader->uniform("iChannel0", mParameterBag->iChannels[0]);
 	aShader->uniform("iChannel1", mParameterBag->iChannels[1]);
 	aShader->uniform("iChannel2", mParameterBag->iChannels[2]);
@@ -283,7 +284,6 @@ void Textures::draw()
 	aShader->uniform("width", 1);
 	aShader->uniform("height", 1);
 	aShader->uniform("iRenderXY", mParameterBag->mRightRenderXY);
-	aShader->uniform("iZoom", mParameterBag->iZoomRight);
 	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
 	aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[15]);
 	aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
@@ -340,6 +340,7 @@ void Textures::draw()
 	//aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
 	aShader->uniform("iChannelResolution", mParameterBag->iChannelResolution, 4);
 	aShader->uniform("iMouse", Vec4f(mParameterBag->mRenderPosXY.x, mParameterBag->mRenderPosXY.y, mParameterBag->iMouse.z, mParameterBag->iMouse.z));//iMouse =  Vec3i( event.getX(), mRenderHeight - event.getY(), 1 );
+	aShader->uniform("iZoom", mParameterBag->controlValues[13]);
 	aShader->uniform("iChannel0", mParameterBag->iChannels[0]);
 	aShader->uniform("iChannel1", mParameterBag->iChannels[1]);
 	aShader->uniform("iChannel2", mParameterBag->iChannels[2]);
@@ -361,7 +362,6 @@ void Textures::draw()
 	aShader->uniform("width", 1);
 	aShader->uniform("height", 1);
 	aShader->uniform("iRenderXY", mParameterBag->mPreviewFragXY);
-	aShader->uniform("iZoom", mParameterBag->iZoomLeft);
 	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
 	aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[15]);
 	aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
