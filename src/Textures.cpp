@@ -33,10 +33,22 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 
 	// store it as a 512x2 texture in the first texture
 	sTextures.push_back(gl::Texture(dTexture, GL_LUMINANCE, 512, 2));
+
+	fs::path localFile;
 	for (int j = 0; j < mTexturesCount - 1; j++)
 	{
-		gl::Texture img(loadImage(loadAsset("reymenta.jpg")));
-		sTextures.push_back(img);
+		fileName = toString(j) + ".jpg";
+		localFile = getAssetPath("") / fileName;
+		if (fs::exists(localFile))
+		{
+			gl::Texture img(loadImage(loadAsset(fileName)));
+			sTextures.push_back(img);
+		}
+		else
+		{
+			gl::Texture img(loadImage(loadAsset("reymenta.jpg")));
+			sTextures.push_back(img);
+		}
 	}
 
 }

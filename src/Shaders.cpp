@@ -120,7 +120,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	//fileName = "default.frag";
 	fs::path localFile; //= getAssetPath("") / "shaders" / fileName;
 	//loadPixelFrag(localFile.string());
-	for (size_t m = 0; m < 3; m++)
+	for (size_t m = 0; m < 8; m++)
 	{
 		fileName = toString(m) + ".glsl";
 		localFile = getAssetPath("")  / fileName;

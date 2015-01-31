@@ -105,7 +105,7 @@ namespace Reymenta
 		ci::gl::Texture				currentTexture;
 		unsigned char				dTexture[1024];
 		vector<ci::gl::Texture>		sTextures;
-
+		string						fileName;
 		// fbo
 		vector<gl::Fbo>				mFbos;
 		//! mixes fbos
