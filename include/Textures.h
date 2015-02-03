@@ -74,12 +74,16 @@ namespace Reymenta
 		}
 		void						setTexture( int index, string fileName );
 		ci::gl::Texture				getTexture(int index);
+		//ci::gl::Texture				getFboThumb(int index);
 		ci::gl::Texture				getWarpTexture(int index);
 		WarpFbo						getWarpFbo(int index) { return mParameterBag->mWarpFbos[min((mParameterBag->MAX)-1, index)]; };
 		void						renderWarpFbos();
 		void						setTexture(int index, ci::gl::Texture texture);
 		ci::gl::Texture				getFboTexture(int index);
-		
+		// spout
+		void						setSenderTextureSize(int index, int width, int height);
+		int							createSpoutTexture(char name[256], unsigned int width, unsigned int height);
+
 		ci::gl::Fbo					getFbo(int index);
 		int							getTextureCount() { return sTextures.size(); };
 		int							getFboCount() { return mFbos.size(); };
@@ -99,15 +103,17 @@ namespace Reymenta
 	private:
 		// Logger
 		LoggerRef					log;	
-		static const int			mTexturesCount = 8;
+		static const int			mTexturesCount = 16;
 
 		ci::gl::Texture				previousTexture;
 		ci::gl::Texture				currentTexture;
 		unsigned char				dTexture[1024];
 		vector<ci::gl::Texture>		sTextures;
+		char						spoutSenderName[256];
 		string						fileName;
 		// fbo
 		vector<gl::Fbo>				mFbos;
+		//vector<gl::Fbo>				mThumbFbos;
 		//! mixes fbos
 		vector<gl::Fbo>				mMixesFbos;
 		//! shader fbos

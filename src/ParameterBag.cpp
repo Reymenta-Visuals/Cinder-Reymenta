@@ -326,6 +326,9 @@ void ParameterBag::reset()
 	{
 		iChannels[a] = a;
 	}
+	iChannels[1] = 2;
+	iChannels[2] = 3;
+	iChannels[4] = 8;
 
 	FPSColor = ColorA(0.0f, 1.0f, 0.0f, 1.0f);
 	ColorGreen = ColorA(0.0f, 1.0f, 0.0f, 1.0f);

@@ -70,16 +70,16 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 
 	// compile shader
 	try {
-		mShaders.push_back(gl::GlslProg(loadAsset("shaders/spectrum.vert"), loadAsset("shaders/spectrum.frag")));
+		mShaders.push_back(gl::GlslProg(loadAsset("spectrum.vert"), loadAsset("spectrum.frag")));
 	}
 	catch (const std::exception& e) {
-		log->logTimedString("Could not compile shaders/spectrum.frag-vert");
+		log->logTimedString("Could not compile spectrum.frag or vert");
 	}
 	try {
-		mShaders.push_back(gl::GlslProg(loadAsset("shaders/spectrum2.vert"), loadAsset("shaders/spectrum2.frag")));
+		mShaders.push_back(gl::GlslProg(loadAsset("spectrum2.vert"), loadAsset("spectrum2.frag")));
 	}
 	catch (const std::exception& e) {
-		log->logTimedString("Could not compile shaders/spectrum2.frag-vert");
+		log->logTimedString("Could not compile spectrum2.frag or vert");
 
 	}
 	currentShaderIndex = 0;

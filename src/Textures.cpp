@@ -13,15 +13,21 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	// preview fbo at index 0
 	mFbos.push_back(gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));//640x480
 	mFbos[0].getTexture(0).setFlipped(true);
+	//mThumbFbos.push_back(gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
+	//mThumbFbos[0].getTexture(0).setFlipped(true);	sTextures[8].setFlipped(false);
 	//createPreviewFbo();//mFboWidth/4 or 16
 	// mix fbo at index 1
 	mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
-	mFbos[1].getTexture(0).setFlipped(true);
+	mFbos[1].getTexture(0).setFlipped(false);
+	//mThumbFbos.push_back(gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
+	//mThumbFbos[1].getTexture(0).setFlipped(true);
 
 	for (size_t m = mFbos.size(); m < 9; m++)
 	{
 		mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
 		mFbos[mFbos.size() - 1].getTexture(0).setFlipped(true);
+		//mThumbFbos.push_back(gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
+		//mThumbFbos[mThumbFbos.size() - 1].getTexture(0).setFlipped(true);
 	}
 	mFbos[mParameterBag->mMeshFboIndex].getTexture(0).setFlipped(false);
 	// audio fbo at index 3
@@ -110,8 +116,14 @@ void Textures::flipMixFbo(bool flip)
 }
 /*void Textures::setCurrentFboIndex(int aFbo)
 {
-	if (aFbo < mFbos.size()) mParameterBag->mCurrentFboIndex = aFbo;
-}*/
+if (aFbo < mFbos.size()) mParameterBag->mCurrentFboIndex = aFbo;
+}
+ci::gl::Texture Textures::getFboThumb(int index)
+{
+	if (index > mThumbFbos.size() - 1) index = mThumbFbos.size() - 1;
+	return mThumbFbos[index].getTexture();
+}
+*/
 ci::gl::Texture Textures::getTexture(int index)
 {
 	if (index > sTextures.size() - 1) index = sTextures.size() - 1;
@@ -161,20 +173,20 @@ void Textures::update()
 }
 void Textures::renderWarpFbos()
 {
-/*TODO	mShaders->getWarpShader();
-			if (mWarp.textureMode == 0)
-			{
+	/*TODO	mShaders->getWarpShader();
+				if (mWarp.textureMode == 0)
+				{
 				// 0 for input texture
 				getSenderTexture(mWarp.textureIndex)->bind(0);
-			}
-			else
-			{
+				}
+				else
+				{
 				// 1 for shader
 				getFboTexture(mWarp.textureIndex)->bind(0);
-			}
-			mShaders->getWarpShader()->uniform("iAlpha", mParameterBag->controlValues[4]);
-			gl::draw(mMesh);
-*/
+				}
+				mShaders->getWarpShader()->uniform("iAlpha", mParameterBag->controlValues[4]);
+				gl::draw(mMesh);
+				*/
 }
 void Textures::draw()
 {
@@ -412,12 +424,20 @@ void Textures::draw()
 
 	aShader->unbind();
 	sTextures[4] = mFbos[mParameterBag->mCurrentPreviewFboIndex].getTexture();
+	// draw thumb
+	/*mThumbFbos[mParameterBag->mPreviewFragIndex].bindFramebuffer();
+	gl::setViewport(mThumbFbos[mParameterBag->mPreviewFragIndex].getBounds());
+	gl::draw(sTextures[4]);
+	mThumbFbos[mParameterBag->mPreviewFragIndex].unbindFramebuffer();*/
+	//writeImage(getHomeDirectory() / "cinder" / "saveImage_" / (toString(1) + ".png"), copyWindowSurface());
 	// end of mLibraryFbos[mParameterBag->mCurrentPreviewFboIndex]
+	
+	
 	/***********************************************
 	* live FBO begin
-	*/
+	
 
-	// draw using the mix shader
+	// draw using the live shader
 	mFbos[mParameterBag->mLiveFboIndex].bindFramebuffer();
 
 	gl::setViewport(mFbos[mParameterBag->mLiveFboIndex].getBounds());
@@ -489,7 +509,7 @@ void Textures::draw()
 	aShader->unbind();
 	sTextures[3] = mFbos[mParameterBag->mLiveFboIndex].getTexture();
 
-	/***********************************************
+	**********************************************
 	* live FBO end
 	*/
 
@@ -616,7 +636,7 @@ complete = false;
 playheadPosition = newPosition;
 }
 }
-sTextures[7] = getCurrentSequenceTexture();
+sTextures[9] = getCurrentSequenceTexture();
 currentTexture = getCurrentSequenceTexture();
 }*/
 Textures::~Textures()
@@ -708,3 +728,17 @@ sequenceTextures.clear();
 sequenceTextures = textureList;
 totalFrames = sequenceTextures.size();
 }*/
+void Textures::setSenderTextureSize(int index, int width, int height)
+{
+	sTextures[8] = gl::Texture(width, height);
+}
+
+int Textures::createSpoutTexture(char name[256], unsigned int width, unsigned int height)
+{
+	// replace spout image at index 8
+	log->logTimedString("createSpoutTexture, replace: " + toString(name));
+
+	memcpy(&spoutSenderName[0], name, strlen(name) + 1);
+	sTextures[8] = gl::Texture(width, height);
+	return 8;
+}
