@@ -183,14 +183,25 @@ void OSC::update()
 		{
 			mShaders->loadPixelFragmentShader(sargs[1]);
 		}
+		else if (oscAddress == "/bend")
+		{
+			mParameterBag->mBend = fargs[0];
+			console() << mParameterBag->mBend << std::endl;
+		}
 		else if (oscAddress == "/live/beat")
 		{
 			mParameterBag->mBeat = iargs[0];
+			console() << mParameterBag->mBeat << std::endl;
 			if (mParameterBag->mBeat == 476)
 			{
 				// stop movie and remove it
 				mTextures->stopMovie(true);
 			}
+		}
+		else if (oscAddress == "/live/track/meter")
+		{
+			mParameterBag->maxVolume = fargs[2];// fargs[0] for AVUI show!;
+			console() << mParameterBag->maxVolume << std::endl;
 		}
 		else if (oscAddress == "/live/tempo")
 		{
@@ -204,10 +215,6 @@ void OSC::update()
 		else if (oscAddress == "/live/play")
 		{
 			mParameterBag->mIsPlaying = (iargs[0] == 2);
-		}
-		else if (oscAddress == "/live/track/meter")
-		{
-			mParameterBag->maxVolume = fargs[2];
 		}
 		else if (oscAddress == "/live/name/trackblock")
 		{

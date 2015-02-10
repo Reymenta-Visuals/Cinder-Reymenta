@@ -398,5 +398,6 @@ void ParameterBag::reset()
 	// invert
 	controlValues[48] = 0.0f;
 	autoInvert = false;
-
+	// abp
+	mBend = 0.0f;
 }
