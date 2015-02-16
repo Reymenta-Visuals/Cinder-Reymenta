@@ -174,7 +174,7 @@ namespace Reymenta {
 		// fbo indexes for warping
 		//! warp fbos
 		WarpFbo						mWarpFbos[MAX];
-		//map<int, int>				iWarpFboChannels;
+		map<int, int>				iWarpFboChannels;
 		int							mCurrentShadaFboIndex;
 		int							selectedWarp;
 		int							mWarpCount;

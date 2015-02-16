@@ -306,6 +306,7 @@ void ParameterBag::reset()
 	for (int a = 1; a < 8; a++)
 	{
 		iChannels[a] = a;
+		iWarpFboChannels[a] = a;
 	}
 
 	FPSColor = ColorA(0.0f, 1.0f, 0.0f, 1.0f);
