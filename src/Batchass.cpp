@@ -31,7 +31,7 @@ void Batchass::createWarpFbos()
 	for (int a = 0; a < mParameterBag->MAX; a++)
 	{
 		WarpFbo newWarpFbo;
-		newWarpFbo.textureIndex = 0;
+		newWarpFbo.textureIndex = 1; //index of MixFbo for shadamixa
 		newWarpFbo.textureMode = 1;
 		newWarpFbo.fbo = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
 		if (a == 0) newWarpFbo.active = true; else newWarpFbo.active = false;

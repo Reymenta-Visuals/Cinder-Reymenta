@@ -114,6 +114,10 @@ void Textures::flipMixFbo(bool flip)
 {
 	mFbos[mParameterBag->mMixFboIndex].getTexture(0).setFlipped(flip);
 }
+void Textures::flipMixFboH(bool flip)
+{
+	mParameterBag->mFlipH = flip;
+}
 /*void Textures::setCurrentFboIndex(int aFbo)
 {
 if (aFbo < mFbos.size()) mParameterBag->mCurrentFboIndex = aFbo;

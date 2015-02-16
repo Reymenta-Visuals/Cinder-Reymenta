@@ -321,15 +321,32 @@ void ParameterBag::reset()
 	multFactor = 126.0;
 	currentSelectedIndex = 0;
 	selectedWarp = 0;
-	iChannels[0] = 1;
+	iChannels[0] = 0;
 	for (int a = 1; a < 8; a++)
 	{
 		iChannels[a] = a;
 	}
-	iChannels[1] = 2;
-	iChannels[2] = 3;
+	//iChannels[1] = 2;
+	//iChannels[2] = 3;
 	iChannels[4] = 8;
+	// fbo indexes for warp
+	mFboResolution = 2048;
+	mCurrentPreviewFboIndex = 0;
+	mMixFboIndex = 1;
+	mAudioFboIndex = 2;
+	mWarpFboIndex = 3;
+	mSphereFboIndex = 4;
+	mMeshFboIndex = 5;
+	mLeftFboIndex = 6;
+	mRightFboIndex = 7;
+	mLiveFboIndex = 8;
 
+	mPreviewFragIndex = 0;
+	mPreviousFragIndex = 1;
+	mLeftFragIndex = 0;
+	mRightFragIndex = 1;
+	mFlipH = false;
+	mWarpCount = 3;
 	FPSColor = ColorA(0.0f, 1.0f, 0.0f, 1.0f);
 	ColorGreen = ColorA(0.0f, 1.0f, 0.0f, 1.0f);
 	ColorRed = ColorA(1.0f, 0.0f, 0.0f, 1.0f);
@@ -346,25 +363,7 @@ void ParameterBag::reset()
 	mOutputResolution = Vec2f(640, 480);
 	// meshes
 	mMeshIndex = 0;
-	// fbo indexes for warp
 
-	mFboResolution = 2048;
-	mCurrentPreviewFboIndex = 0;
-	mMixFboIndex = 1;
-	mAudioFboIndex = 2;
-	mWarpFboIndex = 3;
-	mSphereFboIndex = 4;
-	mMeshFboIndex = 5;
-	mLeftFboIndex = 6;
-	mRightFboIndex = 7;
-	mLiveFboIndex = 8;
-
-	mPreviewFragIndex = 0;
-	mPreviousFragIndex = 1;
-	mLeftFragIndex = 0;
-	mRightFragIndex = 1;
-
-	mWarpCount = 3;
 	// initialize our camera
 	mCamEyePointXY = Vec2f(0.f, 0.f);
 	mCamEyePointZ = -400.f;
