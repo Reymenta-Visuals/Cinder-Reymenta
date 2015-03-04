@@ -36,6 +36,5 @@ namespace Reymenta
 		void						onRead(std::string msg);
 		void						write();
 		std::string					mText;
-
 	};
 }

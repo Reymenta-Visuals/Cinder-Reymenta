@@ -29,7 +29,6 @@ void WebSockets::connect()
 {
 	mClient.connect("ws://localhost:9002");
 }
-
 void WebSockets::disconnect()
 {
 	mClient.disconnect();
