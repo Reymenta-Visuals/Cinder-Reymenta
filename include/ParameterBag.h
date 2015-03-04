@@ -171,6 +171,7 @@ namespace Reymenta {
 		int							mFboResolution;
 		int							mOutputVideoResolution;
 		Vec2f						mOutputResolution;
+		bool						mFlipH;
 		// OSC/MIDI/JSON controlled UI and params
 		map<int, float>				controlValues;
 		// indexes for textures

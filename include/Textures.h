@@ -88,6 +88,7 @@ namespace Reymenta
 		int							getTextureCount() { return sTextures.size(); };
 		int							getFboCount() { return mFbos.size(); };
 		void						flipMixFbo(bool flip);
+		void						flipMixFboH(bool flip);
 		// from audio
 		void						setAudioTexture( unsigned char *signal );
 		// image
@@ -103,7 +104,7 @@ namespace Reymenta
 	private:
 		// Logger
 		LoggerRef					log;	
-		static const int			mTexturesCount = 16;
+		static const int			mTexturesCount = 10;
 
 		ci::gl::Texture				previousTexture;
 		ci::gl::Texture				currentTexture;
