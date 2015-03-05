@@ -2,6 +2,8 @@
 
 #include "cinder/app/AppNative.h"
 #include "WebSocketClient.h"
+#include "WebSocketServer.h"
+
 #include "ParameterBag.h"
 
 using namespace ci;
@@ -25,8 +27,8 @@ namespace Reymenta
 		// parameters
 		ParameterBagRef				mParameterBag;
 		// Web socket client
-		void						connect();
-		void						disconnect();
+		void						clientConnect();
+		void						clientDisconnect();
 		WebSocketClient				mClient;
 		void						onConnect();
 		void						onDisconnect();
@@ -35,6 +37,12 @@ namespace Reymenta
 		void						onPing(std::string msg);
 		void						onRead(std::string msg);
 		void						write();
+		// Web socket  server
+		WebSocketServer				mServer;
+		void						serverConnect();
+		void						serverDisconnect();
+
+		//
 		std::string					mText;
 	};
 }

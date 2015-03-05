@@ -196,6 +196,10 @@ namespace Reymenta {
 		MayaCamUI					mMayaCam;
 		Vec2f						mCamEyePointXY;
 		float						mCamEyePointZ;
+		// web sockets
+		bool						mIsWebSocketsServer;
+		uint16_t					mWebSocketsPort;
+		string						mWebSocketsHost;
 	private:
 		const string settingsFileName = "Settings.xml";
 	};

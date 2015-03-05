@@ -109,6 +109,18 @@ bool ParameterBag::save()
 	IsOSCSender.setAttribute("value", toString(mIsOSCSender));
 	settings.push_back(IsOSCSender);
 
+	XmlTree IsWebSocketsServer("IsWebSocketsServer", "");
+	IsWebSocketsServer.setAttribute("value", toString(mIsWebSocketsServer));
+	settings.push_back(IsWebSocketsServer);
+
+	XmlTree WebSocketsHost("WebSocketsHost", "");
+	WebSocketsHost.setAttribute("value", toString(mWebSocketsHost));
+	settings.push_back(WebSocketsHost);
+
+	XmlTree WebSocketsPort("WebSocketsPort", "");
+	WebSocketsPort.setAttribute("value", toString(mWebSocketsPort));
+	settings.push_back(WebSocketsPort);
+
 	// write XML file
 	settings.write(writeFile(path));
 
@@ -176,6 +188,18 @@ bool ParameterBag::restore()
 			if (settings.hasChild("CursorVisible")) {
 				XmlTree CursorVisible = settings.getChild("CursorVisible");
 				mCursorVisible = CursorVisible.getAttributeValue<bool>("value");
+			}
+			if (settings.hasChild("IsWebSocketsServer")) {
+				XmlTree IsWebSocketsServer = settings.getChild("IsWebSocketsServer");
+				mIsWebSocketsServer = IsWebSocketsServer.getAttributeValue<bool>("value");
+			}
+			if (settings.hasChild("WebSocketsHost")) {
+				XmlTree WebSocketsHost = settings.getChild("WebSocketsHost");
+				mWebSocketsHost = WebSocketsHost.getAttributeValue<string>("value");
+			}
+			if (settings.hasChild("WebSocketsPort")) {
+				XmlTree WebSocketsPort = settings.getChild("WebSocketsPort");
+				mWebSocketsPort = WebSocketsPort.getAttributeValue<int>("value");
 			}
 			// if AutoLayout is false we have to read the custom screen layout
 			if (!mAutoLayout)
@@ -246,17 +270,6 @@ void ParameterBag::reset()
 	mMode = mPreviousMode = mNewMode = 1; // Mix mode by default
 	mCurrentFilePath = "currentMix.frag";
 	mMarginSmall = 2;
-
-	// OSC
-	mOSCDestinationHost = "127.0.0.1";
-	mOSCDestinationPort = 7001;
-	mOSCDestinationHost = "127.0.0.1";
-	mOSCDestinationPort = 7002;
-	mOSCReceiverPort = 7000;
-	OSCMsg = "";
-	newOSCMsg = false;
-	InfoMsg = "";
-	mIsOSCSender = false;
 
 	mCamPosXY = Vec2f::zero();
 	mCount = 1;
@@ -372,11 +385,25 @@ void ParameterBag::reset()
 
 	mUIRefresh = 1;
 
-	// midi and OSC
+	// midi
 	for (int c = 0; c < 128; c++)
 	{
 		controlValues[c] = 0.01f;
 	}
+	// OSC
+	mOSCDestinationHost = "127.0.0.1";
+	mOSCDestinationPort = 7001;
+	mOSCDestinationHost = "127.0.0.1";
+	mOSCDestinationPort = 7002;
+	mOSCReceiverPort = 7000;
+	OSCMsg = "";
+	newOSCMsg = false;
+	InfoMsg = "";
+	mIsOSCSender = false;
+	// web sockets
+	mIsWebSocketsServer = false;
+	mWebSocketsHost = "localhost";
+	mWebSocketsPort = 9002;
 	// red
 	controlValues[1] = 1.0f;
 	// green

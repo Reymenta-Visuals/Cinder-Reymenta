@@ -5,13 +5,29 @@ using namespace Reymenta;
 WebSockets::WebSockets(ParameterBagRef aParameterBag)
 {
 	mParameterBag = aParameterBag;
-	mClient.addConnectCallback(&WebSockets::onConnect, this);
-	mClient.addDisconnectCallback(&WebSockets::onDisconnect, this);
-	mClient.addErrorCallback(&WebSockets::onError, this);
-	mClient.addInterruptCallback(&WebSockets::onInterrupt, this);
-	mClient.addPingCallback(&WebSockets::onPing, this);
-	mClient.addReadCallback(&WebSockets::onRead, this);
-	connect();
+	// either a client or a server
+	if (mParameterBag->mIsWebSocketsServer)
+	{
+		mServer.addConnectCallback(&WebSockets::onConnect, this);
+		mServer.addDisconnectCallback(&WebSockets::onDisconnect, this);
+		mServer.addErrorCallback(&WebSockets::onError, this);
+		mServer.addInterruptCallback(&WebSockets::onInterrupt, this);
+		mServer.addPingCallback(&WebSockets::onPing, this);
+		mServer.addReadCallback(&WebSockets::onRead, this);
+		mServer.listen(mParameterBag->mWebSocketsPort);
+	}
+	else
+	{
+		mClient.addConnectCallback(&WebSockets::onConnect, this);
+		mClient.addDisconnectCallback(&WebSockets::onDisconnect, this);
+		mClient.addErrorCallback(&WebSockets::onError, this);
+		mClient.addInterruptCallback(&WebSockets::onInterrupt, this);
+		mClient.addPingCallback(&WebSockets::onPing, this);
+		mClient.addReadCallback(&WebSockets::onRead, this);
+		clientConnect();
+	}
+
+
 }
 
 WebSocketsRef WebSockets::create(ParameterBagRef aParameterBag)
@@ -23,20 +39,28 @@ void WebSockets::setupSender()
 }
 void WebSockets::update()
 {
-	mClient.poll();
+	if (mParameterBag->mIsWebSocketsServer)
+	{
+		mServer.poll();
+	}
+	else
+	{
+		mClient.poll();
+	}
 }
-void WebSockets::connect()
+void WebSockets::clientConnect()
 {
-	mClient.connect("ws://localhost:9002");
+	stringstream s;
+	s << "ws://" << mParameterBag->mWebSocketsHost << ":" << mParameterBag->mWebSocketsPort;
+	mClient.connect( s.str() );//"ws://localhost:9002"
 }
-void WebSockets::disconnect()
+void WebSockets::clientDisconnect()
 {
 	mClient.disconnect();
 }
 void WebSockets::onConnect()
 {
 	mText = "Connected";
-	mClient.ping();
 }
 
 void WebSockets::onDisconnect()
