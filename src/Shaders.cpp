@@ -140,8 +140,8 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	mResponses = new ConcurrentCircularBuffer<LoaderData>(10);
 
 	// Start the loading thread.
-	setupLoader();
-
+	//setupLoader();
+	// error on program termination, shutdownLoader() must be called
 }
 void Shaders::setupLoader()
 {
