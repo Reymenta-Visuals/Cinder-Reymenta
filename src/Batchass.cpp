@@ -38,6 +38,10 @@ void Batchass::createWarpFbos()
 		mParameterBag->mWarpFbos[a] = newWarpFbo;
 	}
 }
+void Batchass::shutdownLoader()
+{
+	mShaders->shutdownLoader();
+}
 void Batchass::getWindowsResolution()
 {
 	mParameterBag->mDisplayCount = 0;

@@ -35,7 +35,7 @@ namespace Reymenta
 		void						createWarpFbos();
 		void						getWindowsResolution();
 		float						formatFloat(float f);
-
+		void						shutdownLoader();
 	private:
 		// parameters
 		ParameterBagRef				mParameterBag;
