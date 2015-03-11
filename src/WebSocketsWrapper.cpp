@@ -96,3 +96,15 @@ void WebSockets::onRead(string msg)
 		mText += ": " + msg;
 	}
 }
+void WebSockets::write(string msg)
+{
+	if (mParameterBag->mIsWebSocketsServer)
+	{
+		mServer.write(msg);
+	}
+	else
+	{
+		mClient.write(msg);
+
+	}
+}

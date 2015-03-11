@@ -23,6 +23,7 @@ namespace Reymenta
 		static	WebSocketsRef create( ParameterBagRef aParameterBag );
 		void	update();
 		void	setupSender();
+		void						write(std::string msg);
 	private:
 		// parameters
 		ParameterBagRef				mParameterBag;
@@ -36,7 +37,6 @@ namespace Reymenta
 		void						onInterrupt();
 		void						onPing(std::string msg);
 		void						onRead(std::string msg);
-		void						write();
 		// Web socket  server
 		WebSocketServer				mServer;
 		void						serverConnect();
