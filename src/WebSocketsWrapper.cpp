@@ -84,7 +84,8 @@ void WebSockets::onInterrupt()
 void WebSockets::onPing(string msg)
 {
 	mText = "Ponged";
-	if (!msg.empty()) {
+	if (!msg.empty()) 
+	{
 		mText += ": " + msg;
 	}
 }
@@ -92,8 +93,34 @@ void WebSockets::onPing(string msg)
 void WebSockets::onRead(string msg)
 {
 	mText = "Read";
-	if (!msg.empty()) {
+	if (!msg.empty()) 
+	{
 		mText += ": " + msg;
+		string first = msg.substr(0, 1);
+		// json
+		if (first == "{")
+		{
+			JsonTree json;
+			try
+			{
+				json = JsonTree(msg);
+				JsonTree jsonParams = json.getChild("colors");
+				for (JsonTree::ConstIter jsonElement = jsonParams.begin(); jsonElement != jsonParams.end(); ++jsonElement)
+				{
+					int name = jsonElement->getChild("name").getValue<int>();
+					float value = jsonElement->getChild("value").getValue<float>();
+					mParameterBag->controlValues[name] = value;
+				}
+			}
+			catch (cinder::JsonTree::Exception exception)
+			{
+				mText += " error jsonparser exception: ";
+				mText += exception.what();
+				mText += "  ";
+			}
+		}
+
+
 	}
 }
 void WebSockets::write(string msg)

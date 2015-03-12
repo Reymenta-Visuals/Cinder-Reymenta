@@ -1,6 +1,8 @@
 #pragma once
 
 #include "cinder/app/AppNative.h"
+#include "cinder/Json.h"
+
 #include "WebSocketClient.h"
 #include "WebSocketServer.h"
 
