@@ -398,6 +398,8 @@ void ParameterBag::reset()
 	mOSCReceiverPort = 7000;
 	OSCMsg = "";
 	newOSCMsg = false;
+	WSMsg = "";
+	newWSMsg = false;
 	InfoMsg = "";
 	mIsOSCSender = false;
 	// web sockets

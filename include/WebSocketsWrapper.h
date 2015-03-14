@@ -22,9 +22,9 @@ namespace Reymenta
 
 	public:
 		WebSockets( ParameterBagRef aParameterBag );
-		static	WebSocketsRef create( ParameterBagRef aParameterBag );
-		void	update();
-		void	setupSender();
+		static						WebSocketsRef create( ParameterBagRef aParameterBag );
+		void						update();
+		void						setupSender();
 		void						write(std::string msg);
 	private:
 		// parameters

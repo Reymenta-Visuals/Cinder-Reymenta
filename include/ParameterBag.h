@@ -59,6 +59,8 @@ namespace Reymenta {
 		int							mOSCReceiverPort;
 		std::string					OSCMsg;
 		bool						newOSCMsg;
+		std::string					WSMsg;
+		bool						newWSMsg;
 		std::string					InfoMsg;
 		bool						mIsOSCSender;
 		// render windows

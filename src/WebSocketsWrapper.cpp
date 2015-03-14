@@ -93,6 +93,8 @@ void WebSockets::onPing(string msg)
 void WebSockets::onRead(string msg)
 {
 	mText = "Read";
+	mParameterBag->WSMsg = msg;
+	mParameterBag->newWSMsg = true;
 	if (!msg.empty()) 
 	{
 		mText += ": " + msg;
