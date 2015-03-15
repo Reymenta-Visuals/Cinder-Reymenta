@@ -103,6 +103,7 @@ namespace Reymenta {
 		bool						iShowFps;
 		bool						iDebug;
 		float						iFps;
+		string						sFps;
 		bool						iGreyScale;
 		// transition
 		int							iTransition;
@@ -129,6 +130,7 @@ namespace Reymenta {
 		static const int			MODE_WARP = 3;
 		static const int			MODE_SPHERE = 4;
 		static const int			MODE_MESH = 5;
+		static const int			MODE_KINECT = 6;
 
 		// windows to create, should be the same in App and UI
 		static const int			NONE = 0;

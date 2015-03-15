@@ -321,6 +321,7 @@ void ParameterBag::reset()
 	iCrossfade = iPreviewCrossfade = 1.0;
 	iDebug = iFade = mSendToOutput = iLight = iLightAuto = iRepeat = false;
 	iFps = 60.0;
+	sFps = "60";
 	iShowFps = true;
 	iMouse = Vec4f(mRenderWidth / 2, mRenderHeight / 2, 1.0, 1.0);
 	iGreyScale = false;
