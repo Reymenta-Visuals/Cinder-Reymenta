@@ -273,7 +273,6 @@ void ParameterBag::reset()
 
 	mCamPosXY = Vec2f::zero();
 	mCount = 1;
-	mZPosition = -0.7f;
 	mLockFR = mLockFG = mLockFB = mLockFA = mLockBR = mLockBG = mLockBB = mLockBA = false;
 	tFR = tFG = tFB = tFA = tBR = tBG = tBB = tBA = false;
 
@@ -423,6 +422,8 @@ void ParameterBag::reset()
 	controlValues[7] = 0.1f;
 	// background alpha
 	controlValues[8] = 0.2f;
+	// pointsphere zPosition
+	controlValues[9] = -0.7f;
 	// ratio
 	controlValues[11] = 20.0f;
 	// Speed 

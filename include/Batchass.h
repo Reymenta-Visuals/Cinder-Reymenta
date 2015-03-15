@@ -72,16 +72,16 @@ namespace Reymenta
 		bool						tRotationSpeed;
 		bool						autoRotationSpeed;
 		// animation functions
-		void						resetExposure(const bool &pressed);
-		void						tempoExposure(const bool &pressed);
-		void						resetZoom(const bool &pressed);
-		void						tempoZoom(const bool &pressed);
+		void						resetExposure();
+		void						tempoExposure();
+		void						resetZoom();
+		void						tempoZoom();
 		void						resetRatio();
 		void						tempoRatio();
-		void						resetZPos(const bool &pressed);
-		void						tempoZPos(const bool &pressed);
-		void						resetRotationSpeed(const bool &pressed);
-		void						tempoRotationSpeed(const bool &pressed);
+		void						resetZPos();
+		void						tempoZPos();
+		void						resetRotationSpeed();
+		void						tempoRotationSpeed();
 		void						lockRatio() { autoRatio = !autoRatio; };
 		void						lockExposure() { autoExposure = !autoExposure; };
 		void						lockZoom() { autoZoom = !autoZoom; };

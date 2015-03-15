@@ -134,11 +134,11 @@ void Batchass::update()
 		// ZPos
 		if (tZPos)
 		{
-			mParameterBag->mZPosition = (modulo < 0.1) ? maxZPos : minZPos;
+			mParameterBag->controlValues[9] = (modulo < 0.1) ? maxZPos : minZPos;
 		}
 		else
 		{
-			mParameterBag->mZPosition = autoZPos ? lmap<float>(mParameterBag->iTempoTime, 0.00001, mParameterBag->iDeltaTime, minZPos, maxZPos) : mParameterBag->mZPosition;
+			mParameterBag->controlValues[9] = autoZPos ? lmap<float>(mParameterBag->iTempoTime, 0.00001, mParameterBag->iDeltaTime, minZPos, maxZPos) : mParameterBag->controlValues[9];
 		}
 
 		// Front Red
@@ -269,47 +269,47 @@ void Batchass::log(string msg)
 {
 	mLog->logTimedString(msg);
 }
-void Batchass::tempoZoom(const bool &pressed)
+void Batchass::tempoZoom()
 {
-	tZoom = pressed;
-	if (!pressed) resetZoom(pressed);
+	tZoom = !tZoom;
+	if (!tZoom) resetZoom();
 }
-void Batchass::resetZoom(const bool &pressed)
+void Batchass::resetZoom()
 {
 	autoZoom = false;
 	tZoom = false;
 	mParameterBag->controlValues[13] = defaultZoom;
 }
 
-void Batchass::tempoZPos(const bool &pressed)
+void Batchass::tempoZPos()
 {
-	tZPos = pressed;
-	if (!pressed) resetZPos(pressed);
+	tZPos = !tZPos;
+	if (!tZPos) resetZPos();
 }
-void Batchass::resetZPos(const bool &pressed)
+void Batchass::resetZPos()
 {
 	autoZPos = false;
 	tZPos = false;
-	mParameterBag->mZPosition = defaultZPos;
+	mParameterBag->controlValues[9] = defaultZPos;
 }
-void Batchass::tempoRotationSpeed(const bool &pressed)
+void Batchass::tempoRotationSpeed()
 {
-	tRotationSpeed = pressed;
-	if (!pressed) resetRotationSpeed(pressed);
+	tRotationSpeed = !tRotationSpeed;
+	if (!tRotationSpeed) resetRotationSpeed();
 }
-void Batchass::resetRotationSpeed(const bool &pressed)
+void Batchass::resetRotationSpeed()
 {
 	autoRotationSpeed = false;
 	tRotationSpeed = false;
 	mParameterBag->controlValues[19] = defaultRotationSpeed;
 }
 
-void Batchass::tempoExposure(const bool &pressed)
+void Batchass::tempoExposure()
 {
-	tExposure = pressed;
-	if (!pressed) resetExposure(pressed);
+	tExposure = !tExposure;
+	if (!tExposure) resetExposure();
 }
-void Batchass::resetExposure(const bool &pressed)
+void Batchass::resetExposure()
 {
 	autoExposure = false;
 	tExposure = false;

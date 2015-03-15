@@ -80,7 +80,6 @@ namespace Reymenta {
 		bool						isUIDirty;
 		bool						mMIDIOpenAllInputPorts;
 		int							mCount;
-		float						mZPosition;
 		bool						mLockFR, mLockFG, mLockFB, mLockFA, mLockBR, mLockBG, mLockBB, mLockBA;
 		string						mImageFile;
 		// tap tempo
