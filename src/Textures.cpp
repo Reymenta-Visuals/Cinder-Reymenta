@@ -66,7 +66,7 @@ void Textures::createWarpInput()
 	newWarpInput.leftMode = 0;
 	newWarpInput.rightIndex = 0;
 	newWarpInput.rightMode = 0;
-	newWarpInput.iCrossfade = 0.5;
+	newWarpInput.controlValues[18] = 0.5;
 	newWarpInput.hasTexture = false;
 	warpInputs.push_back(newWarpInput);
 	// init mixTextures
@@ -238,8 +238,8 @@ void Textures::draw()
 	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
 	aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[15]);
 	aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
-	aShader->uniform("iCrossfade", mParameterBag->iPreviewCrossfade);
-	aShader->uniform("iPixelate", mParameterBag->controlValues[18]);
+	aShader->uniform("controlValues[18]", mParameterBag->controlValues[17]);
+	aShader->uniform("iPixelate", mParameterBag->controlValues[20]);
 	aShader->uniform("iExposure", mParameterBag->controlValues[14]);
 	aShader->uniform("iDeltaTime", mParameterBag->iDeltaTime);
 	aShader->uniform("iFade", (int)mParameterBag->iFade);
@@ -315,8 +315,8 @@ void Textures::draw()
 	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
 	aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[15]);
 	aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
-	aShader->uniform("iCrossfade", mParameterBag->iPreviewCrossfade);
-	aShader->uniform("iPixelate", mParameterBag->controlValues[18]);
+	aShader->uniform("controlValues[18]", mParameterBag->controlValues[17]);
+	aShader->uniform("iPixelate", mParameterBag->controlValues[20]);
 	aShader->uniform("iExposure", mParameterBag->controlValues[14]);
 	aShader->uniform("iDeltaTime", mParameterBag->iDeltaTime);
 	aShader->uniform("iFade", (int)mParameterBag->iFade);
@@ -393,8 +393,8 @@ void Textures::draw()
 	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
 	aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[15]);
 	aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
-	aShader->uniform("iCrossfade", mParameterBag->iPreviewCrossfade);
-	aShader->uniform("iPixelate", mParameterBag->controlValues[18]);
+	aShader->uniform("controlValues[18]", mParameterBag->controlValues[17]);
+	aShader->uniform("iPixelate", mParameterBag->controlValues[20]);
 	aShader->uniform("iExposure", mParameterBag->controlValues[14]);
 	aShader->uniform("iDeltaTime", mParameterBag->iDeltaTime);
 	aShader->uniform("iFade", (int)mParameterBag->iFade);
@@ -482,8 +482,8 @@ void Textures::draw()
 	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
 	aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[15]);
 	aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
-	aShader->uniform("iCrossfade", mParameterBag->iCrossfade);
-	aShader->uniform("iPixelate", mParameterBag->controlValues[18]);
+	aShader->uniform("controlValues[18]", mParameterBag->controlValues[18]);
+	aShader->uniform("iPixelate", mParameterBag->controlValues[20]);
 	aShader->uniform("iExposure", mParameterBag->controlValues[14]);
 	aShader->uniform("iDeltaTime", mParameterBag->iDeltaTime);
 	aShader->uniform("iFade", (int)mParameterBag->iFade);
@@ -564,8 +564,8 @@ void Textures::draw()
 	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
 	aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[15]);
 	aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
-	aShader->uniform("iCrossfade", mParameterBag->iCrossfade);
-	aShader->uniform("iPixelate", mParameterBag->controlValues[18]);
+	aShader->uniform("controlValues[18]", mParameterBag->controlValues[18]);
+	aShader->uniform("iPixelate", mParameterBag->controlValues[20]);
 	aShader->uniform("iExposure", mParameterBag->controlValues[14]);
 	aShader->uniform("iDeltaTime", mParameterBag->iDeltaTime);
 	aShader->uniform("iFade", (int)mParameterBag->iFade);

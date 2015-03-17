@@ -98,7 +98,7 @@ namespace Reymenta {
 		bool						iRepeat;
 		bool						iLight;
 		bool						iLightAuto;
-		float						iCrossfade, iPreviewCrossfade;
+		//float						iCrossfade, iPreviewCrossfade;
 		bool						iShowFps;
 		bool						iDebug;
 		float						iFps;

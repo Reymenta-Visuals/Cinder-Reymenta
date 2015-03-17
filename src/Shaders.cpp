@@ -257,7 +257,7 @@ string Shaders::getNewFragFileName(string aFilePath)
 void Shaders::renderPreviewShader()
 {
 	//mShader = mPreviewShader;
-	mParameterBag->iCrossfade = mParameterBag->iPreviewCrossfade;
+	mParameterBag->controlValues[18] = mParameterBag->controlValues[17];
 	mFragmentShaders[mCurrentRenderShader] = mFragmentShaders[mCurrentPreviewShader];
 }
 bool Shaders::loadPixelFragmentShader(string aFilePath)
@@ -319,15 +319,15 @@ void Shaders::loadCurrentFrag()
 	mParameterBag->iTransition = 0;
 	// avoid looping or transition to run
 	mParameterBag->iAnim = 1.0;
-	if (mParameterBag->iCrossfade < 0.5)
+	if (mParameterBag->controlValues[18] < 0.5)
 	{
 		//Right
-		mParameterBag->iCrossfade = 1.0;
+		mParameterBag->controlValues[18] = 1.0;
 	}
 	else
 	{
 		//Left
-		mParameterBag->iCrossfade = 0.0;
+		mParameterBag->controlValues[18] = 0.0;
 
 	}
 	timeline().apply(&mParameterBag->iAnim, 1.0f, 0.1f, EaseOutCubic()).finishFn([&]{

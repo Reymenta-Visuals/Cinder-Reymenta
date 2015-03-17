@@ -59,7 +59,7 @@ namespace Reymenta
 		int							leftMode;		// 0 for input texture, 1 for shader
 		int							rightIndex;
 		int							rightMode;		// 0 for input texture, 1 for shader
-		float						iCrossfade;		// from 0 left to 1 right
+		float						controlValues[18];		// from 0 left to 1 right
 		bool						hasTexture;		// has already a texture? if not the first one is put on left and right
 		bool						active;
 	};
@@ -99,7 +99,7 @@ namespace Reymenta
 		void						createWarpInput();
 		//! warpInputs: vector of warp input textures/shader fbo texture
 		vector<WarpInput>			warpInputs;
-		void						setCrossfade(int value) { warpInputs[mParameterBag->selectedWarp].iCrossfade = value; };
+		void						setCrossfade(int value) { warpInputs[mParameterBag->selectedWarp].controlValues[18] = value; };
 
 	private:
 		// Logger

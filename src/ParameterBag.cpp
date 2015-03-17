@@ -317,7 +317,7 @@ void ParameterBag::reset()
 	{
 		iChannelResolution[i] = Vec3f(mRenderWidth, mRenderHeight, 1.0);
 	}	
-	iCrossfade = iPreviewCrossfade = 1.0;
+	controlValues[18] = controlValues[17] = 1.0;
 	iDebug = iFade = mSendToOutput = iLight = iLightAuto = iRepeat = false;
 	iFps = 60.0;
 	sFps = "60";
@@ -436,8 +436,12 @@ void ParameterBag::reset()
 	controlValues[15] = 0.0f;
 	// Steps
 	controlValues[16] = 16.0f;
-	// Pixelate
+	// iPreviewCrossfade
+	controlValues[17] = 1.0f;
+	// iCrossfade
 	controlValues[18] = 1.0f;
+	// Pixelate
+	controlValues[20] = 1.0f;
 	// RotationSpeed
 	controlValues[19] = 0.0f;
 	// glitch
