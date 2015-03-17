@@ -45,16 +45,17 @@ namespace Reymenta
 			return shared_ptr<Shaders>( new Shaders( aParameterBag ) );
 		}
 
-		string getMiddleFragFileName() { return mFragFileName; };
-		string getMiddleFragFullPath() { return mFragFile; };
+		string getFragFileName() { return mFragFileName; };
+		string getFragFullPath() { return mFragFile; };
 
-		void doTransition();
-		bool setFragString(string pixelFrag);
-		bool setGLSLString(string pixelFrag);
-		bool loadTextFile(string aFilePath);
-		void loadCurrentFrag();
+		void							doTransition();
+		bool							setFragString(string pixelFrag);
+		int								setGLSLString(string pixelFrag);
+		string							getShaderName(int aIndex);
+		bool							loadTextFile(string aFilePath);
+		void							loadCurrentFrag();
 
-		string getFragError();
+		string							getFragError();
 		
 		bool isValidFrag() { return validFrag; };
 		bool isValidVert() { return validVert; };
@@ -64,7 +65,7 @@ namespace Reymenta
 		gl::GlslProgRef getLiveShader() { return mLiveShader; };
 		gl::GlslProgRef getShader(int aIndex) { return mFragmentShaders[aIndex]; };
 
-		bool loadPixelFragmentShader(string aFilePath);
+		int loadPixelFragmentShader(string aFilePath);
 		void loadFragmentShader(boost::filesystem::path aFilePath);
 		string getFileName(string aFilePath);
 		string getNewFragFileName( string aFilePath);
@@ -88,6 +89,7 @@ namespace Reymenta
 		int							mCurrentRenderShader;
 		int							mCurrentPreviewShader;
 		vector<gl::GlslProgRef>		mFragmentShaders;
+		vector<string>				mFragmentShadersNames;
 
 		string						fileName, previousFileName, currentFileName, mixFileName;
 		string						mError;

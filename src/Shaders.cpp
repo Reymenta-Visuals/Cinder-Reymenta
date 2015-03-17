@@ -126,12 +126,14 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 		localFile = getAssetPath("")  / fileName;
 		mFragFileName = fileName;
 		mFragFile = localFile.string();
+		mFragmentShadersNames.push_back("unknown");
 		loadPixelFragmentShader(localFile.string());
 	}
 	// init with passthru shader if something goes wrong	
 	for (size_t m = mFragmentShaders.size(); m < mParameterBag->MAX; m++)
 	{
 		mFragmentShaders.push_back(gl::GlslProg::create(loadAsset("passthru.vert"), loadAsset("passthru.frag")));
+		mFragmentShadersNames.push_back("passthru.frag");
 	}
 	mCurrentPreviewShader = 0;
 	mCurrentRenderShader = 0;
@@ -227,6 +229,10 @@ Shaders::~Shaders()
 {
 	log->logTimedString("Shaders destructor");
 }
+string Shaders::getShaderName(int aIndex)
+{
+	return mFragmentShadersNames[aIndex];
+}
 string Shaders::getFileName(string aFilePath)
 {
 	string fName;
@@ -242,16 +248,7 @@ string Shaders::getFileName(string aFilePath)
 }
 string Shaders::getNewFragFileName(string aFilePath)
 {
-	string fName;
-	if (aFilePath.find_last_of("\\") != std::string::npos)
-	{
-		fName = aFilePath.substr(aFilePath.find_last_of("\\") + 1);
-	}
-	else
-	{
-		fName = aFilePath;
-	}
-	return fName + ".frag";
+	return getFileName(aFilePath) + ".frag";
 }
 
 void Shaders::renderPreviewShader()
@@ -260,9 +257,9 @@ void Shaders::renderPreviewShader()
 	mParameterBag->controlValues[18] = mParameterBag->controlValues[17];
 	mFragmentShaders[mCurrentRenderShader] = mFragmentShaders[mCurrentPreviewShader];
 }
-bool Shaders::loadPixelFragmentShader(string aFilePath)
+int Shaders::loadPixelFragmentShader(string aFilePath)
 {
-	bool rtn = false;
+	int rtn = -1;
 	// reset 
 	mParameterBag->iFade = false;
 	mParameterBag->controlValues[13] = 1.0f;
@@ -278,6 +275,10 @@ bool Shaders::loadPixelFragmentShader(string aFilePath)
 			validFrag = false;
 			std::string fs = inc + loadString(loadFile(aFilePath));
 			rtn = setGLSLString(fs);
+			if (rtn > -1)
+			{
+				mFragmentShadersNames[rtn] = getFileName(aFilePath);
+			}
 		}
 		else
 		{
@@ -347,7 +348,7 @@ void Shaders::doTransition()
 	}
 }
 
-bool Shaders::setGLSLString(string pixelFrag)
+int Shaders::setGLSLString(string pixelFrag)
 {
 	int foundIndex = -1;
 	currentFrag = pixelFrag;
@@ -385,7 +386,7 @@ bool Shaders::setGLSLString(string pixelFrag)
 		mError = string(exc.what());
 		log->logTimedString("setGLSLString error: " + mError);
 	}
-	return validFrag;
+	return foundIndex;
 }
 
 bool Shaders::setFragString(string pixelFrag)
