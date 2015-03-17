@@ -328,6 +328,16 @@ void OSC::sendOSCStringMessage(string controlType, int iarg0, string sarg1, stri
 	m.setRemoteEndpoint(mParameterBag->mOSCDestinationHost2, mParameterBag->mOSCDestinationPort2);
 	mOSCSender2.sendMessage(m);
 }
+void OSC::sendOSCColorMessage(string controlType, float val)
+{
+	osc::Message m;
+	m.setAddress(controlType);
+	m.addFloatArg(val);
+	m.setRemoteEndpoint(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort);
+	mOSCSender.sendMessage(m);
+	m.setRemoteEndpoint(mParameterBag->mOSCDestinationHost2, mParameterBag->mOSCDestinationPort2);
+	mOSCSender2.sendMessage(m);
+}
 void OSC::sendOSCFloatMessage(string controlType, int iarg0, float farg1, float farg2, float farg3, float farg4, float farg5)
 {
 	osc::Message m;
