@@ -25,7 +25,7 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	for (size_t m = mFbos.size(); m < 9; m++)
 	{
 		mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
-		//mFbos[mFbos.size() - 1].getTexture(0).setFlipped(true);
+		mFbos[mFbos.size() - 1].getTexture(0).setFlipped(true);
 		//mThumbFbos.push_back(gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
 		//mThumbFbos[mThumbFbos.size() - 1].getTexture(0).setFlipped(true);
 	}
