@@ -360,14 +360,19 @@ void OSC::updateAndSendOSCFloatMessage(string controlType, int iarg0, float farg
 }
 void OSC::updateParams(int iarg0, float farg1)
 {
+	if (iarg0 > 10 && iarg0 < 19)
+	{
+		// rotary 
+		mParameterBag->controlValues[iarg0] = farg1;
+	}
 	if (iarg0 > 20 && iarg0 < 29)
 	{
-		//select index
+		// select index
 		mParameterBag->selectedWarp = iarg0 - 21;
 	}
 	if (iarg0 >30 && iarg0 < 39)
 	{
-		//select input
+		// select input
 		mParameterBag->mWarpFbos[mParameterBag->selectedWarp].textureIndex = iarg0 - 31;
 		// activate
 		mParameterBag->mWarpFbos[mParameterBag->selectedWarp].active = !mParameterBag->mWarpFbos[mParameterBag->selectedWarp].active;
