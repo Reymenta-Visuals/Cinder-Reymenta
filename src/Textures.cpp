@@ -12,27 +12,27 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 
 	// preview fbo at index 0
 	mFbos.push_back(gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));//640x480
-	mFbos[0].getTexture(0).setFlipped(true);
+	//mFbos[0].getTexture(0).setFlipped(true);
 	//mThumbFbos.push_back(gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
 	//mThumbFbos[0].getTexture(0).setFlipped(true);	sTextures[8].setFlipped(false);
 	//createPreviewFbo();//mFboWidth/4 or 16
 	// mix fbo at index 1
 	mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
-	mFbos[1].getTexture(0).setFlipped(false);
+	//mFbos[1].getTexture(0).setFlipped(false);
 	//mThumbFbos.push_back(gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
 	//mThumbFbos[1].getTexture(0).setFlipped(true);
 
 	for (size_t m = mFbos.size(); m < 9; m++)
 	{
 		mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
-		mFbos[mFbos.size() - 1].getTexture(0).setFlipped(true);
+		//mFbos[mFbos.size() - 1].getTexture(0).setFlipped(true);
 		//mThumbFbos.push_back(gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
 		//mThumbFbos[mThumbFbos.size() - 1].getTexture(0).setFlipped(true);
 	}
-	mFbos[mParameterBag->mMeshFboIndex].getTexture(0).setFlipped(false);
+	//mFbos[mParameterBag->mMeshFboIndex].getTexture(0).setFlipped(false);
 	// audio fbo at index 3
 	mFbos[mParameterBag->mAudioFboIndex] = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
-	//mFbos[mParameterBag->mAudioFboIndex].getTexture(0).setFlipped(true);
+	mFbos[mParameterBag->mAudioFboIndex].getTexture(0).setFlipped(true);
 
 
 	for (int i = 0; i < 1024; ++i) dTexture[i] = (unsigned char)(Rand::randUint() & 0xFF);
@@ -109,6 +109,10 @@ void Textures::setTexture(int index, string fileName)
 			log->logTimedString("Load asset error: " + fileName);
 		}
 	}
+}
+void Textures::flipFbo(int index)
+{
+	mFbos[index].getTexture(0).setFlipped(!mFbos[index].getTexture(0).isFlipped());
 }
 void Textures::flipMixFbo(bool flip)
 {
@@ -194,7 +198,7 @@ void Textures::renderWarpFbos()
 }
 void Textures::draw()
 {
-	renderWarpFbos();
+	//renderWarpFbos();
 	/**********************************************
 	* library FBOs
 	*/
@@ -228,10 +232,10 @@ void Textures::draw()
 	aShader->uniform("iFreq2", mParameterBag->iFreqs[2]);
 	aShader->uniform("iFreq3", mParameterBag->iFreqs[3]);
 	aShader->uniform("iChannelTime", mParameterBag->iChannelTime, 4);
-	aShader->uniform("iColor", Vec3f(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3]));// mParameterBag->iColor);
-	aShader->uniform("iBackgroundColor", Vec3f(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));// mParameterBag->iBackgroundColor);
+	aShader->uniform("iColor", Vec3f(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3]));
+	aShader->uniform("iBackgroundColor", Vec3f(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
 	aShader->uniform("iSteps", (int)mParameterBag->controlValues[16]);
-	aShader->uniform("iRatio", mParameterBag->controlValues[11]);//check if needed: +1;//mParameterBag->iRatio); 
+	aShader->uniform("iRatio", mParameterBag->controlValues[11]);
 	aShader->uniform("width", 1);
 	aShader->uniform("height", 1);
 	aShader->uniform("iRenderXY", mParameterBag->mLeftRenderXY);

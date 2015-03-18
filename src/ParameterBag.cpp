@@ -318,7 +318,8 @@ void ParameterBag::reset()
 		iChannelResolution[i] = Vec3f(mRenderWidth, mRenderHeight, 1.0);
 	}	
 	controlValues[18] = controlValues[17] = 1.0;
-	iDebug = iFade = mSendToOutput = iLight = iLightAuto = iRepeat = false;
+	iDebug = true;
+	iFade = mSendToOutput = iLight = iLightAuto = iRepeat = false;
 	iFps = 60.0;
 	sFps = "60";
 	iShowFps = true;
@@ -330,7 +331,7 @@ void ParameterBag::reset()
 	iAnim = 0.0;
 	mTransitionDuration = 1.0f;
 
-	mOriginUpperLeft = false;
+	mOriginUpperLeft = true;
 	multFactor = 126.0;
 	currentSelectedIndex = 0;
 	selectedWarp = 0;

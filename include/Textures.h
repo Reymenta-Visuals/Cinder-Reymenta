@@ -88,6 +88,7 @@ namespace Reymenta
 		int							getTextureCount() { return sTextures.size(); };
 		int							getFboCount() { return mFbos.size(); };
 		void						flipMixFbo(bool flip);
+		void						flipFbo(int index);
 		void						flipMixFboH(bool flip);
 		// from audio
 		void						setAudioTexture( unsigned char *signal );
