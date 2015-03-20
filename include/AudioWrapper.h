@@ -34,22 +34,25 @@ namespace Reymenta
 
 	public:
 		AudioWrapper( ParameterBagRef aParameterBag, TexturesRef aTexturesRef );
-		static AudioWrapperRef create( ParameterBagRef aParameterBag, TexturesRef aTexturesRef );
-		void draw();
-		void update();
-		void loadWaveFile(string aFilePath);
-		void mouseDown(MouseEvent event);
-		void mouseDrag(MouseEvent event);
-		void mouseUp(MouseEvent event);
-
+		static AudioWrapperRef			create( ParameterBagRef aParameterBag, TexturesRef aTexturesRef );
+		void							draw();
+		void							update();
+		void							loadWaveFile(string aFilePath);
+		void							mouseDown(MouseEvent event);
+		void							mouseDrag(MouseEvent event);
+		void							mouseUp(MouseEvent event);
+		void							setFftSize(int willBeMultipledByTwo);
+		void							setWindowSize(int willBeMultipledByTwo);
+		int								getFftSize() { return mFftSize / 2; };
+		int								getWindowSize() { return mWindowSize / 2; };
 	private:
 
 		// parameters
-		ParameterBagRef mParameterBag;
+		ParameterBagRef					mParameterBag;
 		// Textures
-		TexturesRef		mTextures;
+		TexturesRef						mTextures;
 		// Logger
-		LoggerRef					log;
+		LoggerRef						log;
 
 		// audio
 		audio::InputDeviceNodeRef		mLineIn;
@@ -60,14 +63,17 @@ namespace Reymenta
 
 		audio::SamplePlayerNodeRef		mSamplePlayerNode;
 		audio::SourceFileRef			mSourceFile;
+		int								mFftSize;
+		int								mWindowSize;
+		audio::MonitorSpectralNodeRef	mScopeLineInFmt;
 		// Paul Houx
 		// width and height of our mesh
-		static const int kWidth = 512;
-		static const int kHeight = 512;
+		static const int				kWidth = 256;//512;
+		static const int				kHeight = 256;//512;
 
 		// number of frequency bands of our spectrum
-		static const int kBands = 1024;
-		static const int kHistory = 128;
+		static const int				kBands = 256;// 1024;
+		static const int				kHistory = 128;
 
 		Channel32f			mChannelLeft;
 		Channel32f			mChannelRight;

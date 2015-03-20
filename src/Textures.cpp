@@ -18,7 +18,7 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	//createPreviewFbo();//mFboWidth/4 or 16
 	// mix fbo at index 1
 	mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
-	//mFbos[1].getTexture(0).setFlipped(false);
+	mFbos[1].getTexture(0).setFlipped(true);
 	//mThumbFbos.push_back(gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
 	//mThumbFbos[1].getTexture(0).setFlipped(true);
 
@@ -47,7 +47,8 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 		localFile = getAssetPath("") / fileName;
 		if (fs::exists(localFile))
 		{
-			gl::Texture img(loadImage(loadAsset(fileName)));
+			gl::Texture img(loadImage(loadAsset(fileName)));// TODO , gl::Texture::Format().magFilter(GL_LINEAR).minFilter(GL_LINEAR).loadTopDown());
+			//img.setFlipped();
 			sTextures.push_back(img);
 		}
 		else
@@ -109,6 +110,10 @@ void Textures::setTexture(int index, string fileName)
 			log->logTimedString("Load asset error: " + fileName);
 		}
 	}
+}
+void Textures::flipTexture(int index)
+{
+	sTextures[index].setFlipped(!sTextures[index].isFlipped());
 }
 void Textures::flipFbo(int index)
 {

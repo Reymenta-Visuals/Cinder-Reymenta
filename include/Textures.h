@@ -86,6 +86,7 @@ namespace Reymenta
 
 		ci::gl::Fbo					getFbo(int index);
 		int							getTextureCount() { return sTextures.size(); };
+		void						flipTexture(int index);
 		int							getFboCount() { return mFbos.size(); };
 		void						flipMixFbo(bool flip);
 		void						flipFbo(int index);
