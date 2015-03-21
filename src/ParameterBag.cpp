@@ -323,7 +323,6 @@ void ParameterBag::reset()
 #else
 	iDebug = false;
 #endif  // _DEBUG
-	iDebug = true;
 	iFade = mSendToOutput = iLight = iLightAuto = iRepeat = false;
 	iFps = 60.0;
 	sFps = "60";
@@ -438,18 +437,18 @@ void ParameterBag::reset()
 	controlValues[13] = iZoomLeft = iZoomRight = 1.0f;
 	// exposure
 	controlValues[14] = 1.0f;
-	// Blendmode 
-	controlValues[15] = 0.0f;
+	// Pixelate
+	controlValues[15] = 1.0f;
 	// Steps
 	controlValues[16] = 16.0f;
 	// iPreviewCrossfade
 	controlValues[17] = 1.0f;
 	// iCrossfade
 	controlValues[18] = 1.0f;
-	// Pixelate
-	controlValues[20] = 1.0f;
 	// RotationSpeed
 	controlValues[19] = 0.0f;
+	// Blendmode 
+	controlValues[20] = 0.0f;
 	// glitch
 	controlValues[45] = 0.0f;
 	// toggle
