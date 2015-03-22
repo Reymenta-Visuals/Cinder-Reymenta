@@ -36,17 +36,17 @@ namespace Reymenta
 	typedef std::shared_ptr<class Shaders> ShadersRef;
 
 	class Shaders {
-	public:		
-		Shaders( ParameterBagRef aParameterBag );
+	public:
+		Shaders(ParameterBagRef aParameterBag);
 		virtual					~Shaders();
 		void update();
-		static ShadersRef	create( ParameterBagRef aParameterBag )
+		static ShadersRef	create(ParameterBagRef aParameterBag)
 		{
-			return shared_ptr<Shaders>( new Shaders( aParameterBag ) );
+			return shared_ptr<Shaders>(new Shaders(aParameterBag));
 		}
 
-		string getFragFileName() { return mFragFileName; };
-		string getFragFullPath() { return mFragFile; };
+		string							getFragFileName() { return mFragFileName; };
+		string							getFragFullPath() { return mFragFile; };
 
 		void							doTransition();
 		bool							setFragString(string pixelFrag);
@@ -56,27 +56,27 @@ namespace Reymenta
 		void							loadCurrentFrag();
 
 		string							getFragError();
-		
-		bool isValidFrag() { return validFrag; };
-		bool isValidVert() { return validVert; };
 
-		gl::GlslProgRef getMixShader() { return mMixShader; };
-		gl::GlslProgRef	getWarpShader() { return mWarpShader; };
-		gl::GlslProgRef getLiveShader() { return mLiveShader; };
-		gl::GlslProgRef getShader(int aIndex) { return mFragmentShaders[aIndex]; };
+		bool							isValidFrag() { return validFrag; };
+		bool							isValidVert() { return validVert; };
 
-		int loadPixelFragmentShader(string aFilePath);
-		void loadFragmentShader(boost::filesystem::path aFilePath);
-		string getFileName(string aFilePath);
-		string getNewFragFileName( string aFilePath);
-		string getFragStringFromFile( string fileName );
-		void renderPreviewShader();
-		int getCount() { return mFragmentShaders.size(); };
+		gl::GlslProgRef					getMixShader() { return mMixShader; };
+		gl::GlslProgRef					getWarpShader() { return mWarpShader; };
+		gl::GlslProgRef					getLiveShader() { return mLiveShader; };
+		gl::GlslProgRef					getShader(int aIndex) { return mFragmentShaders[aIndex]; };
+
+		int								loadPixelFragmentShader(string aFilePath);
+		void							loadFragmentShader(boost::filesystem::path aFilePath);
+		string							getFileName(string aFilePath);
+		string							getNewFragFileName(string aFilePath);
+		string							getFragStringFromFile(string fileName);
+		void							renderPreviewShader();
+		int								getCount() { return mFragmentShaders.size(); };
 
 		void shutdownLoader();
 	private:
 		// Logger
-		LoggerRef					log;	
+		LoggerRef					log;
 
 
 		string						mFragFile;
