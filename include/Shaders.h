@@ -51,6 +51,7 @@ namespace Reymenta
 		void							doTransition();
 		bool							setFragString(string pixelFrag);
 		int								setGLSLString(string pixelFrag);
+		int								setGLSLStringAtIndex(string pixelFrag, int index);
 		string							getShaderName(int aIndex);
 		bool							loadTextFile(string aFilePath);
 		void							loadCurrentFrag();
@@ -67,6 +68,7 @@ namespace Reymenta
 
 		int								loadPixelFragmentShader(string aFilePath);
 		void							loadFragmentShader(boost::filesystem::path aFilePath);
+		int								loadPixelFragmentShaderAtIndex(string aFilePath, int index);
 		string							getFileName(string aFilePath);
 		string							getNewFragFileName(string aFilePath);
 		string							getFragStringFromFile(string fileName);

@@ -81,13 +81,13 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 
 				// Load our shader and test if it is correctly compiled
 				try {
-					mLiveShader = gl::GlslProg::create(loadAsset("passthru.vert"), frag);
-					liveError = false;
+				mLiveShader = gl::GlslProg::create(loadAsset("passthru.vert"), frag);
+				liveError = false;
 				}
 				catch (gl::GlslProgCompileExc exc){
-					console() << exc.what() << endl;
+				console() << exc.what() << endl;
 				}
-			});*/
+				});*/
 		}
 		else
 		{
@@ -123,7 +123,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	for (size_t m = 0; m < 8; m++)
 	{
 		fileName = toString(m) + ".glsl";
-		localFile = getAssetPath("")  / fileName;
+		localFile = getAssetPath("") / fileName;
 		mFragFileName = fileName;
 		mFragFile = localFile.string();
 		mFragmentShadersNames.push_back("unknown");
@@ -212,7 +212,7 @@ string Shaders::getFragStringFromFile(string fileName)
 	string rtn = "";
 	try
 	{
-		rtn = loadString(loadAsset( fileName));
+		rtn = loadString(loadAsset(fileName));
 	}
 	catch (const std::exception &e)
 	{
@@ -256,6 +256,47 @@ void Shaders::renderPreviewShader()
 	//mShader = mPreviewShader;
 	mParameterBag->controlValues[18] = mParameterBag->controlValues[17];
 	mFragmentShaders[mCurrentRenderShader] = mFragmentShaders[mCurrentPreviewShader];
+}
+int Shaders::loadPixelFragmentShaderAtIndex(string aFilePath, int index)
+{
+	int rtn = -1;
+	// reset 
+	mParameterBag->iFade = false;
+	mParameterBag->controlValues[13] = 1.0f;
+	try
+	{
+		fs::path fr = aFilePath;
+		string name = "unknown";
+		string mFile = fr.string();
+		if (mFile.find_last_of("\\") != std::string::npos) name = mFile.substr(mFile.find_last_of("\\") + 1);
+		mFragFileName = name;
+		if (fs::exists(fr))
+		{
+			validFrag = false;
+			std::string fs = inc + loadString(loadFile(aFilePath));
+			rtn = setGLSLStringAtIndex(fs, index);
+			if (rtn > -1)
+			{
+				mFragmentShadersNames[rtn] = getFileName(aFilePath);
+			}
+		}
+		else
+		{
+			log->logTimedString(mFragFile + " loaded and compiled, does not exist:" + aFilePath);
+		}
+	}
+	catch (gl::GlslProgCompileExc &exc)
+	{
+		mError = string(exc.what());
+		log->logTimedString(aFilePath + " unable to load/compile shader:" + string(exc.what()));
+	}
+	catch (const std::exception &e)
+	{
+		mError = string(e.what());
+		log->logTimedString(aFilePath + " unable to load shader:" + string(e.what()));
+	}
+
+	return rtn;
 }
 int Shaders::loadPixelFragmentShader(string aFilePath)
 {
@@ -388,7 +429,29 @@ int Shaders::setGLSLString(string pixelFrag)
 	}
 	return foundIndex;
 }
-
+int Shaders::setGLSLStringAtIndex(string pixelFrag, int index)
+{
+	int foundIndex = -1;
+	currentFrag = pixelFrag;
+	try
+	{
+		// load the new shader
+		mFragmentShaders[index] = gl::GlslProg::create(NULL, currentFrag.c_str());
+		foundIndex = index;
+		//preview the new loaded shader
+		mParameterBag->mPreviewFragIndex = index;
+		log->logTimedString("setGLSLString success");
+		mError = "";
+		validFrag = true;
+	}
+	catch (gl::GlslProgCompileExc &exc)
+	{
+		validFrag = false;
+		mError = string(exc.what());
+		log->logTimedString("setGLSLString error: " + mError);
+	}
+	return foundIndex;
+}
 bool Shaders::setFragString(string pixelFrag)
 {
 	currentFrag = pixelFrag;
