@@ -45,7 +45,7 @@ float Batchass::formatFloat(float f)
 {
 	int i;
 	f *= 100;
-	i = ((int)f)/100;
+	i = ((int)f) / 100;
 	return (float)i;
 }
 void Batchass::setup()
@@ -240,28 +240,28 @@ void Batchass::getWindowsResolution()
 	mParameterBag->mDisplayCount = 0;
 	//if (mParameterBag->mAutoLayout)
 	//{
-		// Display sizes
-		mParameterBag->mMainDisplayWidth = Display::getMainDisplay()->getWidth();
-		mParameterBag->mRenderX = mParameterBag->mMainDisplayWidth;
-		mParameterBag->mRenderY = 0;
-		for (auto display : Display::getDisplays())
-		{
-			mParameterBag->mDisplayCount++;
-			mParameterBag->mRenderWidth = display->getWidth();
-			mParameterBag->mRenderHeight = display->getHeight();
-			mLog->logTimedString("Window " + toString(mParameterBag->mDisplayCount) + ": " + toString(mParameterBag->mRenderWidth) + "x" + toString(mParameterBag->mRenderHeight));
-		}
-		mLog->logTimedString(" mRenderWidth" + toString(mParameterBag->mRenderWidth) + "mRenderHeight" + toString(mParameterBag->mRenderHeight));
-		mParameterBag->mRenderResoXY = Vec2f(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
-		// in case only one screen , render from x = 0
-		if (mParameterBag->mDisplayCount == 1) mParameterBag->mRenderX = 0;
-	/*}	
+	// Display sizes
+	mParameterBag->mMainDisplayWidth = Display::getMainDisplay()->getWidth();
+	mParameterBag->mRenderX = mParameterBag->mMainDisplayWidth;
+	mParameterBag->mRenderY = 0;
+	for (auto display : Display::getDisplays())
+	{
+		mParameterBag->mDisplayCount++;
+		mParameterBag->mRenderWidth = display->getWidth();
+		mParameterBag->mRenderHeight = display->getHeight();
+		mLog->logTimedString("Window " + toString(mParameterBag->mDisplayCount) + ": " + toString(mParameterBag->mRenderWidth) + "x" + toString(mParameterBag->mRenderHeight));
+	}
+	mLog->logTimedString(" mRenderWidth" + toString(mParameterBag->mRenderWidth) + "mRenderHeight" + toString(mParameterBag->mRenderHeight));
+	mParameterBag->mRenderResoXY = Vec2f(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
+	// in case only one screen , render from x = 0
+	if (mParameterBag->mDisplayCount == 1) mParameterBag->mRenderX = 0;
+	/*}
 	else
 	{
-		for (auto display : Display::getDisplays())
-		{
-			mParameterBag->mDisplayCount++;
-		}
+	for (auto display : Display::getDisplays())
+	{
+	mParameterBag->mDisplayCount++;
+	}
 	}*/
 
 }
@@ -359,4 +359,40 @@ void Batchass::calculateTempo()
 	averageTime = (double)(tAverage / buffer.size());
 	mParameterBag->iDeltaTime = averageTime;
 	mParameterBag->mTempo = 60 / averageTime;
+}
+void Batchass::setTimeFactor(const int &aTimeFactor)
+{
+	switch (aTimeFactor)
+	{
+	case 0:
+		mParameterBag->iTimeFactor = 0.0001;
+		break;
+	case 1:
+		mParameterBag->iTimeFactor = 0.125;
+		break;
+	case 2:
+		mParameterBag->iTimeFactor = 0.25;
+		break;
+	case 3:
+		mParameterBag->iTimeFactor = 0.5;
+		break;
+	case 4:
+		mParameterBag->iTimeFactor = 0.75;
+		break;
+	case 5:
+		mParameterBag->iTimeFactor = 1.0;
+		break;
+	case 6:
+		mParameterBag->iTimeFactor = 2.0;
+		break;
+	case 7:
+		mParameterBag->iTimeFactor = 4.0;
+		break;
+	case 8:
+		mParameterBag->iTimeFactor = 16.0;
+		break;
+	default:
+		mParameterBag->iTimeFactor = 1.0;
+		break;
+	}
 }

@@ -89,6 +89,7 @@ namespace Reymenta
 		void						lockRotationSpeed() { autoRotationSpeed = !autoRotationSpeed; };
 		// tempo
 		void						tapTempo();
+		void						setTimeFactor(const int &aTimeFactor);
 
 	private:
 		// parameters
