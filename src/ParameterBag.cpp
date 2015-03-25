@@ -49,6 +49,10 @@ bool ParameterBag::save()
 	AutoLayout.setAttribute("value", toString(mAutoLayout));
 	settings.push_back(AutoLayout);
 
+	XmlTree Standalone("Standalone", "");
+	Standalone.setAttribute("value", toString(mStandalone));
+	settings.push_back(Standalone);
+
 	XmlTree RenderWidth("RenderWidth", "");
 	RenderWidth.setAttribute("value", toString(mRenderWidth));
 	settings.push_back(RenderWidth);
@@ -149,6 +153,10 @@ bool ParameterBag::restore()
 		else {
 			const XmlTree settings = xml.getChild("settings");
 
+			if (settings.hasChild("Standalone")) {
+				XmlTree Standalone = settings.getChild("Standalone");
+				mStandalone = Standalone.getAttributeValue<bool>("value");
+			}
 			if (settings.hasChild("AutoLayout")) {
 				XmlTree AutoLayout = settings.getChild("AutoLayout");
 				mAutoLayout = AutoLayout.getAttributeValue<bool>("value");
@@ -253,13 +261,14 @@ void ParameterBag::reset()
 	// parameters exposed in XML
 	mMIDIOpenAllInputPorts = true;
 	mAutoLayout = true;
+	mStandalone = false;
 	mShowUI = true;
 	mCursorVisible = true;
 	mOutputVideoResolution = 1024;
 
 	// parameters not exposed in XML
 	mMainWindowX = 10;
-	mMainWindowY = 10;
+	mMainWindowY = 40;
 	mMainWindowWidth = 1280;
 	mMainWindowHeight = 720;
 	// render widths
