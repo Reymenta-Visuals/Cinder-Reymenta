@@ -258,8 +258,8 @@ void ParameterBag::reset()
 	mOutputVideoResolution = 1024;
 
 	// parameters not exposed in XML
-	mMainWindowX = 150;
-	mMainWindowY = 140;
+	mMainWindowX = 10;
+	mMainWindowY = 10;
 	mMainWindowWidth = 1280;
 	mMainWindowHeight = 720;
 	// render widths

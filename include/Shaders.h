@@ -75,7 +75,7 @@ namespace Reymenta
 		void							renderPreviewShader();
 		int								getCount() { return mFragmentShaders.size(); };
 
-		void shutdownLoader();
+		void							shutdownLoader();
 	private:
 		// Logger
 		LoggerRef					log;

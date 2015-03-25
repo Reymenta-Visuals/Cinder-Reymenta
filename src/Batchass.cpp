@@ -242,6 +242,7 @@ void Batchass::getWindowsResolution()
 	//{
 	// Display sizes
 	mParameterBag->mMainDisplayWidth = Display::getMainDisplay()->getWidth();
+	mParameterBag->mMainDisplayHeight = Display::getMainDisplay()->getHeight();
 	mParameterBag->mRenderX = mParameterBag->mMainDisplayWidth;
 	mParameterBag->mRenderY = 0;
 	for (auto display : Display::getDisplays())
@@ -251,7 +252,8 @@ void Batchass::getWindowsResolution()
 		mParameterBag->mRenderHeight = display->getHeight();
 		mLog->logTimedString("Window " + toString(mParameterBag->mDisplayCount) + ": " + toString(mParameterBag->mRenderWidth) + "x" + toString(mParameterBag->mRenderHeight));
 	}
-	mLog->logTimedString(" mRenderWidth" + toString(mParameterBag->mRenderWidth) + "mRenderHeight" + toString(mParameterBag->mRenderHeight));
+	mLog->logTimedString(" mMainDisplayWidth" + toString(mParameterBag->mMainDisplayWidth) + " mMainDisplayHeight" + toString(mParameterBag->mMainDisplayHeight));
+	mLog->logTimedString(" mRenderX" + toString(mParameterBag->mRenderX) + " mRenderY" + toString(mParameterBag->mRenderY));
 	mParameterBag->mRenderResoXY = Vec2f(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
 	// in case only one screen , render from x = 0
 	if (mParameterBag->mDisplayCount == 1) mParameterBag->mRenderX = 0;
