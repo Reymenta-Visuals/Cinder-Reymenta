@@ -151,6 +151,8 @@ namespace Reymenta {
 		float						mAudioMultFactor;
 		float						iFreqs[4];
 		int							mBeat;
+		int							mFftSize;
+		int							mWindowSize;
 
 		// z EyePointZ
 		float						defaultEyePointZ;

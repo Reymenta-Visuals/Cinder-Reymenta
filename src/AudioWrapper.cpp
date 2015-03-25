@@ -23,17 +23,6 @@ POSSIBILITY OF SUCH DAMAGE.
 
 using namespace Reymenta;
 
-void AudioWrapper::setFftSize(int willBeMultipledByTwo)
-{
-	mFftSize = willBeMultipledByTwo * 2;
-	//scopeLineInFmt = audio::MonitorSpectralNode::Format().fftSize(mFftSize).windowSize(mWindowSize);
-}
-void AudioWrapper::setWindowSize(int willBeMultipledByTwo)
-{
-	mWindowSize = willBeMultipledByTwo * 2;
-	//scopeLineInFmt = audio::MonitorSpectralNode::Format().fftSize(mFftSize).windowSize(mWindowSize);
-}
-
 AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesRef)
 {
 	mParameterBag = aParameterBag;
@@ -42,10 +31,8 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 	log = Logger::create("AudioLog.txt");
 	log->logTimedString("Audio constructor");
 	
-	mFftSize = 256;
-	mWindowSize = 512;
-	//kWidth = 256;//512;
-	//kHeight = 256;//512;
+	kWidth = mParameterBag->mFftSize;//512;
+	kHeight = mParameterBag->mFftSize;//512;
 
 	// number of frequency bands of our spectrum
 	//kBands = 256;// 1024;
@@ -56,7 +43,7 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 	mLineIn = ctx->createInputDeviceNode();
 
 	//*mScopeLineInFmt = audio::MonitorSpectralNode::Format().fftSize(512).windowSize(256);
-	auto scopeLineInFmt = audio::MonitorSpectralNode::Format().fftSize(mFftSize).windowSize(mWindowSize);
+	auto scopeLineInFmt = audio::MonitorSpectralNode::Format().fftSize(mParameterBag->mFftSize).windowSize(mParameterBag->mWindowSize);
 	mMonitorLineInSpectralNode = ctx->makeNode(new audio::MonitorSpectralNode(scopeLineInFmt));
 	mLineIn >> mMonitorLineInSpectralNode;
 	

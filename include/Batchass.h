@@ -88,7 +88,7 @@ namespace Reymenta
 		void						lockZPos() { autoZPos = !autoZPos; };
 		void						lockRotationSpeed() { autoRotationSpeed = !autoRotationSpeed; };
 		// tempo
-		void						tapTempo(const bool &pressed);
+		void						tapTempo();
 
 	private:
 		// parameters

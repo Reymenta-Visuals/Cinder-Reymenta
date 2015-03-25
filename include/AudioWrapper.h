@@ -41,10 +41,7 @@ namespace Reymenta
 		void							mouseDown(MouseEvent event);
 		void							mouseDrag(MouseEvent event);
 		void							mouseUp(MouseEvent event);
-		void							setFftSize(int willBeMultipledByTwo);
-		void							setWindowSize(int willBeMultipledByTwo);
-		int								getFftSize() { return mFftSize / 2; };
-		int								getWindowSize() { return mWindowSize / 2; };
+
 	private:
 
 		// parameters
@@ -63,13 +60,11 @@ namespace Reymenta
 
 		audio::SamplePlayerNodeRef		mSamplePlayerNode;
 		audio::SourceFileRef			mSourceFile;
-		int								mFftSize;
-		int								mWindowSize;
 		audio::MonitorSpectralNodeRef	mScopeLineInFmt;
 		// Paul Houx
 		// width and height of our mesh
-		static const int				kWidth = 256;//512;
-		static const int				kHeight = 256;//512;
+		int								kWidth = 256;//512;
+		int								kHeight = 256;//512;
 
 		// number of frequency bands of our spectrum
 		static const int				kBands = 256;// 1024;

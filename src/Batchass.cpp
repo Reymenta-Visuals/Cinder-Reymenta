@@ -327,7 +327,7 @@ void Batchass::resetRatio()
 	mParameterBag->controlValues[11] = defaultRatio;
 }
 // tempo
-void Batchass::tapTempo(const bool &pressed)
+void Batchass::tapTempo()
 {
 	startTime = currentTime = timer.getSeconds();
 

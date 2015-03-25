@@ -121,6 +121,14 @@ bool ParameterBag::save()
 	WebSocketsPort.setAttribute("value", toString(mWebSocketsPort));
 	settings.push_back(WebSocketsPort);
 
+	XmlTree FftSize("FftSize", "");
+	FftSize.setAttribute("value", toString(mFftSize));
+	settings.push_back(FftSize);
+
+	XmlTree WindowSize("WindowSize", "");
+	WindowSize.setAttribute("value", toString(mWindowSize));
+	settings.push_back(WindowSize);
+
 	// write XML file
 	settings.write(writeFile(path));
 
@@ -200,6 +208,14 @@ bool ParameterBag::restore()
 			if (settings.hasChild("WebSocketsPort")) {
 				XmlTree WebSocketsPort = settings.getChild("WebSocketsPort");
 				mWebSocketsPort = WebSocketsPort.getAttributeValue<int>("value");
+			}
+			if (settings.hasChild("FftSize")) {
+				XmlTree FftSize = settings.getChild("FftSize");
+				mFftSize = FftSize.getAttributeValue<int>("value");
+			}
+			if (settings.hasChild("WindowSize")) {
+				XmlTree WindowSize = settings.getChild("WindowSize");
+				mWindowSize = WindowSize.getAttributeValue<int>("value");
 			}
 			// if AutoLayout is false we have to read the custom screen layout
 			if (!mAutoLayout)
@@ -289,6 +305,9 @@ void ParameterBag::reset()
 	mUseLineIn = true;
 	mIsPlaying = false;
 	mBeat = 0;
+	mFftSize = 256;
+	mWindowSize = 512;
+
 	maxVolume = 0.0f;
 	mData = new float[1024];
 	for (int i = 0; i < 1024; i++)
