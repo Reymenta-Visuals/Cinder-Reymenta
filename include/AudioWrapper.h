@@ -42,8 +42,9 @@ namespace Reymenta
 		void							mouseDrag(MouseEvent event);
 		void							mouseUp(MouseEvent event);
 
+		float*							getSmallSpectrum() { return arr; };
 	private:
-
+		float							arr[7];
 		// parameters
 		ParameterBagRef					mParameterBag;
 		// Textures

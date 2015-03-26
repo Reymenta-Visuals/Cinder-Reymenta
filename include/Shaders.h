@@ -80,7 +80,6 @@ namespace Reymenta
 		// Logger
 		LoggerRef					log;
 
-
 		string						mFragFile;
 		string						mFragFileName;
 

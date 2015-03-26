@@ -150,6 +150,7 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 	//  1) it tells us where to upload the next spectrum data
 	//  2) we use it to offset the texture coordinates in the shader for the scrolling effect
 	mOffset = 0;
+
 }
 
 AudioWrapperRef AudioWrapper::create(ParameterBagRef aParameterBag, TexturesRef aTexturesRef)
@@ -237,16 +238,30 @@ void AudioWrapper::update()
 			{
 			case 11:
 				mParameterBag->iFreqs[0] = f;
+				arr[0] = f;
 				break;
 			case 13:
 				mParameterBag->iFreqs[1] = f;
+				arr[1] = f;
 				break;
 			case 15:
 				mParameterBag->iFreqs[2] = f;
+				arr[2] = f;
 				break;
 			case 18:
 				mParameterBag->iFreqs[3] = f;
+				arr[3] = f;
 				break;
+			case 25:
+				arr[4] = f;
+				break;
+			case 30:
+				arr[5] = f;
+				break;
+			case 35:
+				arr[6] = f;
+				break;
+
 			default:
 				break;
 			}

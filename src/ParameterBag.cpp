@@ -53,6 +53,14 @@ bool ParameterBag::save()
 	Standalone.setAttribute("value", toString(mStandalone));
 	settings.push_back(Standalone);
 
+	XmlTree MainWindowWidth("MainWindowWidth", "");
+	MainWindowWidth.setAttribute("value", toString(mMainWindowWidth));
+	settings.push_back(MainWindowWidth);
+
+	XmlTree MainWindowHeight("MainWindowHeight", "");
+	MainWindowHeight.setAttribute("value", toString(mMainWindowHeight));
+	settings.push_back(MainWindowHeight);
+
 	XmlTree RenderWidth("RenderWidth", "");
 	RenderWidth.setAttribute("value", toString(mRenderWidth));
 	settings.push_back(RenderWidth);
@@ -228,6 +236,14 @@ bool ParameterBag::restore()
 			// if AutoLayout is false we have to read the custom screen layout
 			if (!mAutoLayout)
 			{
+				if (settings.hasChild("MainWindowWidth")) {
+					XmlTree MainWindowWidth = settings.getChild("MainWindowWidth");
+					mMainWindowWidth = MainWindowWidth.getAttributeValue<int>("value");
+				}
+				if (settings.hasChild("MainWindowHeight")) {
+					XmlTree MainWindowHeight = settings.getChild("MainWindowHeight");
+					mMainWindowHeight = MainWindowHeight.getAttributeValue<int>("value");
+				}
 				if (settings.hasChild("RenderWidth")) {
 					XmlTree RenderWidth = settings.getChild("RenderWidth");
 					mRenderWidth = RenderWidth.getAttributeValue<int>("value");
@@ -267,8 +283,8 @@ void ParameterBag::reset()
 	mOutputVideoResolution = 1024;
 
 	// parameters not exposed in XML
-	mMainWindowX = 10;
-	mMainWindowY = 40;
+	mMainWindowX = 0;
+	mMainWindowY = 0;
 	mMainWindowWidth = 1280;
 	mMainWindowHeight = 720;
 	// render widths
