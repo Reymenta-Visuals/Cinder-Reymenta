@@ -23,6 +23,7 @@ namespace Reymenta
 	// stores the pointer to the Reymenta instance
 	typedef std::shared_ptr<class Batchass> BatchassRef;
 
+
 	class Batchass {
 	public:
 		Batchass(ParameterBagRef aParameterBag);
