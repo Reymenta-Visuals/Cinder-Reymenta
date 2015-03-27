@@ -113,4 +113,3 @@ namespace Reymenta
 		int							beatIndex; //0 to 3
 	};
 }
-
