@@ -11,6 +11,8 @@
 #include "Shaders.h"
 // textures
 #include "Textures.h"
+// warps
+#include "WarpWrapper.h"
 // logger
 #include "Logger.h"
 
@@ -41,6 +43,7 @@ namespace Reymenta
 		void						log(string msg);
 		ShadersRef					getShadersRef() { return mShaders; };
 		TexturesRef					getTexturesRef() { return mTextures; };
+		WarpWrapperRef				getWarpsRef() { return mWarpings; };
 		// animation
 		// exposure
 		float						defaultExposure;
@@ -100,6 +103,8 @@ namespace Reymenta
 		ShadersRef					mShaders;
 		// Textures
 		TexturesRef					mTextures;
+		// warps
+		WarpWrapperRef				mWarpings;
 		// Logger
 		LoggerRef					mLog;
 		// tempo

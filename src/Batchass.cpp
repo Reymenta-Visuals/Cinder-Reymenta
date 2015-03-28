@@ -55,6 +55,8 @@ void Batchass::setup()
 
 	// instanciate the textures class
 	mTextures = Textures::create(mParameterBag, mShaders);
+	// instanciate the warps class
+	mWarpings = WarpWrapper::create(mParameterBag, mTextures, mShaders);
 
 	createWarpFbos();
 }
@@ -72,7 +74,7 @@ void Batchass::createWarpFbos()
 }
 void Batchass::createWarp()
 {
-
+	mWarpings->createWarp();
 }
 void Batchass::changeMode(int newMode)
 {
