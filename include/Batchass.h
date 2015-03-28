@@ -92,7 +92,7 @@ namespace Reymenta
 		void						tapTempo();
 		void						setTimeFactor(const int &aTimeFactor);
 		void						changeMode(int newMode);
-
+		void						createWarp();
 	private:
 		// parameters
 		ParameterBagRef				mParameterBag;

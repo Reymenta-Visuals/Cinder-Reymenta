@@ -131,8 +131,8 @@ if (aFbo < mFbos.size()) mParameterBag->mCurrentFboIndex = aFbo;
 }
 ci::gl::Texture Textures::getFboThumb(int index)
 {
-	if (index > mThumbFbos.size() - 1) index = mThumbFbos.size() - 1;
-	return mThumbFbos[index].getTexture();
+if (index > mThumbFbos.size() - 1) index = mThumbFbos.size() - 1;
+return mThumbFbos[index].getTexture();
 }
 */
 ci::gl::Texture Textures::getTexture(int index)
@@ -286,7 +286,7 @@ void Textures::renderShadaThumbFbo()
 	aShader->unbind();
 	// increment shada thumb index
 	currentShadaThumbIndex++;
-	if (currentShadaThumbIndex > mShaders->getCount()-1) currentShadaThumbIndex = 0;
+	if (currentShadaThumbIndex > mShaders->getCount() - 1) currentShadaThumbIndex = 0;
 }
 
 void Textures::draw()
@@ -533,11 +533,11 @@ void Textures::draw()
 	mThumbFbos[mParameterBag->mPreviewFragIndex].unbindFramebuffer();*/
 	//writeImage(getHomeDirectory() / "cinder" / "saveImage_" / (toString(1) + ".png"), copyWindowSurface());
 	// end of mLibraryFbos[mParameterBag->mCurrentPreviewFboIndex]
-	
-	
+
+
 	/***********************************************
 	* live FBO begin
-	
+
 
 	// draw using the live shader
 	mFbos[mParameterBag->mLiveFboIndex].bindFramebuffer();
@@ -572,7 +572,7 @@ void Textures::draw()
 	aShader->uniform("iColor", Vec3f(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3]));// mParameterBag->iColor);
 	aShader->uniform("iBackgroundColor", Vec3f(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));// mParameterBag->iBackgroundColor);
 	aShader->uniform("iSteps", (int)mParameterBag->controlValues[16]);
-	aShader->uniform("iRatio", mParameterBag->controlValues[11]);//check if needed: +1;//mParameterBag->iRatio); 
+	aShader->uniform("iRatio", mParameterBag->controlValues[11]);//check if needed: +1;//mParameterBag->iRatio);
 	aShader->uniform("width", 1);
 	aShader->uniform("height", 1);
 	aShader->uniform("iRenderXY", mParameterBag->mRenderXY);

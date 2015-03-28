@@ -70,6 +70,10 @@ void Batchass::createWarpFbos()
 		mParameterBag->mWarpFbos[a] = newWarpFbo;
 	}
 }
+void Batchass::createWarp()
+{
+
+}
 void Batchass::changeMode(int newMode)
 {
 	if (mParameterBag->mMode != newMode)
