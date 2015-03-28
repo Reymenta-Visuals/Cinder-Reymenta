@@ -111,6 +111,30 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 		fs::path mixFragFile = getAssetPath("") / "mix.frag";
 		mLiveShader = gl::GlslProg::create(loadAsset("passthru.vert"), loadFile(mixFragFile));
 	}
+	//load VertexSphereShader shader
+	try
+	{
+		fs::path vertexSphereFragFile = getAssetPath("") / "vertexSphere.frag";
+		if (fs::exists(vertexSphereFragFile))
+		{
+			mVertexSphereShader = gl::GlslProg::create(loadAsset("vertexSphere.vert"), loadFile(vertexSphereFragFile));
+		}
+		else
+		{
+			log->logTimedString("vertexSphere.frag does not exist, should quit");
+		}
+	}
+	catch (gl::GlslProgCompileExc &exc)
+	{
+		mError = string(exc.what());
+		log->logTimedString("unable to load/compile shader:" + string(exc.what()));
+	}
+	catch (const std::exception &e)
+	{
+		mError = string(e.what());
+		log->logTimedString("unable to load shader:" + string(e.what()));
+	}	
+	// shadertoy include
 	vs = loadString(loadAsset("passthru.vert"));
 	inc = loadString(loadAsset("shadertoy.inc"));
 

@@ -64,6 +64,7 @@ namespace Reymenta
 		gl::GlslProgRef					getMixShader() { return mMixShader; };
 		gl::GlslProgRef					getWarpShader() { return mWarpShader; };
 		gl::GlslProgRef					getLiveShader() { return mLiveShader; };
+		gl::GlslProgRef					getVertexSphereShader() { return mVertexSphereShader; };
 		gl::GlslProgRef					getShader(int aIndex) { return mFragmentShaders[aIndex]; };
 
 		int								loadPixelFragmentShader(string aFilePath);
@@ -115,23 +116,25 @@ namespace Reymenta
 			//gl::GlslProgRef shader;
 		};
 		//! The main thread will push data to this buffer, to be picked up by the loading thread.
-		ConcurrentCircularBuffer<LoaderData>* mRequests;
+		ConcurrentCircularBuffer<LoaderData>*	mRequests;
 		//! The loading thread will push data to this buffer, to be picked up by the main thread.
-		ConcurrentCircularBuffer<LoaderData>* mResponses;
+		ConcurrentCircularBuffer<LoaderData>*	mResponses;
 		//! Our loading thread, sharing a OpenGL context with the main thread.
-		std::shared_ptr<std::thread>          mThread;
+		std::shared_ptr<std::thread>			mThread;
 		//! Signals if the loading thread should abort.
-		bool                                  mThreadAbort;
+		bool									mThreadAbort;
 		// default vertex shader
-		std::string vs;
+		std::string								vs;
 		// include shader lines
-		std::string inc;
+		std::string								inc;
 		// mix shader
-		gl::GlslProgRef mMixShader;
+		gl::GlslProgRef							mMixShader;
 		// live coding shader
-		gl::GlslProgRef mLiveShader;
+		gl::GlslProgRef							mLiveShader;
 		//! warp shader
-		gl::GlslProgRef				mWarpShader;
+		gl::GlslProgRef							mWarpShader;
+		// vertex Sphere shader
+		gl::GlslProgRef							mVertexSphereShader;
 
 	};
 }

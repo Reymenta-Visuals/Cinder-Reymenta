@@ -402,6 +402,7 @@ void ParameterBag::reset()
 	mLeftFboIndex = 6;
 	mRightFboIndex = 7;
 	mLiveFboIndex = 8;
+	mVertexSphereFboIndex = 9;
 
 	mPreviewFragIndex = 0;
 	mPreviousFragIndex = 1;
@@ -425,6 +426,8 @@ void ParameterBag::reset()
 	mOutputResolution = Vec2f(640, 480);
 	// meshes
 	mMeshIndex = 0;
+	// vertex sphere
+	mVertexSphereTextureIndex = 1;
 
 	// initialize our camera
 	mCamEyePointXY = Vec2f(0.f, 0.f);

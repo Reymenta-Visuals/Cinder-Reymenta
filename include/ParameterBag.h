@@ -155,6 +155,7 @@ namespace Reymenta {
 		static const int			MODE_SPHERE = 4;
 		static const int			MODE_MESH = 5;
 		static const int			MODE_KINECT = 6;
+		static const int			MODE_VERTEXSPHERE = 7;
 
 		// windows to create, should be the same in App and UI
 		static const int			NONE = 0;
@@ -216,11 +217,13 @@ namespace Reymenta {
 		int							mUIRefresh;
 		int							mCurrentPreviewFboIndex;
 		int							mSphereFboIndex, mMeshFboIndex, mWarpFboIndex, mMixFboIndex, mAudioFboIndex, mLiveFboIndex;
-		int							mLeftFboIndex, mRightFboIndex;
+		int							mLeftFboIndex, mRightFboIndex, mVertexSphereFboIndex;
 		int							mLeftFragIndex, mRightFragIndex, mPreviewFragIndex, mPreviousFragIndex;
 		float						iZoomLeft, iZoomRight;
 		// meshes
 		int							mMeshIndex;
+		// VertexSphere
+		int							mVertexSphereTextureIndex;
 		// camera
 		CameraPersp					mCamera;
 		MayaCamUI					mMayaCam;

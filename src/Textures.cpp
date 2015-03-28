@@ -18,7 +18,7 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
 	mFbos[1].getTexture(0).setFlipped(true);
 
-	for (size_t m = mFbos.size(); m < 9; m++)
+	for (size_t m = mFbos.size(); m < 10; m++)
 	{
 		mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
 		//mFbos[mFbos.size() - 1].getTexture(0).setFlipped(true);
@@ -35,6 +35,8 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	for (int i = 0; i < 1024; ++i) dTexture[i] = (unsigned char)(Rand::randUint() & 0xFF);
 	// store it as a 512x2 texture in the first texture
 	sTextures.push_back(gl::Texture(dTexture, GL_LUMINANCE, 512, 2));
+
+
 
 	fs::path localFile;
 	for (int j = 0; j < mTexturesCount - 1; j++)
