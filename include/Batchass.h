@@ -91,6 +91,7 @@ namespace Reymenta
 		// tempo
 		void						tapTempo();
 		void						setTimeFactor(const int &aTimeFactor);
+		void						changeMode(int newMode);
 
 	private:
 		// parameters

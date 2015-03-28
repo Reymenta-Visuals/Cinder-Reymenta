@@ -330,8 +330,8 @@ void ParameterBag::reset()
 	mUseLineIn = true;
 	mIsPlaying = false;
 	mBeat = 0;
-	mFftSize = 256;
-	mWindowSize = 512;
+	mFftSize = 512;
+	mWindowSize = 1024;
 
 	maxVolume = 0.0f;
 	mData = new float[1024];

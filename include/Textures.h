@@ -37,33 +37,6 @@ namespace Reymenta
 	// stores the pointer to the Textures instance
 	typedef std::shared_ptr<class Textures> TexturesRef;
 
-	//! struct to keep track of the texture names for spout senders and shader fbo-rendered textures
-	//typedef 
-	struct Sender
-	{
-		char						SenderName[256];
-		unsigned int				width, height;
-		ci::gl::TextureRef			texture;
-		bool						active;
-	};
-	struct ShadaFbo
-	{
-		ci::gl::Fbo					fbo;
-		int							shadaIndex;
-		bool						active;
-	};
-
-	struct WarpInput
-	{
-		int							leftIndex;
-		int							leftMode;		// 0 for input texture, 1 for shader
-		int							rightIndex;
-		int							rightMode;		// 0 for input texture, 1 for shader
-		float						controlValues[18];		// from 0 left to 1 right
-		bool						hasTexture;		// has already a texture? if not the first one is put on left and right
-		bool						active;
-	};
-
 	class Textures {
 	public:		
 		Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef);

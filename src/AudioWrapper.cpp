@@ -30,13 +30,6 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 	// instanciate the logger class
 	log = Logger::create("AudioLog.txt");
 	log->logTimedString("Audio constructor");
-	
-	kWidth = mParameterBag->mFftSize;//512;
-	kHeight = mParameterBag->mFftSize;//512;
-
-	// number of frequency bands of our spectrum
-	//kBands = 256;// 1024;
-	//kHistory = 128;
 
 	// linein
 	auto ctx = audio::Context::master();
@@ -215,7 +208,7 @@ void AudioWrapper::update()
 	unsigned char signal[kBands];
 	mParameterBag->maxVolume = 0.0;
 	size_t mDataSize = mMagSpectrum.size();
-	if (mDataSize > 0)
+	if (mDataSize > 0 && mDataSize < 2048)
 	{
 		float mv;
 		float db;

@@ -64,11 +64,11 @@ namespace Reymenta
 		audio::MonitorSpectralNodeRef	mScopeLineInFmt;
 		// Paul Houx
 		// width and height of our mesh
-		int								kWidth = 256;//512;
-		int								kHeight = 256;//512;
+		static const int				kWidth = 512;
+		static const int				kHeight = 512;
 
 		// number of frequency bands of our spectrum
-		static const int				kBands = 256;// 1024;
+		static const int				kBands = 1024;
 		static const int				kHistory = 128;
 
 		Channel32f			mChannelLeft;
