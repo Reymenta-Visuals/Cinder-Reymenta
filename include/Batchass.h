@@ -96,6 +96,7 @@ namespace Reymenta
 		void						setTimeFactor(const int &aTimeFactor);
 		void						changeMode(int newMode);
 		void						createWarp();
+		void						assignFboToWarp(int index, int fbo);
 	private:
 		// parameters
 		ParameterBagRef				mParameterBag;

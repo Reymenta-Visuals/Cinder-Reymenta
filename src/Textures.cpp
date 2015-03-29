@@ -29,7 +29,7 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	}
 	currentShadaThumbIndex = 0;
 	//mFbos[mParameterBag->mMeshFboIndex].getTexture(0).setFlipped(false);
-	// audio fbo at index 3
+	// audio fbo at index 2
 	mFbos[mParameterBag->mAudioFboIndex] = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
 	mFbos[mParameterBag->mAudioFboIndex].getTexture(0).setFlipped(true);
 	for (int i = 0; i < 1024; ++i) dTexture[i] = (unsigned char)(Rand::randUint() & 0xFF);
@@ -54,6 +54,7 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 			gl::Texture img(loadImage(loadAsset("reymenta.jpg")));
 			sTextures.push_back(img);
 		}
+		
 	}
 
 }

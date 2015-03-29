@@ -76,6 +76,11 @@ void Batchass::createWarp()
 {
 	mWarpings->createWarp();
 }
+void Batchass::assignFboToWarp(int index, int fbo)
+{
+	if (index > -1 && index < mParameterBag->MAX && fbo > -1 && fbo < mTextures->getFboCount())
+	mParameterBag->mWarpFbos[index].textureIndex = fbo;
+}
 void Batchass::changeMode(int newMode)
 {
 	if (mParameterBag->mMode != newMode)
