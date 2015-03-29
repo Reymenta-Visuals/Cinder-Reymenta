@@ -290,7 +290,7 @@ void ParameterBag::reset()
 	// render widths
 	mRenderWidth = 1024;
 	mRenderHeight = 768;
-	mRenderXY = mLeftRenderXY = mRightRenderXY = mPreviewRenderXY = Vec2f::zero();
+	mRenderXY = mLeftRenderXY = mRightRenderXY = mPreviewRenderXY = mWarp1RenderXY = mWarp2RenderXY = Vec2f::zero();
 	mRenderPosXY = Vec2f(0.0, 320.0);
 	mRenderResoXY = Vec2f(mRenderWidth, mRenderHeight);
 	mRenderResolution = Vec2i(mRenderWidth, mRenderHeight);
@@ -299,8 +299,8 @@ void ParameterBag::reset()
 	mFboHeight = 480;
 	mPreviewFboWidth = 80;
 	mPreviewFboHeight = 60;
-	mPreviewWidth = 156;
-	mPreviewHeight = 88;
+	mPreviewWidth = 160;
+	mPreviewHeight = 120;
 	mRenderCodeEditorXY.x = 0;
 	mRenderCodeEditorXY.y = 0;
 	mCodeEditorWidth = 800;
@@ -401,13 +401,17 @@ void ParameterBag::reset()
 	mMeshFboIndex = 5;
 	mLeftFboIndex = 6;
 	mRightFboIndex = 7;
-	mLiveFboIndex = 8;
-	mVertexSphereFboIndex = 9;
+	mWarp1FboIndex = 8; 
+	mWarp2FboIndex = 9;
+	mLiveFboIndex = 10;
+	mVertexSphereFboIndex = 11;
 
 	mPreviewFragIndex = 0;
 	mPreviousFragIndex = 1;
 	mLeftFragIndex = 0;
 	mRightFragIndex = 1;
+	mWarp1FragIndex = 2;
+	mWarp2FragIndex = 3;
 	mFlipH = false;
 	mWarpCount = 3;
 	FPSColor = ColorA(0.0f, 1.0f, 0.0f, 1.0f);

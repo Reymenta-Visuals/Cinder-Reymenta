@@ -287,11 +287,10 @@ void Batchass::shutdownLoader()
 {
 	mShaders->shutdownLoader();
 }
-void Batchass::getWindowsResolution()
+int Batchass::getWindowsResolution()
 {
 	mParameterBag->mDisplayCount = 0;
-	//if (mParameterBag->mAutoLayout)
-	//{
+	int w =Display::getMainDisplay()->getWidth();
 	// Display sizes
 	mParameterBag->mMainDisplayWidth = Display::getMainDisplay()->getWidth();
 	mParameterBag->mMainDisplayHeight = Display::getMainDisplay()->getHeight();
@@ -309,15 +308,7 @@ void Batchass::getWindowsResolution()
 	mParameterBag->mRenderResoXY = Vec2f(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
 	// in case only one screen , render from x = 0
 	if (mParameterBag->mDisplayCount == 1) mParameterBag->mRenderX = 0;
-	/*}
-	else
-	{
-	for (auto display : Display::getDisplays())
-	{
-	mParameterBag->mDisplayCount++;
-	}
-	}*/
-
+	return w;
 }
 void Batchass::log(string msg)
 {

@@ -61,7 +61,7 @@ namespace Reymenta {
 		static ParameterBagRef create();
 
 		//! maximum number of fbos, shaders, textures
-		static const int			MAX = 10;
+		static const int			MAX = 12;
 
 		bool						save();
 		bool						restore();
@@ -90,7 +90,7 @@ namespace Reymenta {
 		// render windows
 		int							mRenderWidth;
 		int							mRenderHeight;
-		Vec2f						mRenderXY, mLeftRenderXY, mRightRenderXY, mPreviewRenderXY;
+		Vec2f						mRenderXY, mLeftRenderXY, mRightRenderXY, mPreviewRenderXY, mWarp1RenderXY, mWarp2RenderXY;
 		Vec2f						mRenderPosXY;
 		Vec2f						mPreviewFragXY;
 		Vec2f						mCamPosXY;
@@ -217,8 +217,8 @@ namespace Reymenta {
 		int							mUIRefresh;
 		int							mCurrentPreviewFboIndex;
 		int							mSphereFboIndex, mMeshFboIndex, mWarpFboIndex, mMixFboIndex, mAudioFboIndex, mLiveFboIndex;
-		int							mLeftFboIndex, mRightFboIndex, mVertexSphereFboIndex;
-		int							mLeftFragIndex, mRightFragIndex, mPreviewFragIndex, mPreviousFragIndex;
+		int							mLeftFboIndex, mRightFboIndex, mVertexSphereFboIndex, mWarp1FboIndex, mWarp2FboIndex;
+		int							mLeftFragIndex, mRightFragIndex, mPreviewFragIndex, mPreviousFragIndex, mWarp1FragIndex, mWarp2FragIndex;
 		float						iZoomLeft, iZoomRight;
 		// meshes
 		int							mMeshIndex;

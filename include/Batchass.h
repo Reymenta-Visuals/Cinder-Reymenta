@@ -37,7 +37,7 @@ namespace Reymenta
 		void						update();
 		// TODO move to private when shadamixa upgraded
 		void						createWarpFbos();
-		void						getWindowsResolution();
+		int							getWindowsResolution();
 		float						formatFloat(float f);
 		void						shutdownLoader();
 		void						log(string msg);

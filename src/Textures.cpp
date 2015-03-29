@@ -18,7 +18,7 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
 	mFbos[1].getTexture(0).setFlipped(true);
 
-	for (size_t m = mFbos.size(); m < 10; m++)
+	for (size_t m = mFbos.size(); m < mParameterBag->MAX ; m++)
 	{
 		mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
 		//mFbos[mFbos.size() - 1].getTexture(0).setFlipped(true);
@@ -35,8 +35,6 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	for (int i = 0; i < 1024; ++i) dTexture[i] = (unsigned char)(Rand::randUint() & 0xFF);
 	// store it as a 512x2 texture in the first texture
 	sTextures.push_back(gl::Texture(dTexture, GL_LUMINANCE, 512, 2));
-
-
 
 	fs::path localFile;
 	for (int j = 0; j < mTexturesCount - 1; j++)
@@ -296,8 +294,9 @@ void Textures::draw()
 	renderShadaThumbFbo();
 	/**********************************************
 	* library FBOs
+	* start of mLibraryFbos[mParameterBag->mLeftFboIndex]
 	*/
-	// start of mLibraryFbos[mParameterBag->mLeftFboIndex]
+
 	mFbos[mParameterBag->mLeftFboIndex].bindFramebuffer();
 	gl::setViewport(mFbos[mParameterBag->mLeftFboIndex].getBounds());
 
@@ -372,9 +371,14 @@ void Textures::draw()
 
 	aShader->unbind();
 	sTextures[6] = mFbos[mParameterBag->mLeftFboIndex].getTexture();
-	// end of mLibraryFbos[mParameterBag->mLeftFboIndex]
+	/*
+	* end of mLibraryFbos[mParameterBag->mLeftFboIndex]
+	***********************************************/
 
-	// start of mLibraryFbos[mParameterBag->mRightFboIndex]
+	/***********************************************
+	* start of mLibraryFbos[mParameterBag->mRightFboIndex]
+	*/
+
 	mFbos[mParameterBag->mRightFboIndex].bindFramebuffer();
 	gl::setViewport(mFbos[mParameterBag->mRightFboIndex].getBounds());
 
@@ -385,7 +389,6 @@ void Textures::draw()
 	aShader = mShaders->getShader(mParameterBag->mRightFragIndex);
 	aShader->bind();
 	aShader->uniform("iGlobalTime", mParameterBag->iGlobalTime);
-	//aShader->uniform("iResolution", Vec3f(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight, 1.0));
 	aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
 	aShader->uniform("iChannelResolution", mParameterBag->iChannelResolution, 4);
 	aShader->uniform("iMouse", Vec4f(mParameterBag->mRenderPosXY.x, mParameterBag->mRenderPosXY.y, mParameterBag->iMouse.z, mParameterBag->iMouse.z));//iMouse =  Vec3i( event.getX(), mRenderHeight - event.getY(), 1 );
@@ -450,9 +453,179 @@ void Textures::draw()
 	aShader->unbind();
 	sTextures[7] = mFbos[mParameterBag->mRightFboIndex].getTexture();
 
-	// end of mLibraryFbos[mParameterBag->mRightFboLibraryIndex]
+	/*
+	* end of mLibraryFbos[mParameterBag->mRightFboLibraryIndex]
+	***********************************************/
+#pragma region warp
+	if (mParameterBag->mMode == mParameterBag->MODE_WARP)
+	{
+		/***********************************************
+		* start of mFbos[mParameterBag->mWarp1FboIndex]
+		*/
 
-	// start of mLibraryFbos[mParameterBag->mCurrentPreviewFboIndex]
+		mFbos[mParameterBag->mWarp1FboIndex].bindFramebuffer();
+		gl::setViewport(mFbos[mParameterBag->mWarp1FboIndex].getBounds());
+
+		// clear the FBO
+		gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
+		gl::setMatricesWindow(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight, mParameterBag->mOriginUpperLeft);
+
+		aShader = mShaders->getShader(mParameterBag->mWarp1FragIndex);
+		aShader->bind();
+		aShader->uniform("iGlobalTime", mParameterBag->iGlobalTime);
+		aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
+		aShader->uniform("iChannelResolution", mParameterBag->iChannelResolution, 4);
+		aShader->uniform("iMouse", Vec4f(mParameterBag->mRenderPosXY.x, mParameterBag->mRenderPosXY.y, mParameterBag->iMouse.z, mParameterBag->iMouse.z));//iMouse =  Vec3i( event.getX(), mRenderHeight - event.getY(), 1 );
+		aShader->uniform("iZoom", mParameterBag->iZoomRight);
+		aShader->uniform("iChannel0", mParameterBag->iChannels[0]);
+		aShader->uniform("iChannel1", mParameterBag->iChannels[1]);
+		aShader->uniform("iChannel2", mParameterBag->iChannels[2]);
+		aShader->uniform("iChannel3", mParameterBag->iChannels[3]);
+		aShader->uniform("iChannel4", mParameterBag->iChannels[4]);
+		aShader->uniform("iChannel5", mParameterBag->iChannels[5]);
+		aShader->uniform("iChannel6", mParameterBag->iChannels[6]);
+		aShader->uniform("iChannel7", mParameterBag->iChannels[7]);
+		aShader->uniform("iAudio0", 0);
+		aShader->uniform("iFreq0", mParameterBag->iFreqs[0]);
+		aShader->uniform("iFreq1", mParameterBag->iFreqs[1]);
+		aShader->uniform("iFreq2", mParameterBag->iFreqs[2]);
+		aShader->uniform("iFreq3", mParameterBag->iFreqs[3]);
+		aShader->uniform("iChannelTime", mParameterBag->iChannelTime, 4);
+		aShader->uniform("iColor", Vec3f(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3]));// mParameterBag->iColor);
+		aShader->uniform("iBackgroundColor", Vec3f(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));// mParameterBag->iBackgroundColor);
+		aShader->uniform("iSteps", (int)mParameterBag->controlValues[16]);
+		aShader->uniform("iRatio", mParameterBag->controlValues[11]);//check if needed: +1;//mParameterBag->iRatio); 
+		aShader->uniform("width", 1);
+		aShader->uniform("height", 1);
+		aShader->uniform("iRenderXY", mParameterBag->mWarp1RenderXY);
+		aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
+		aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[20]);
+		aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
+		aShader->uniform("iCrossfade", mParameterBag->controlValues[17]);
+		aShader->uniform("iPixelate", mParameterBag->controlValues[15]);
+		aShader->uniform("iExposure", mParameterBag->controlValues[14]);
+		aShader->uniform("iDeltaTime", mParameterBag->iDeltaTime);
+		aShader->uniform("iFade", (int)mParameterBag->iFade);
+		aShader->uniform("iToggle", (int)mParameterBag->controlValues[46]);
+		aShader->uniform("iLight", (int)mParameterBag->iLight);
+		aShader->uniform("iLightAuto", (int)mParameterBag->iLightAuto);
+		aShader->uniform("iGreyScale", (int)mParameterBag->iGreyScale);
+		aShader->uniform("iTransition", mParameterBag->iTransition);
+		aShader->uniform("iAnim", mParameterBag->iAnim.value());
+		aShader->uniform("iRepeat", (int)mParameterBag->iRepeat);
+		aShader->uniform("iVignette", (int)mParameterBag->controlValues[47]);
+		aShader->uniform("iInvert", (int)mParameterBag->controlValues[48]);
+		aShader->uniform("iDebug", (int)mParameterBag->iDebug);
+		aShader->uniform("iShowFps", (int)mParameterBag->iShowFps);
+		aShader->uniform("iFps", mParameterBag->iFps);
+		aShader->uniform("iTempoTime", mParameterBag->iTempoTime);
+		aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
+
+		for (size_t m = 0; m < mTexturesCount; m++)
+		{
+			getTexture(m).bind(m);
+		}
+		gl::drawSolidRect(Rectf(0, 0, mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
+		// stop drawing into the FBO
+		mFbos[mParameterBag->mWarp1FboIndex].unbindFramebuffer();
+
+		for (size_t m = 0; m < mTexturesCount; m++)
+		{
+			getTexture(m).unbind();
+		}
+
+		aShader->unbind();
+		sTextures[8] = mFbos[mParameterBag->mWarp1FboIndex].getTexture();
+
+		/*
+		* end of mFbos[mParameterBag->mWarp1FboIndex]
+		***********************************************/
+		/***********************************************
+		* start of mFbos[mParameterBag->mWarp2FboIndex]
+		*/
+
+		mFbos[mParameterBag->mWarp2FboIndex].bindFramebuffer();
+		gl::setViewport(mFbos[mParameterBag->mWarp2FboIndex].getBounds());
+
+		// clear the FBO
+		gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
+		gl::setMatricesWindow(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight, mParameterBag->mOriginUpperLeft);
+
+		aShader = mShaders->getShader(mParameterBag->mWarp2FragIndex);
+		aShader->bind();
+		aShader->uniform("iGlobalTime", mParameterBag->iGlobalTime);
+		aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
+		aShader->uniform("iChannelResolution", mParameterBag->iChannelResolution, 4);
+		aShader->uniform("iMouse", Vec4f(mParameterBag->mRenderPosXY.x, mParameterBag->mRenderPosXY.y, mParameterBag->iMouse.z, mParameterBag->iMouse.z));//iMouse =  Vec3i( event.getX(), mRenderHeight - event.getY(), 1 );
+		aShader->uniform("iZoom", mParameterBag->iZoomRight);
+		aShader->uniform("iChannel0", mParameterBag->iChannels[0]);
+		aShader->uniform("iChannel1", mParameterBag->iChannels[1]);
+		aShader->uniform("iChannel2", mParameterBag->iChannels[2]);
+		aShader->uniform("iChannel3", mParameterBag->iChannels[3]);
+		aShader->uniform("iChannel4", mParameterBag->iChannels[4]);
+		aShader->uniform("iChannel5", mParameterBag->iChannels[5]);
+		aShader->uniform("iChannel6", mParameterBag->iChannels[6]);
+		aShader->uniform("iChannel7", mParameterBag->iChannels[7]);
+		aShader->uniform("iAudio0", 0);
+		aShader->uniform("iFreq0", mParameterBag->iFreqs[0]);
+		aShader->uniform("iFreq1", mParameterBag->iFreqs[1]);
+		aShader->uniform("iFreq2", mParameterBag->iFreqs[2]);
+		aShader->uniform("iFreq3", mParameterBag->iFreqs[3]);
+		aShader->uniform("iChannelTime", mParameterBag->iChannelTime, 4);
+		aShader->uniform("iColor", Vec3f(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3]));// mParameterBag->iColor);
+		aShader->uniform("iBackgroundColor", Vec3f(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));// mParameterBag->iBackgroundColor);
+		aShader->uniform("iSteps", (int)mParameterBag->controlValues[16]);
+		aShader->uniform("iRatio", mParameterBag->controlValues[11]);//check if needed: +1;//mParameterBag->iRatio); 
+		aShader->uniform("width", 1);
+		aShader->uniform("height", 1);
+		aShader->uniform("iRenderXY", mParameterBag->mWarp2RenderXY);
+		aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
+		aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[20]);
+		aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
+		aShader->uniform("iCrossfade", mParameterBag->controlValues[17]);
+		aShader->uniform("iPixelate", mParameterBag->controlValues[15]);
+		aShader->uniform("iExposure", mParameterBag->controlValues[14]);
+		aShader->uniform("iDeltaTime", mParameterBag->iDeltaTime);
+		aShader->uniform("iFade", (int)mParameterBag->iFade);
+		aShader->uniform("iToggle", (int)mParameterBag->controlValues[46]);
+		aShader->uniform("iLight", (int)mParameterBag->iLight);
+		aShader->uniform("iLightAuto", (int)mParameterBag->iLightAuto);
+		aShader->uniform("iGreyScale", (int)mParameterBag->iGreyScale);
+		aShader->uniform("iTransition", mParameterBag->iTransition);
+		aShader->uniform("iAnim", mParameterBag->iAnim.value());
+		aShader->uniform("iRepeat", (int)mParameterBag->iRepeat);
+		aShader->uniform("iVignette", (int)mParameterBag->controlValues[47]);
+		aShader->uniform("iInvert", (int)mParameterBag->controlValues[48]);
+		aShader->uniform("iDebug", (int)mParameterBag->iDebug);
+		aShader->uniform("iShowFps", (int)mParameterBag->iShowFps);
+		aShader->uniform("iFps", mParameterBag->iFps);
+		aShader->uniform("iTempoTime", mParameterBag->iTempoTime);
+		aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
+
+		for (size_t m = 0; m < mTexturesCount; m++)
+		{
+			getTexture(m).bind(m);
+		}
+		gl::drawSolidRect(Rectf(0, 0, mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
+		// stop drawing into the FBO
+		mFbos[mParameterBag->mWarp2FboIndex].unbindFramebuffer();
+
+		for (size_t m = 0; m < mTexturesCount; m++)
+		{
+			getTexture(m).unbind();
+		}
+
+		aShader->unbind();
+		sTextures[9] = mFbos[mParameterBag->mWarp2FboIndex].getTexture();
+
+		/*
+		* end of mFbos[mParameterBag->mWarp2FboIndex]
+		***********************************************/
+	}
+#pragma endregion warp
+	/***********************************************
+	* start of mLibraryFbos[mParameterBag->mCurrentPreviewFboIndex]
+	*/
 	mFbos[mParameterBag->mCurrentPreviewFboIndex].bindFramebuffer();
 	gl::setViewport(mFbos[mParameterBag->mCurrentPreviewFboIndex].getBounds());
 
@@ -527,94 +700,11 @@ void Textures::draw()
 
 	aShader->unbind();
 	sTextures[4] = mFbos[mParameterBag->mCurrentPreviewFboIndex].getTexture();
-	// draw thumb
-	/*mThumbFbos[mParameterBag->mPreviewFragIndex].bindFramebuffer();
-	gl::setViewport(mThumbFbos[mParameterBag->mPreviewFragIndex].getBounds());
-	gl::draw(sTextures[4]);
-	mThumbFbos[mParameterBag->mPreviewFragIndex].unbindFramebuffer();*/
-	//writeImage(getHomeDirectory() / "cinder" / "saveImage_" / (toString(1) + ".png"), copyWindowSurface());
-	// end of mLibraryFbos[mParameterBag->mCurrentPreviewFboIndex]
+	/*
+	* end of mLibraryFbos[mParameterBag->mCurrentPreviewFboIndex]
+	***********************************************/
 
 
-	/***********************************************
-	* live FBO begin
-
-
-	// draw using the live shader
-	mFbos[mParameterBag->mLiveFboIndex].bindFramebuffer();
-
-	gl::setViewport(mFbos[mParameterBag->mLiveFboIndex].getBounds());
-
-	// clear the FBO
-	gl::clear();
-	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, mParameterBag->mOriginUpperLeft);
-
-	aShader = mShaders->getLiveShader();
-	aShader->bind();
-	aShader->uniform("iGlobalTime", mParameterBag->iGlobalTime);
-	//20140703 aShader->uniform("iResolution", Vec3f(mParameterBag->mRenderResoXY.x, mParameterBag->mRenderResoXY.y, 1.0));
-	aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
-	aShader->uniform("iChannelResolution", mParameterBag->iChannelResolution, 4);
-	aShader->uniform("iMouse", Vec4f(mParameterBag->mRenderPosXY.x, mParameterBag->mRenderPosXY.y, mParameterBag->iMouse.z, mParameterBag->iMouse.z));//iMouse =  Vec3i( event.getX(), mRenderHeight - event.getY(), 1 );
-	aShader->uniform("iChannel0", 0);
-	aShader->uniform("iChannel1", 1);
-	aShader->uniform("iChannel2", 2);
-	aShader->uniform("iChannel3", 3);
-	aShader->uniform("iChannel4", 4);
-	aShader->uniform("iChannel5", 5);
-	aShader->uniform("iChannel6", 6);
-	aShader->uniform("iChannel7", 7);
-	aShader->uniform("iAudio0", 0);
-	aShader->uniform("iFreq0", mParameterBag->iFreqs[0]);
-	aShader->uniform("iFreq1", mParameterBag->iFreqs[1]);
-	aShader->uniform("iFreq2", mParameterBag->iFreqs[2]);
-	aShader->uniform("iFreq3", mParameterBag->iFreqs[3]);
-	aShader->uniform("iChannelTime", mParameterBag->iChannelTime, 4);
-	aShader->uniform("iColor", Vec3f(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3]));// mParameterBag->iColor);
-	aShader->uniform("iBackgroundColor", Vec3f(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));// mParameterBag->iBackgroundColor);
-	aShader->uniform("iSteps", (int)mParameterBag->controlValues[16]);
-	aShader->uniform("iRatio", mParameterBag->controlValues[11]);//check if needed: +1;//mParameterBag->iRatio);
-	aShader->uniform("width", 1);
-	aShader->uniform("height", 1);
-	aShader->uniform("iRenderXY", mParameterBag->mRenderXY);
-	aShader->uniform("iZoom", mParameterBag->controlValues[13]);
-	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
-	aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[20]);
-	aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
-	aShader->uniform("iCrossfade", mParameterBag->controlValues[18]);
-	aShader->uniform("iPixelate", mParameterBag->controlValues[15]);
-	aShader->uniform("iExposure", mParameterBag->controlValues[14]);
-	aShader->uniform("iDeltaTime", mParameterBag->iDeltaTime);
-	aShader->uniform("iFade", (int)mParameterBag->iFade);
-	aShader->uniform("iToggle", (int)mParameterBag->controlValues[46]);
-	aShader->uniform("iLight", (int)mParameterBag->iLight);
-	aShader->uniform("iLightAuto", (int)mParameterBag->iLightAuto);
-	aShader->uniform("iGreyScale", (int)mParameterBag->iGreyScale);
-	aShader->uniform("iTransition", mParameterBag->iTransition);
-	aShader->uniform("iAnim", mParameterBag->iAnim.value());
-	aShader->uniform("iRepeat", (int)mParameterBag->iRepeat);
-	aShader->uniform("iVignette", (int)mParameterBag->controlValues[47]);
-	aShader->uniform("iInvert", (int)mParameterBag->controlValues[48]);
-	aShader->uniform("iDebug", (int)mParameterBag->iDebug);
-	aShader->uniform("iShowFps", (int)mParameterBag->iShowFps);
-	aShader->uniform("iFps", mParameterBag->iFps);
-	aShader->uniform("iTempoTime", mParameterBag->iTempoTime);
-	aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
-
-	sTextures[6].bind(0);
-	sTextures[7].bind(1);
-	gl::drawSolidRect(Rectf(0, 0, mParameterBag->mFboWidth, mParameterBag->mFboHeight));
-	// stop drawing into the FBO
-	mFbos[mParameterBag->mLiveFboIndex].unbindFramebuffer();
-	sTextures[6].unbind();
-	sTextures[7].unbind();
-
-	aShader->unbind();
-	sTextures[3] = mFbos[mParameterBag->mLiveFboIndex].getTexture();
-
-	**********************************************
-	* live FBO end
-	*/
 
 	/***********************************************
 	* mix 2 FBOs begin

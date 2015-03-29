@@ -206,10 +206,10 @@ void WarpWrapper::draw()
 		{
 			// b) simply draw a texture on them (ideal for video)
 
-			if (i < mParameterBag->mWarpCount)
-			{
+			//if (i < mParameterBag->mWarpCount)
+			//{
 				warp->draw(mTextures->getFboTexture(mParameterBag->mWarpFbos[i].textureIndex), mTextures->getFboTexture(mParameterBag->mWarpFbos[i].textureIndex).getBounds());// was i
-			}
+			//}
 		}
 		i++;
 	}

@@ -287,6 +287,7 @@ int Shaders::loadPixelFragmentShaderAtIndex(string aFilePath, int index)
 	// reset 
 	mParameterBag->iFade = false;
 	mParameterBag->controlValues[13] = 1.0f;
+	if (index > mFragmentShaders.size() - 1) index = mFragmentShaders.size() - 1;
 	try
 	{
 		fs::path fr = aFilePath;
