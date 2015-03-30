@@ -236,6 +236,7 @@ namespace Reymenta {
 		string						mWebSocketsHost;
 		//abp
 		float						mBend;
+		float						liveMeter;
 
 	private:
 		const string settingsFileName = "Settings.xml";

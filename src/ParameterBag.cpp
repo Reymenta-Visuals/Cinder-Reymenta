@@ -334,6 +334,7 @@ void ParameterBag::reset()
 	mWindowSize = 1024;
 
 	maxVolume = 0.0f;
+	liveMeter = 0.0f;
 	mData = new float[1024];
 	for (int i = 0; i < 1024; i++)
 	{
@@ -411,11 +412,11 @@ void ParameterBag::reset()
 	mWarp1FboIndex = 3;
 	mWarp2FboIndex = 4;
 	mCurrentPreviewFboIndex = 5;
-	mAudioFboIndex = 6;
+	mABPFboIndex = 6;
 	mWarpFboIndex = 7;
 	mSphereFboIndex = 8;
 	mMeshFboIndex = 9;
-	mABPFboIndex = 10;
+	mAudioFboIndex = 10;
 	mVertexSphereFboIndex = 11;
 
 	mPreviewFragIndex = 0;

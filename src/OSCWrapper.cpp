@@ -167,7 +167,7 @@ void OSC::update()
 		}
 		else if (oscAddress == "/live/track/meter")
 		{
-			mParameterBag->maxVolume = fargs[2];
+			mParameterBag->liveMeter = fargs[2];
 			routeMessage = true;
 		}
 		else if (oscAddress == "/live/name/trackblock")
