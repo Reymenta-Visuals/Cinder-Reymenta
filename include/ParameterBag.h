@@ -156,6 +156,7 @@ namespace Reymenta {
 		static const int			MODE_MESH = 5;
 		static const int			MODE_KINECT = 6;
 		static const int			MODE_VERTEXSPHERE = 7;
+		static const int			MODE_ABP = 8;
 
 		// windows to create, should be the same in App and UI
 		static const int			NONE = 0;
@@ -216,8 +217,8 @@ namespace Reymenta {
 		bool						mOptimizeUI;//mDirectRender, 
 		int							mUIRefresh;
 		int							mCurrentPreviewFboIndex;
-		int							mSphereFboIndex, mMeshFboIndex, mWarpFboIndex, mMixFboIndex, mAudioFboIndex, mLiveFboIndex;
-		int							mLeftFboIndex, mRightFboIndex, mVertexSphereFboIndex, mWarp1FboIndex, mWarp2FboIndex;
+		int							mSphereFboIndex, mMeshFboIndex, mWarpFboIndex, mMixFboIndex, mAudioFboIndex;
+		int							mLeftFboIndex, mRightFboIndex, mVertexSphereFboIndex, mWarp1FboIndex, mWarp2FboIndex, mABPFboIndex;
 		int							mLeftFragIndex, mRightFragIndex, mPreviewFragIndex, mPreviousFragIndex, mWarp1FragIndex, mWarp2FragIndex;
 		float						iZoomLeft, iZoomRight;
 		// meshes
@@ -233,6 +234,9 @@ namespace Reymenta {
 		bool						mIsWebSocketsServer;
 		uint16_t					mWebSocketsPort;
 		string						mWebSocketsHost;
+		//abp
+		float						mBend;
+
 	private:
 		const string settingsFileName = "Settings.xml";
 	};

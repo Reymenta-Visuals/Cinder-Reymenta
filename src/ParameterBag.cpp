@@ -415,7 +415,7 @@ void ParameterBag::reset()
 	mWarpFboIndex = 7;
 	mSphereFboIndex = 8;
 	mMeshFboIndex = 9;
-	mLiveFboIndex = 10;
+	mABPFboIndex = 10;
 	mVertexSphereFboIndex = 11;
 
 	mPreviewFragIndex = 0;
@@ -474,6 +474,8 @@ void ParameterBag::reset()
 	mIsWebSocketsServer = false;
 	mWebSocketsHost = "localhost";
 	mWebSocketsPort = 9002;
+	// abp
+	mBend = 0.0f;
 	// red
 	controlValues[1] = 1.0f;
 	// green
