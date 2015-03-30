@@ -87,7 +87,7 @@ namespace Reymenta
 	private:
 		// Logger
 		LoggerRef					log;	
-		static const int			mTexturesCount = 10;
+		static const int			mTexturesCount = 12; //match MAX from mParameterBag
 
 		ci::gl::Texture				previousTexture;
 		ci::gl::Texture				currentTexture;

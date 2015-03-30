@@ -390,7 +390,7 @@ void ParameterBag::reset()
 	}
 	//iChannels[1] = 2;
 	//iChannels[2] = 3;
-	iChannels[4] = 8;
+	iChannels[4] = 10;
 	// fbo indexes for warp
 	mFboResolution = 2048;
 	mCurrentPreviewFboIndex = 0;

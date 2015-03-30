@@ -71,6 +71,9 @@ void Batchass::createWarpFbos()
 		if (a == 0) newWarpFbo.active = true; else newWarpFbo.active = false;
 		mParameterBag->mWarpFbos[a] = newWarpFbo;
 	}
+	mParameterBag->mWarpFbos[10].textureIndex = 10;
+	mParameterBag->mWarpFbos[10].textureMode = 0;
+	mParameterBag->mWarpFbos[10].active = true;
 }
 void Batchass::createWarp()
 {
@@ -125,7 +128,7 @@ void Batchass::changeMode(int newMode)
 void Batchass::update()
 {
 	mTextures->update();
-	mShaders->update();
+	//mShaders->update();
 	if (mParameterBag->controlValues[12] == 0.0) mParameterBag->controlValues[12] = 0.01;
 
 #pragma region animation

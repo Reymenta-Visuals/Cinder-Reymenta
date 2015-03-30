@@ -16,7 +16,7 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	//createPreviewFbo();//mFboWidth/4 or 16
 	// mix fbo at index 1
 	mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
-	mFbos[1].getTexture(0).setFlipped(true);
+	//mFbos[1].getTexture(0).setFlipped(true);
 
 	for (size_t m = mFbos.size(); m < mParameterBag->MAX ; m++)
 	{
@@ -292,6 +292,7 @@ void Textures::draw()
 {
 	//renderWarpFbos();
 	renderShadaThumbFbo();
+#pragma region left
 	/**********************************************
 	* library FBOs
 	* start of mLibraryFbos[mParameterBag->mLeftFboIndex]
@@ -320,6 +321,9 @@ void Textures::draw()
 	aShader->uniform("iChannel5", mParameterBag->iChannels[5]);
 	aShader->uniform("iChannel6", mParameterBag->iChannels[6]);
 	aShader->uniform("iChannel7", mParameterBag->iChannels[7]);
+	aShader->uniform("iChannel8", mParameterBag->iChannels[8]);
+	aShader->uniform("iChannel9", mParameterBag->iChannels[9]);
+	aShader->uniform("iChannel10", mParameterBag->iChannels[10]);
 	aShader->uniform("iAudio0", 0);
 	aShader->uniform("iFreq0", mParameterBag->iFreqs[0]);
 	aShader->uniform("iFreq1", mParameterBag->iFreqs[1]);
@@ -374,7 +378,8 @@ void Textures::draw()
 	/*
 	* end of mLibraryFbos[mParameterBag->mLeftFboIndex]
 	***********************************************/
-
+#pragma endregion left
+#pragma region right
 	/***********************************************
 	* start of mLibraryFbos[mParameterBag->mRightFboIndex]
 	*/
@@ -401,6 +406,9 @@ void Textures::draw()
 	aShader->uniform("iChannel5", mParameterBag->iChannels[5]);
 	aShader->uniform("iChannel6", mParameterBag->iChannels[6]);
 	aShader->uniform("iChannel7", mParameterBag->iChannels[7]);
+	aShader->uniform("iChannel8", mParameterBag->iChannels[8]);
+	aShader->uniform("iChannel9", mParameterBag->iChannels[9]);
+	aShader->uniform("iChannel10", mParameterBag->iChannels[10]);
 	aShader->uniform("iAudio0", 0);
 	aShader->uniform("iFreq0", mParameterBag->iFreqs[0]);
 	aShader->uniform("iFreq1", mParameterBag->iFreqs[1]);
@@ -452,10 +460,10 @@ void Textures::draw()
 
 	aShader->unbind();
 	sTextures[7] = mFbos[mParameterBag->mRightFboIndex].getTexture();
-
 	/*
 	* end of mLibraryFbos[mParameterBag->mRightFboLibraryIndex]
 	***********************************************/
+#pragma endregion right
 #pragma region warp
 	if (mParameterBag->mMode == mParameterBag->MODE_WARP)
 	{
@@ -485,6 +493,9 @@ void Textures::draw()
 		aShader->uniform("iChannel5", mParameterBag->iChannels[5]);
 		aShader->uniform("iChannel6", mParameterBag->iChannels[6]);
 		aShader->uniform("iChannel7", mParameterBag->iChannels[7]);
+		aShader->uniform("iChannel8", mParameterBag->iChannels[8]);
+		aShader->uniform("iChannel9", mParameterBag->iChannels[9]);
+		aShader->uniform("iChannel10", mParameterBag->iChannels[10]);
 		aShader->uniform("iAudio0", 0);
 		aShader->uniform("iFreq0", mParameterBag->iFreqs[0]);
 		aShader->uniform("iFreq1", mParameterBag->iFreqs[1]);
@@ -540,6 +551,7 @@ void Textures::draw()
 		/*
 		* end of mFbos[mParameterBag->mWarp1FboIndex]
 		***********************************************/
+
 		/***********************************************
 		* start of mFbos[mParameterBag->mWarp2FboIndex]
 		*/
@@ -566,6 +578,9 @@ void Textures::draw()
 		aShader->uniform("iChannel5", mParameterBag->iChannels[5]);
 		aShader->uniform("iChannel6", mParameterBag->iChannels[6]);
 		aShader->uniform("iChannel7", mParameterBag->iChannels[7]);
+		aShader->uniform("iChannel8", mParameterBag->iChannels[8]);
+		aShader->uniform("iChannel9", mParameterBag->iChannels[9]);
+		aShader->uniform("iChannel10", mParameterBag->iChannels[10]);
 		aShader->uniform("iAudio0", 0);
 		aShader->uniform("iFreq0", mParameterBag->iFreqs[0]);
 		aShader->uniform("iFreq1", mParameterBag->iFreqs[1]);
@@ -623,6 +638,7 @@ void Textures::draw()
 		***********************************************/
 	}
 #pragma endregion warp
+#pragma region preview
 	/***********************************************
 	* start of mLibraryFbos[mParameterBag->mCurrentPreviewFboIndex]
 	*/
@@ -649,6 +665,9 @@ void Textures::draw()
 	aShader->uniform("iChannel5", mParameterBag->iChannels[5]);
 	aShader->uniform("iChannel6", mParameterBag->iChannels[6]);
 	aShader->uniform("iChannel7", mParameterBag->iChannels[7]);
+	aShader->uniform("iChannel8", mParameterBag->iChannels[8]);
+	aShader->uniform("iChannel9", mParameterBag->iChannels[9]);
+	aShader->uniform("iChannel10", mParameterBag->iChannels[10]);
 	aShader->uniform("iAudio0", 0);
 	aShader->uniform("iFreq0", mParameterBag->iFreqs[0]);
 	aShader->uniform("iFreq1", mParameterBag->iFreqs[1]);
@@ -703,9 +722,9 @@ void Textures::draw()
 	/*
 	* end of mLibraryFbos[mParameterBag->mCurrentPreviewFboIndex]
 	***********************************************/
+#pragma endregion preview
 
-
-
+#pragma region mix
 	/***********************************************
 	* mix 2 FBOs begin
 	* first render the 2 frags to fbos (done before)
@@ -730,12 +749,6 @@ void Textures::draw()
 	aShader->uniform("iMouse", Vec4f(mParameterBag->mRenderPosXY.x, mParameterBag->mRenderPosXY.y, mParameterBag->iMouse.z, mParameterBag->iMouse.z));//iMouse =  Vec3i( event.getX(), mRenderHeight - event.getY(), 1 );
 	aShader->uniform("iChannel0", 0);
 	aShader->uniform("iChannel1", 1);
-	aShader->uniform("iChannel2", 2);
-	aShader->uniform("iChannel3", 3);
-	aShader->uniform("iChannel4", 4);
-	aShader->uniform("iChannel5", 5);
-	aShader->uniform("iChannel6", 6);
-	aShader->uniform("iChannel7", 7);
 	aShader->uniform("iAudio0", 0);
 	aShader->uniform("iFreq0", mParameterBag->iFreqs[0]);
 	aShader->uniform("iFreq1", mParameterBag->iFreqs[1]);
@@ -788,6 +801,9 @@ void Textures::draw()
 	/***********************************************
 	* mix 2 FBOs end
 	*/
+#pragma endregion mix
+
+
 }
 
 /*void Textures::updateSequence()
@@ -923,15 +939,15 @@ totalFrames = sequenceTextures.size();
 }*/
 void Textures::setSenderTextureSize(int index, int width, int height)
 {
-	sTextures[8] = gl::Texture(width, height);
+	sTextures[10] = gl::Texture(width, height);
 }
 
 int Textures::createSpoutTexture(char name[256], unsigned int width, unsigned int height)
 {
-	// replace spout image at index 8
+	// replace spout image at index 10
 	log->logTimedString("createSpoutTexture, replace: " + toString(name));
 
 	memcpy(&spoutSenderName[0], name, strlen(name) + 1);
-	sTextures[8] = gl::Texture(width, height);
-	return 8;
+	sTextures[10] = gl::Texture(width, height);
+	return 10;
 }

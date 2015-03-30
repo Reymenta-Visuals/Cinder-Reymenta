@@ -144,7 +144,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	//fileName = "default.frag";
 	fs::path localFile; //= getAssetPath("") / "shaders" / fileName;
 	//loadPixelFrag(localFile.string());
-	for (size_t m = 0; m < 8; m++)
+	for (size_t m = 0; m < mParameterBag->MAX; m++)
 	{
 		fileName = toString(m) + ".glsl";
 		localFile = getAssetPath("") / fileName;
@@ -154,16 +154,16 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 		loadPixelFragmentShader(localFile.string());
 	}
 	// init with passthru shader if something goes wrong	
-	for (size_t m = mFragmentShaders.size(); m < mParameterBag->MAX; m++)
+	/*for (size_t m = mFragmentShaders.size(); m < mParameterBag->MAX; m++)
 	{
 		mFragmentShaders.push_back(gl::GlslProg::create(loadAsset("passthru.vert"), loadAsset("passthru.frag")));
 		mFragmentShadersNames.push_back("passthru.frag");
-	}
+	}*/
 	mCurrentPreviewShader = 0;
 	mCurrentRenderShader = 0;
 	// Create our thread communication buffers.
-	mRequests = new ConcurrentCircularBuffer<LoaderData>(10);
-	mResponses = new ConcurrentCircularBuffer<LoaderData>(10);
+	//mRequests = new ConcurrentCircularBuffer<LoaderData>(10);
+	//mResponses = new ConcurrentCircularBuffer<LoaderData>(10);
 
 	// error on program termination, shutdownLoader() must be called
 	// Start the loading thread.
@@ -172,19 +172,19 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 void Shaders::setupLoader()
 {
 	// If succeeded, start the loading thread.
-	mThreadAbort = false;
-	mThread = std::make_shared<std::thread>(&Shaders::loader, this);
+	//mThreadAbort = false;
+	//mThread = std::make_shared<std::thread>(&Shaders::loader, this);
 }
 void Shaders::shutdownLoader()
 {
 	// Tell the loading thread to abort, then wait for it to stop.
-	mThreadAbort = true;
-	mThread->join();
+	//mThreadAbort = true;
+	//mThread->join();
 }
 void Shaders::loader()
 {
 	// Loading loop.
-	while (!mThreadAbort)
+	/*while (!mThreadAbort)
 	{
 		// Wait for a request.
 		if (mRequests->isNotEmpty())
@@ -213,22 +213,22 @@ void Shaders::loader()
 			std::chrono::milliseconds duration(100);
 			std::this_thread::sleep_for(duration);
 		}
-	}
+	}*/
 }
 void Shaders::loadFragmentShader(boost::filesystem::path aFilePath)
 {
-	if (mRequests->isNotFull()) mRequests->pushFront(aFilePath);
+	//if (mRequests->isNotFull()) mRequests->pushFront(aFilePath);
 }
 void Shaders::update()
 {
-	LoaderData data;
+	/*LoaderData data;
 
 	// If we are ready for the next shader, take it from the buffer.
 	if (mResponses->isNotEmpty()) {
 		mResponses->popBack(&data);
 
 		setFragString(data.shadertext);
-	}
+	}*/
 }
 
 string Shaders::getFragStringFromFile(string fileName)
@@ -345,10 +345,11 @@ int Shaders::loadPixelFragmentShader(string aFilePath)
 			{
 				mFragmentShadersNames[rtn] = getFileName(aFilePath);
 			}
+			log->logTimedString(mFragFile + " loaded and compiled:" );
 		}
 		else
 		{
-			log->logTimedString(mFragFile + " loaded and compiled, does not exist:" + aFilePath);
+			log->logTimedString(mFragFile + " does not exist:" );
 		}
 	}
 	catch (gl::GlslProgCompileExc &exc)
