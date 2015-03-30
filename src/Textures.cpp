@@ -10,13 +10,13 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	log = Logger::create("TexturesLog.txt");
 	log->logTimedString("Textures constructor");
 
-	// preview fbo at index 0
-	mFbos.push_back(gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));//640x480
-	//mFbos[0].getTexture(0).setFlipped(true);
 	//createPreviewFbo();//mFboWidth/4 or 16
-	// mix fbo at index 1
+	// mix fbo at index 0
 	mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
-	//mFbos[1].getTexture(0).setFlipped(true);
+
+	// preview fbo at index 5
+	//mFbos.push_back(gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));//640x480
+	//mFbos[0].getTexture(0).setFlipped(true);
 
 	for (size_t m = mFbos.size(); m < mParameterBag->MAX ; m++)
 	{
@@ -29,7 +29,7 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	}
 	currentShadaThumbIndex = 0;
 	//mFbos[mParameterBag->mMeshFboIndex].getTexture(0).setFlipped(false);
-	// audio fbo at index 2
+	// audio fbo at index 6
 	mFbos[mParameterBag->mAudioFboIndex] = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
 	mFbos[mParameterBag->mAudioFboIndex].getTexture(0).setFlipped(true);
 	for (int i = 0; i < 1024; ++i) dTexture[i] = (unsigned char)(Rand::randUint() & 0xFF);
@@ -321,9 +321,6 @@ void Textures::draw()
 	aShader->uniform("iChannel5", mParameterBag->iChannels[5]);
 	aShader->uniform("iChannel6", mParameterBag->iChannels[6]);
 	aShader->uniform("iChannel7", mParameterBag->iChannels[7]);
-	aShader->uniform("iChannel8", mParameterBag->iChannels[8]);
-	aShader->uniform("iChannel9", mParameterBag->iChannels[9]);
-	aShader->uniform("iChannel10", mParameterBag->iChannels[10]);
 	aShader->uniform("iAudio0", 0);
 	aShader->uniform("iFreq0", mParameterBag->iFreqs[0]);
 	aShader->uniform("iFreq1", mParameterBag->iFreqs[1]);
@@ -406,9 +403,6 @@ void Textures::draw()
 	aShader->uniform("iChannel5", mParameterBag->iChannels[5]);
 	aShader->uniform("iChannel6", mParameterBag->iChannels[6]);
 	aShader->uniform("iChannel7", mParameterBag->iChannels[7]);
-	aShader->uniform("iChannel8", mParameterBag->iChannels[8]);
-	aShader->uniform("iChannel9", mParameterBag->iChannels[9]);
-	aShader->uniform("iChannel10", mParameterBag->iChannels[10]);
 	aShader->uniform("iAudio0", 0);
 	aShader->uniform("iFreq0", mParameterBag->iFreqs[0]);
 	aShader->uniform("iFreq1", mParameterBag->iFreqs[1]);
@@ -493,9 +487,6 @@ void Textures::draw()
 		aShader->uniform("iChannel5", mParameterBag->iChannels[5]);
 		aShader->uniform("iChannel6", mParameterBag->iChannels[6]);
 		aShader->uniform("iChannel7", mParameterBag->iChannels[7]);
-		aShader->uniform("iChannel8", mParameterBag->iChannels[8]);
-		aShader->uniform("iChannel9", mParameterBag->iChannels[9]);
-		aShader->uniform("iChannel10", mParameterBag->iChannels[10]);
 		aShader->uniform("iAudio0", 0);
 		aShader->uniform("iFreq0", mParameterBag->iFreqs[0]);
 		aShader->uniform("iFreq1", mParameterBag->iFreqs[1]);
@@ -578,9 +569,6 @@ void Textures::draw()
 		aShader->uniform("iChannel5", mParameterBag->iChannels[5]);
 		aShader->uniform("iChannel6", mParameterBag->iChannels[6]);
 		aShader->uniform("iChannel7", mParameterBag->iChannels[7]);
-		aShader->uniform("iChannel8", mParameterBag->iChannels[8]);
-		aShader->uniform("iChannel9", mParameterBag->iChannels[9]);
-		aShader->uniform("iChannel10", mParameterBag->iChannels[10]);
 		aShader->uniform("iAudio0", 0);
 		aShader->uniform("iFreq0", mParameterBag->iFreqs[0]);
 		aShader->uniform("iFreq1", mParameterBag->iFreqs[1]);
@@ -665,9 +653,6 @@ void Textures::draw()
 	aShader->uniform("iChannel5", mParameterBag->iChannels[5]);
 	aShader->uniform("iChannel6", mParameterBag->iChannels[6]);
 	aShader->uniform("iChannel7", mParameterBag->iChannels[7]);
-	aShader->uniform("iChannel8", mParameterBag->iChannels[8]);
-	aShader->uniform("iChannel9", mParameterBag->iChannels[9]);
-	aShader->uniform("iChannel10", mParameterBag->iChannels[10]);
 	aShader->uniform("iAudio0", 0);
 	aShader->uniform("iFreq0", mParameterBag->iFreqs[0]);
 	aShader->uniform("iFreq1", mParameterBag->iFreqs[1]);

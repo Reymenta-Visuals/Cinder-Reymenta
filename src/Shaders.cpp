@@ -144,7 +144,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	//fileName = "default.frag";
 	fs::path localFile; //= getAssetPath("") / "shaders" / fileName;
 	//loadPixelFrag(localFile.string());
-	for (size_t m = 0; m < mParameterBag->MAX; m++)
+	for (size_t m = 0; m < 8; m++)
 	{
 		fileName = toString(m) + ".glsl";
 		localFile = getAssetPath("") / fileName;
@@ -154,11 +154,11 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 		loadPixelFragmentShader(localFile.string());
 	}
 	// init with passthru shader if something goes wrong	
-	/*for (size_t m = mFragmentShaders.size(); m < mParameterBag->MAX; m++)
+	for (size_t m = mFragmentShaders.size(); m < mParameterBag->MAX; m++)
 	{
 		mFragmentShaders.push_back(gl::GlslProg::create(loadAsset("passthru.vert"), loadAsset("passthru.frag")));
 		mFragmentShadersNames.push_back("passthru.frag");
-	}*/
+	}
 	mCurrentPreviewShader = 0;
 	mCurrentRenderShader = 0;
 	// Create our thread communication buffers.

@@ -393,7 +393,7 @@ void ParameterBag::reset()
 	iChannels[4] = 10;
 	// fbo indexes for warp
 	mFboResolution = 2048;
-	mCurrentPreviewFboIndex = 0;
+	/*mCurrentPreviewFboIndex = 0;
 	mMixFboIndex = 1;
 	mAudioFboIndex = 2;
 	mWarpFboIndex = 3;
@@ -403,6 +403,18 @@ void ParameterBag::reset()
 	mRightFboIndex = 7;
 	mWarp1FboIndex = 8; 
 	mWarp2FboIndex = 9;
+	mLiveFboIndex = 10;
+	mVertexSphereFboIndex = 11;*/
+	mMixFboIndex = 0;
+	mLeftFboIndex = 1;
+	mRightFboIndex = 2;
+	mWarp1FboIndex = 3;
+	mWarp2FboIndex = 4;
+	mCurrentPreviewFboIndex = 5;
+	mAudioFboIndex = 6;
+	mWarpFboIndex = 7;
+	mSphereFboIndex = 8;
+	mMeshFboIndex = 95;
 	mLiveFboIndex = 10;
 	mVertexSphereFboIndex = 11;
 
