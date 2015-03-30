@@ -117,11 +117,13 @@ void Batchass::changeMode(int newMode)
 		case 5: // mesh
 			mParameterBag->controlValues[19] = 1.0; //reset rotation
 			mParameterBag->mRenderPosXY = Vec2f(0.0, 0.0);
-			mParameterBag->mCamEyePointZ = -56.f;
+			mParameterBag->mCamEyePointZ = -10.f;
 			mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7] = 0;
 			mParameterBag->currentSelectedIndex = 5;
 			mParameterBag->iLight = true;
 			break;
+
+
 		}
 	}
 }

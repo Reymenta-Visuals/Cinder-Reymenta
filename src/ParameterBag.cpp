@@ -414,7 +414,7 @@ void ParameterBag::reset()
 	mAudioFboIndex = 6;
 	mWarpFboIndex = 7;
 	mSphereFboIndex = 8;
-	mMeshFboIndex = 95;
+	mMeshFboIndex = 9;
 	mLiveFboIndex = 10;
 	mVertexSphereFboIndex = 11;
 
