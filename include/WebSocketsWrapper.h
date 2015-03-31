@@ -26,11 +26,12 @@ namespace Reymenta
 		void						update();
 		void						setupSender();
 		void						write(std::string msg);
+		void						clientConnect();
+		void						ping();
 	private:
 		// parameters
 		ParameterBagRef				mParameterBag;
 		// Web socket client
-		void						clientConnect();
 		void						clientDisconnect();
 		WebSocketClient				mClient;
 		void						onConnect();
@@ -43,6 +44,7 @@ namespace Reymenta
 		WebSocketServer				mServer;
 		void						serverConnect();
 		void						serverDisconnect();
+		double						mPingTime;
 
 		//
 		std::string					mText;

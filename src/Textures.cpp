@@ -17,10 +17,13 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	// preview fbo at index 5
 	//mFbos.push_back(gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));//640x480
 	//mFbos[0].getTexture(0).setFlipped(true);
-
+	ci::gl::Fbo::Format mFormat;
+	mFormat.setMinFilter(GL_NEAREST);
+	mFormat.setMagFilter(GL_NEAREST);
+	mFormat.setWrap(GL_REPEAT, GL_REPEAT);
 	for (size_t m = mFbos.size(); m < mParameterBag->MAX ; m++)
 	{
-		mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
+		mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight, mFormat));
 		//mFbos[mFbos.size() - 1].getTexture(0).setFlipped(true);
 	}
 	for (size_t m = 0; m < mShaders->getCount(); m++)
@@ -32,6 +35,9 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	// audio fbo at index 6
 	mFbos[mParameterBag->mAudioFboIndex] = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
 	mFbos[mParameterBag->mAudioFboIndex].getTexture(0).setFlipped(true);
+	// vertex sphere fbo at index 11
+	mFbos[mParameterBag->mVertexSphereFboIndex] = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight, mFormat);
+
 	for (int i = 0; i < 1024; ++i) dTexture[i] = (unsigned char)(Rand::randUint() & 0xFF);
 	// store it as a 512x2 texture in the first texture
 	sTextures.push_back(gl::Texture(dTexture, GL_LUMINANCE, 512, 2));
@@ -635,12 +641,12 @@ void Textures::draw()
 
 	// clear the FBO
 	gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
-	gl::setMatricesWindow(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight, mParameterBag->mOriginUpperLeft);
+	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, mParameterBag->mOriginUpperLeft);
 
 	aShader = mShaders->getShader(mParameterBag->mPreviewFragIndex);
 	aShader->bind();
 	aShader->uniform("iGlobalTime", mParameterBag->iGlobalTime);
-	aShader->uniform("iResolution", Vec3f(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight, 1.0));
+	aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
 	//aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
 	aShader->uniform("iChannelResolution", mParameterBag->iChannelResolution, 4);
 	aShader->uniform("iMouse", Vec4f(mParameterBag->mRenderPosXY.x, mParameterBag->mRenderPosXY.y, mParameterBag->iMouse.z, mParameterBag->iMouse.z));//iMouse =  Vec3i( event.getX(), mRenderHeight - event.getY(), 1 );
@@ -693,7 +699,7 @@ void Textures::draw()
 	{
 		getTexture(m).bind(m);
 	}
-	gl::drawSolidRect(Rectf(0, 0, mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
+	gl::drawSolidRect(Rectf(0, 0, mParameterBag->mFboWidth, mParameterBag->mFboHeight));
 	// stop drawing into the FBO
 	mFbos[mParameterBag->mCurrentPreviewFboIndex].unbindFramebuffer();
 

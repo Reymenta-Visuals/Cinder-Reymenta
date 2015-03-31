@@ -26,7 +26,7 @@ WebSockets::WebSockets(ParameterBagRef aParameterBag)
 		mClient.addReadCallback(&WebSockets::onRead, this);
 		clientConnect();
 	}
-
+	mPingTime = getElapsedSeconds();
 
 }
 
@@ -37,6 +37,13 @@ WebSocketsRef WebSockets::create(ParameterBagRef aParameterBag)
 void WebSockets::setupSender()
 {
 }
+void WebSockets::ping()
+{
+	if (!mParameterBag->mIsWebSocketsServer)
+	{
+		mClient.ping();
+	}
+}
 void WebSockets::update()
 {
 	if (mParameterBag->mIsWebSocketsServer)
@@ -46,6 +53,11 @@ void WebSockets::update()
 	else
 	{
 		mClient.poll();
+		double e = getElapsedSeconds();
+		if ( e - mPingTime > 10.0 ) {
+			mClient.ping();
+			mPingTime = e;
+		}
 	}
 }
 void WebSockets::clientConnect()
@@ -88,6 +100,9 @@ void WebSockets::onPing(string msg)
 	{
 		mText += ": " + msg;
 	}
+	mParameterBag->WSMsg = mText;
+	mParameterBag->newWSMsg = true;
+
 }
 
 void WebSockets::onRead(string msg)
