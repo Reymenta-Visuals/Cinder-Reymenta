@@ -65,15 +65,26 @@ void Batchass::createWarpFbos()
 	for (int a = 0; a < mParameterBag->MAX; a++)
 	{
 		WarpFbo newWarpFbo;
-		newWarpFbo.textureIndex = 1; //index of MixFbo for shadamixa
-		newWarpFbo.textureMode = 1;
+		if (a == 0)
+		{
+			newWarpFbo.textureIndex = 0; // spout
+			newWarpFbo.textureMode = mParameterBag->TEXTUREMODEINPUT;
+
+		}
+		else
+		{
+			newWarpFbo.textureIndex = 0; // index of MixFbo for shadamixa
+			newWarpFbo.textureMode = mParameterBag->TEXTUREMODESHADER;
+
+		}
 		newWarpFbo.fbo = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
 		if (a == 0) newWarpFbo.active = true; else newWarpFbo.active = false;
 		mParameterBag->mWarpFbos[a] = newWarpFbo;
 	}
-	mParameterBag->mWarpFbos[10].textureIndex = 10;
-	mParameterBag->mWarpFbos[10].textureMode = 0;
-	mParameterBag->mWarpFbos[10].active = true;
+	/*mParameterBag->mWarpFbos[10].textureIndex = 10;
+	mParameterBag->mWarpFbos[10].textureMode = mParameterBag->TEXTUREMODEINPUT;
+	mParameterBag->mWarpFbos[10].active = true;*/
+
 }
 void Batchass::createWarp()
 {

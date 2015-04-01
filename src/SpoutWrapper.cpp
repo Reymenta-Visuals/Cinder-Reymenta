@@ -47,8 +47,8 @@ void SpoutWrapper::update()
 				nReceivers++;
 				log->logTimedString("new receiver count:");
 				log->logTimedString(toString(nReceivers));
-				mParameterBag->mWarpFbos[10].textureIndex = 0;
-				mParameterBag->mWarpFbos[10].textureMode = 0;
+				mParameterBag->mWarpFbos[0].textureIndex = 0;
+				mParameterBag->mWarpFbos[0].textureMode = mParameterBag->TEXTUREMODEINPUT;
 			}
 		}
 	}
@@ -56,7 +56,7 @@ void SpoutWrapper::update()
 	{
 		nReceivers = 0;
 		// reset to shader mode
-		mParameterBag->mWarpFbos[0].textureMode = 1;
+		mParameterBag->mWarpFbos[0].textureMode = mParameterBag->TEXTUREMODESHADER;
 	}
 }
 
