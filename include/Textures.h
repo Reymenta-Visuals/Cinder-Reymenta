@@ -47,7 +47,7 @@ namespace Reymenta
 		}
 		//ci::gl::Texture				getFboThumb(int index);
 		ci::gl::Texture				getWarpTexture(int index);
-		WarpFbo						getWarpFbo(int index) { return mParameterBag->mWarpFbos[min((mParameterBag->MAX)-1, index)]; };
+		WarpFbo						getWarpFbo(int index) { return mParameterBag->mWarpFbos[min((int)(mParameterBag->mWarpFbos.size()-1), index)]; };
 		void						renderWarpFbos();
 		// shaders
 		void						renderShadaThumbFbo();
@@ -79,10 +79,7 @@ namespace Reymenta
 
 		void						update();
 		void						draw();
-		void						createWarpInput();
-		//! warpInputs: vector of warp input textures/shader fbo texture
-		vector<WarpInput>			warpInputs;
-		void						setCrossfade(int value) { warpInputs[mParameterBag->selectedWarp].controlValues[18] = value; };
+		//void						createWarpInput();
 
 	private:
 		// Logger

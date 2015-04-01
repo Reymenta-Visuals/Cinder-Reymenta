@@ -25,11 +25,29 @@ WarpWrapper::WarpWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesRef
 		mWarps.push_back(WarpPerspectiveBilinear::create());
 	}
 	log->logTimedString("Warps size" + mWarps.size());
-	mSrcArea = mTextures->getTexture(1).getBounds();
-	/*for (int i = mWarps.size(); i < mTextures->getTextureCount(); i++)
+	// vector + dynamic resize
+	for (int a = 0; a < mWarps.size(); a++)
 	{
-		mWarps.push_back(WarpPerspectiveBilinear::create());
-	}*/
+		WarpFbo newWarpFbo;
+		if (a == 0)
+		{
+			newWarpFbo.textureIndex = 0; // spout
+			newWarpFbo.textureMode = mParameterBag->TEXTUREMODEINPUT;
+			newWarpFbo.active = true;
+			newWarpFbo.fbo = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
+		}
+		else
+		{
+			newWarpFbo.textureIndex = 0; // index of MixFbo for shadamixa
+			newWarpFbo.textureMode = mParameterBag->TEXTUREMODESHADER;
+			newWarpFbo.active = false;
+			newWarpFbo.fbo = gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight);
+		}
+		mParameterBag->mWarpFbos.push_back(newWarpFbo);
+	}
+
+	mSrcArea = mTextures->getTexture(1).getBounds();
+
 	// adjust the content size of the warps
 	Warp::setSize(mWarps, mTextures->getFboTexture(mParameterBag->mMixFboIndex).getSize());
 
@@ -39,7 +57,17 @@ WarpWrapper::WarpWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesRef
 void WarpWrapper::createWarp()
 {
 	// create a new warp
+	int odd = (mWarps.size() % 2 == 0);
+	WarpFbo newWarpFbo;
+	newWarpFbo.textureIndex = 3 + odd; // index of MixFbo for shadamixa
+	newWarpFbo.textureMode = mParameterBag->TEXTUREMODESHADER;
+	newWarpFbo.active = false;
+	newWarpFbo.fbo = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
+
+	mParameterBag->mWarpFbos.push_back(newWarpFbo);
+
 	mWarps.push_back(WarpPerspectiveBilinear::create());
+
 }
 
 void WarpWrapper::load()
@@ -159,7 +187,7 @@ void WarpWrapper::draw()
 	mFbo.unbindFramebuffer();*/
 
 	/***********************************************
-	* fbo2 begin	
+	* fbo2 begin
 	// we can draw it into a second FBO, applying the shader...
 	// note that we have to set up the matrices for 2d drawing to the FBO not the screen
 	mFbo2.bindFramebuffer();
@@ -167,7 +195,7 @@ void WarpWrapper::draw()
 	gl::setViewport(mFbo2.getBounds());
 	gl::clear();
 	gl::draw(mTextures->getTexture(0), Rectf(0, 0, mParameterBag->mRenderWidth, mParameterBag->mRenderHeight));
-	mFbo2.unbindFramebuffer();	
+	mFbo2.unbindFramebuffer();
 	* fbo2 end
 	*/
 	// at this point the FBO contains our scene
@@ -177,7 +205,7 @@ void WarpWrapper::draw()
 	// the GL state is persistent across all framebuffers
 	gl::setMatricesWindow(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, mParameterBag->mOriginUpperLeft);
 	mViewportArea = Area(0, 0, mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
-	
+
 	gl::setViewport(mViewportArea);
 	// clear the window and set the drawing color to white
 	gl::clear();
@@ -192,25 +220,7 @@ void WarpWrapper::draw()
 		// create a readable reference to our warp, to prevent code like this: (*itr)->begin();
 		WarpRef warp(*itr);
 
-		// there are two ways you can use the warps:
-		if (mUseBeginEnd)
-		{
-			// a) issue your draw commands between begin() and end() statements
-			warp->begin();
-			
-			gl::draw(mTextures->getFboTexture(mParameterBag->mWarpFbos[i].textureIndex), mSrcArea, warp->getBounds());
-
-			warp->end();
-		}
-		else
-		{
-			// b) simply draw a texture on them (ideal for video)
-
-			//if (i < mParameterBag->mWarpCount)
-			//{
-				warp->draw(mTextures->getFboTexture(mParameterBag->mWarpFbos[i].textureIndex), mTextures->getFboTexture(mParameterBag->mWarpFbos[i].textureIndex).getBounds());// was i
-			//}
-		}
+		warp->draw(mTextures->getFboTexture(mParameterBag->mWarpFbos[i].textureIndex), mTextures->getFboTexture(mParameterBag->mWarpFbos[i].textureIndex).getBounds());// was i
 		i++;
 	}
 }

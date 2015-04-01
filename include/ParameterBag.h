@@ -36,7 +36,7 @@ namespace Reymenta {
 		bool						active;
 	};
 
-	struct WarpInput
+	/*struct WarpInput
 	{
 		int							leftIndex;
 		int							leftMode;		// 0 for input texture, 1 for shader
@@ -45,7 +45,7 @@ namespace Reymenta {
 		float						controlValues[18];		// from 0 left to 1 right
 		bool						hasTexture;		// has already a texture? if not the first one is put on left and right
 		bool						active;
-	};
+	};*/
 	struct WarpFbo
 	{
 		ci::gl::Fbo					fbo;
@@ -213,7 +213,11 @@ namespace Reymenta {
 		// fbo indexes for warping
 		//map<int, int>				iWarpFboChannels;
 		//! warp fbos
-		WarpFbo						mWarpFbos[MAX];
+		//! warpInputs: vector of warp input textures/shader fbo texture
+		//vector<WarpInput>			warpInputs;
+		//void						setCrossfade(int value) { warpInputs[mParameterBag->selectedWarp].controlValues[18] = value; };
+
+		vector<WarpFbo>				mWarpFbos;
 		int							selectedWarp;
 		int							mWarpCount;
 		bool						mOptimizeUI;//mDirectRender, 

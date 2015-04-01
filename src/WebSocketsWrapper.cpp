@@ -54,7 +54,7 @@ void WebSockets::update()
 	{
 		mClient.poll();
 		double e = getElapsedSeconds();
-		if ( e - mPingTime > 10.0 ) {
+		if ( e - mPingTime > 20.0 ) {
 			mClient.ping();
 			mPingTime = e;
 		}

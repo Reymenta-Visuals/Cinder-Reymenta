@@ -63,7 +63,7 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 
 }
 
-void Textures::createWarpInput()
+/*void Textures::createWarpInput()
 {
 	WarpInput newWarpInput;
 	newWarpInput.leftIndex = 0;
@@ -75,7 +75,7 @@ void Textures::createWarpInput()
 	warpInputs.push_back(newWarpInput);
 	// init mixTextures
 	mMixesFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
-}
+}*/
 
 void Textures::setAudioTexture(unsigned char *signal)
 {
@@ -481,7 +481,7 @@ void Textures::draw()
 		aShader = mShaders->getShader(mParameterBag->mWarp1FragIndex);
 		aShader->bind();
 		aShader->uniform("iGlobalTime", mParameterBag->iGlobalTime);
-		aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
+		aShader->uniform("iResolution", Vec3f(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight, 1.0));
 		aShader->uniform("iChannelResolution", mParameterBag->iChannelResolution, 4);
 		aShader->uniform("iMouse", Vec4f(mParameterBag->mRenderPosXY.x, mParameterBag->mRenderPosXY.y, mParameterBag->iMouse.z, mParameterBag->iMouse.z));//iMouse =  Vec3i( event.getX(), mRenderHeight - event.getY(), 1 );
 		aShader->uniform("iZoom", mParameterBag->iZoomRight);
@@ -563,7 +563,7 @@ void Textures::draw()
 		aShader = mShaders->getShader(mParameterBag->mWarp2FragIndex);
 		aShader->bind();
 		aShader->uniform("iGlobalTime", mParameterBag->iGlobalTime);
-		aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
+		aShader->uniform("iResolution", Vec3f(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight, 1.0));
 		aShader->uniform("iChannelResolution", mParameterBag->iChannelResolution, 4);
 		aShader->uniform("iMouse", Vec4f(mParameterBag->mRenderPosXY.x, mParameterBag->mRenderPosXY.y, mParameterBag->iMouse.z, mParameterBag->iMouse.z));//iMouse =  Vec3i( event.getX(), mRenderHeight - event.getY(), 1 );
 		aShader->uniform("iZoom", mParameterBag->iZoomRight);
