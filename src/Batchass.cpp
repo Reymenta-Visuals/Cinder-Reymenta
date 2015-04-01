@@ -58,29 +58,29 @@ void Batchass::setup()
 	// instanciate the warps class
 	mWarpings = WarpWrapper::create(mParameterBag, mTextures, mShaders);
 
-	createWarpFbos();
+	//createWarpFbos();
 }
 void Batchass::createWarpFbos()
 {
 	// vector + dynamic resize
 	/*for (int a = 0; a < 30; a++)
 	{
-		WarpFbo newWarpFbo;
-		if (a == 0)
-		{
-			newWarpFbo.textureIndex = 0; // spout
-			newWarpFbo.textureMode = mParameterBag->TEXTUREMODEINPUT;
-			newWarpFbo.active = true; 
-			newWarpFbo.fbo = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
-		}
-		else
-		{
-			newWarpFbo.textureIndex = 0; // index of MixFbo for shadamixa
-			newWarpFbo.textureMode = mParameterBag->TEXTUREMODESHADER;
-			newWarpFbo.active = false;
-			newWarpFbo.fbo = gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight);
-		}
-		mParameterBag->mWarpFbos.push_back( newWarpFbo );
+	WarpFbo newWarpFbo;
+	if (a == 0)
+	{
+	newWarpFbo.textureIndex = 0; // spout
+	newWarpFbo.textureMode = mParameterBag->TEXTUREMODEINPUT;
+	newWarpFbo.active = true;
+	newWarpFbo.fbo = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
+	}
+	else
+	{
+	newWarpFbo.textureIndex = 0; // index of MixFbo for shadamixa
+	newWarpFbo.textureMode = mParameterBag->TEXTUREMODESHADER;
+	newWarpFbo.active = false;
+	newWarpFbo.fbo = gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight);
+	}
+	mParameterBag->mWarpFbos.push_back( newWarpFbo );
 	}*/
 }
 void Batchass::createWarp()
@@ -90,7 +90,7 @@ void Batchass::createWarp()
 void Batchass::assignFboToWarp(int index, int fbo)
 {
 	if (index > -1 && index < mParameterBag->MAX && fbo > -1 && fbo < mTextures->getFboCount())
-	mParameterBag->mWarpFbos[index].textureIndex = fbo;
+		mParameterBag->mWarpFbos[index].textureIndex = fbo;
 }
 void Batchass::changeMode(int newMode)
 {
@@ -303,19 +303,31 @@ void Batchass::shutdownLoader()
 int Batchass::getWindowsResolution()
 {
 	mParameterBag->mDisplayCount = 0;
-	int w =Display::getMainDisplay()->getWidth();
+	int w = Display::getMainDisplay()->getWidth();
 	// Display sizes
 	mParameterBag->mMainDisplayWidth = Display::getMainDisplay()->getWidth();
 	mParameterBag->mMainDisplayHeight = Display::getMainDisplay()->getHeight();
-	mParameterBag->mRenderX = mParameterBag->mMainDisplayWidth;
-	mParameterBag->mRenderY = 0;
-	for (auto display : Display::getDisplays())
+	if (mParameterBag->mCustomLayout)
 	{
-		mParameterBag->mDisplayCount++;
-		mParameterBag->mRenderWidth = display->getWidth();
-		mParameterBag->mRenderHeight = display->getHeight();
-		mLog->logTimedString("Window " + toString(mParameterBag->mDisplayCount) + ": " + toString(mParameterBag->mRenderWidth) + "x" + toString(mParameterBag->mRenderHeight));
+		// for MODE_MIX and triplehead(or doublehead), we only want 1/3 of the screen centered	
+		for (auto display : Display::getDisplays())
+		{
+			mParameterBag->mDisplayCount++;
+		}
 	}
+	else
+	{
+		mParameterBag->mRenderX = mParameterBag->mMainDisplayWidth;
+		for (auto display : Display::getDisplays())
+		{
+			mParameterBag->mDisplayCount++;
+			mParameterBag->mRenderWidth = display->getWidth();
+			mParameterBag->mRenderHeight = display->getHeight();
+		}	
+	}
+	mParameterBag->mRenderY = 0;
+	mLog->logTimedString("Window " + toString(mParameterBag->mDisplayCount) + ": " + toString(mParameterBag->mRenderWidth) + "x" + toString(mParameterBag->mRenderHeight));
+
 	mLog->logTimedString(" mMainDisplayWidth" + toString(mParameterBag->mMainDisplayWidth) + " mMainDisplayHeight" + toString(mParameterBag->mMainDisplayHeight));
 	mLog->logTimedString(" mRenderX" + toString(mParameterBag->mRenderX) + " mRenderY" + toString(mParameterBag->mRenderY));
 	mParameterBag->mRenderResoXY = Vec2f(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);

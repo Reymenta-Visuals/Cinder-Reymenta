@@ -98,6 +98,7 @@ namespace Reymenta {
 		Vec2f						mCamPosXY;
 		Vec2f						mRenderResoXY;
 		bool						mAutoLayout;
+		bool						mCustomLayout;
 		bool						mStandalone;
 
 		// code editor
