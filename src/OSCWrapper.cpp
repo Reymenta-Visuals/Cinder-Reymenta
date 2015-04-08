@@ -360,6 +360,11 @@ void OSC::updateAndSendOSCFloatMessage(string controlType, int iarg0, float farg
 }
 void OSC::updateParams(int iarg0, float farg1)
 {
+	if (iarg0 > 0 && iarg0 < 9)
+	{
+		// sliders 
+		mParameterBag->controlValues[iarg0] = farg1;
+	}
 	if (iarg0 > 10 && iarg0 < 19)
 	{
 		// rotary 

@@ -296,6 +296,8 @@ void Textures::renderShadaThumbFbo()
 
 void Textures::draw()
 {
+	// start profiling
+	auto start = Clock::now();
 	//renderWarpFbos();
 	renderShadaThumbFbo();
 #pragma region left
@@ -635,8 +637,6 @@ void Textures::draw()
 #pragma region preview
 	if (mParameterBag->mPreviewEnabled)
 	{
-		// start profiling
-		auto start = Clock::now();
 		/***********************************************
 		* start of mLibraryFbos[mParameterBag->mCurrentPreviewFboIndex]
 		*/
@@ -705,18 +705,6 @@ void Textures::draw()
 		}
 		gl::drawSolidRect(Rectf(0, 0, mParameterBag->mFboWidth, mParameterBag->mFboHeight));
 		// stop drawing into the FBO
-		auto end = Clock::now();
-		auto nsdur = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-		auto msdur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-		std::cout << nsdur.count() << "ns,  " << msdur.count() << "ms" << std::endl;
-		char txt[256];
-		sprintf_s(txt, "ns: %2.2d, ms: %2.2d", nsdur.count(),  msdur.count());
-		gl::enableAlphaBlending();
-		gl::drawString(txt, Vec2f(toPixels(100), toPixels(20)), Color(1, 0, 0), Font("Verdana", toPixels(72)));
-
-
-		gl::disableAlphaBlending();
-
 		mFbos[mParameterBag->mCurrentPreviewFboIndex].unbindFramebuffer();
 
 		for (size_t m = 0; m < mTexturesCount; m++)
@@ -813,6 +801,11 @@ void Textures::draw()
 	*/
 #pragma endregion mix
 
+	auto end = Clock::now();
+	auto nsdur = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+	auto msdur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+	std::cout << nsdur.count() << "ns,  " << msdur.count() << "ms" << std::endl;
+	sprintf_s(previewTime, "ns: %2d, ms: %2d", nsdur.count(), msdur.count());
 
 }
 

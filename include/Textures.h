@@ -81,7 +81,7 @@ namespace Reymenta
 		void						update();
 		void						draw();
 		//void						createWarpInput();
-
+		char*						getPreviewTime() { return previewTime; };
 	private:
 		// Logger
 		LoggerRef					log;	
@@ -106,5 +106,8 @@ namespace Reymenta
 		ParameterBagRef				mParameterBag;
 		// Shaders
 		ShadersRef					mShaders;
+		// profiling
+		char						previewTime[256];
+
 	};
 }

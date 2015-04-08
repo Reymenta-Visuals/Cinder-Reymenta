@@ -92,6 +92,12 @@ void Batchass::assignFboToWarp(int index, int fbo)
 	if (index > -1 && index < mParameterBag->MAX && fbo > -1 && fbo < mTextures->getFboCount())
 		mParameterBag->mWarpFbos[index].textureIndex = fbo;
 }
+void Batchass::assignTextureToChannel(int selectedTexture_index, int selectedChannel)
+{
+	if (selectedTexture_index > -1 && selectedTexture_index < mTextures->getTextureCount() && selectedChannel > -1 && selectedChannel < mParameterBag->iChannels.size())
+		mParameterBag->iChannels[selectedChannel] = selectedTexture_index;
+}
+
 void Batchass::changeMode(int newMode)
 {
 	if (mParameterBag->mMode != newMode)

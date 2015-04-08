@@ -97,6 +97,7 @@ namespace Reymenta
 		void						changeMode(int newMode);
 		void						createWarp();
 		void						assignFboToWarp(int index, int fbo);
+		void						assignTextureToChannel(int selectedTexture_index, int selectedChannel);
 	private:
 		// parameters
 		ParameterBagRef				mParameterBag;
