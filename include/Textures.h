@@ -36,6 +36,7 @@ namespace Reymenta
 {
 	// stores the pointer to the Textures instance
 	typedef std::shared_ptr<class Textures> TexturesRef;
+	typedef std::chrono::high_resolution_clock Clock;
 
 	class Textures {
 	public:		
