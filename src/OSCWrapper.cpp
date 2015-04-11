@@ -186,12 +186,12 @@ void OSC::update()
 		else if (oscAddress == "/bend")
 		{
 			mParameterBag->mBend = fargs[0];
-			console() << mParameterBag->mBend << std::endl;
+			console() << "bend: " << mParameterBag->mBend << std::endl;
 		}
 		else if (oscAddress == "/live/beat")
 		{
 			mParameterBag->mBeat = iargs[0];
-			console() << mParameterBag->mBeat << std::endl;
+			console() << "beat: " << mParameterBag->mBeat << std::endl;
 			if (mParameterBag->mBeat == 476)
 			{
 				// stop movie and remove it
@@ -201,11 +201,12 @@ void OSC::update()
 		else if (oscAddress == "/live/track/meter")
 		{
 			mParameterBag->maxVolume = fargs[2];// fargs[0] for AVUI show!;
-			console() << mParameterBag->maxVolume << std::endl;
+			console() << "volume: "  << mParameterBag->maxVolume << std::endl;
 		}
 		else if (oscAddress == "/live/tempo")
 		{
 			mParameterBag->mTempo = fargs[0];
+			console() << "tempo: " << mParameterBag->mTempo << std::endl;
 			if (mParameterBag->mTempo == 88.0)
 			{
 				mTextures->loadFileFromAssets(tracks[0]);
