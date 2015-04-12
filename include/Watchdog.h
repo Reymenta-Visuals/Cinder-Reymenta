@@ -31,6 +31,11 @@
 
 #ifdef CINDER_CINDER
     #include "cinder/Filesystem.h"
+    #if CINDER_VERSION < 900
+        #include "cinder/app/AppNative.h"
+    #else
+        #include "cinder/app/App.h"
+    #endif
 #else
     #if defined( CINDER_WINRT )
         #include <filesystem>
@@ -43,10 +48,24 @@
     #endif
 #endif
 
+// Windows Issue :
+// For the moment the overloaded version of wd::watch has a different name on windows
+// platforms because of some issues with visual studio lambda support (see above)
+// see https://forum.libcinder.org/topic/watchdog#23286000002228083
+// and https://github.com/simongeilfus/Watchdog/issues/2
+// It seems that visual studio is not able to resolve the ambiguity between the two
+// wd::watch methods when trying to cast a lambda to a std::function. A quick
+// temporary way to fix the issue is to rename the method on windows until microsoft
+// decide to update visual studio compiler.
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+    #define WIN_AMBIGUITY_FIX
+#endif
+
+// There's currently some issues with this so it's disabled for now :
 // By default watchdog is disabled in release mode and will only execute the
 // provided callback once when wd::watch is called and do nothing for the
 // other methods. Undef this if you want Watchdog to work in release mode.
-#define WATCHDOG_ONLY_IN_DEBUG
+// #define WATCHDOG_ONLY_IN_DEBUG
 
 //! Exception for when Watchdog can't locate a file or parse the wildcard
 class WatchedFileSystemExc : public std::exception {
@@ -70,8 +89,13 @@ public:
     {
         watchImpl( path, callback, std::function<void(const std::vector<ci::fs::path>&)>() );
     }
+    
     //! Watches a file or directory for modification and call back the specified std::function. A list of modified files or directory is passed as argument of the callback. Use this version only if you are watching multiple files or a directory.
+#ifdef WIN_AMBIGUITY_FIX
+    static void watchMany( const ci::fs::path &path, const std::function<void(const std::vector<ci::fs::path>&)> &callback )
+#else
     static void watch( const ci::fs::path &path, const std::function<void(const std::vector<ci::fs::path>&)> &callback )
+#endif
     {
         watchImpl( path, std::function<void(const ci::fs::path&)>(), callback );
     }
@@ -114,7 +138,7 @@ protected:
     {
     }
     
-    ~Watchdog()
+    void close()
     {
         // remove all watchers
         unwatchAll();
@@ -149,7 +173,18 @@ protected:
         // create the static Watchdog instance
         static Watchdog wd;
         // and start its thread
-        if( !wd.mWatching ) wd.start();
+        if( !wd.mWatching ) {
+            wd.start();
+            #ifdef CINDER_CINDER
+                #if CINDER_VERSION < 900
+                    ci::app::App::get()->getSignalShutdown().connect( [&]() {
+                #else
+                    ci::app::App::get()->getSignalCleanup().connect( [&]() {
+                #endif
+                        wd.close();
+                    } );
+            #endif
+        }
         
         const std::string key = path.string();
         
@@ -158,7 +193,6 @@ protected:
             
             std::string filter;
             ci::fs::path p = path;
-            
             // try to see if there's a match for the wildcard
             if( path.string().find( "*" ) != std::string::npos ){
                 bool found = false;
@@ -175,7 +209,21 @@ protected:
                 }
             }
             
-            std::lock_guard<std::mutex> lock( wd.mMutex );
+#ifdef CINDER_CINDER
+            // try to see if the path is an asset
+            if( !ci::fs::exists( p ) ){
+                ci::fs::path asset = ci::app::getAssetPath( p );
+                if( !asset.empty() ){
+                    p = asset;
+                }
+            }
+            // throw an exception if the file doesn't exist
+            if( !ci::fs::exists( p ) ){
+                throw WatchedFileSystemExc( path );
+            }
+#endif
+            
+            std::lock_guard<std::mutex> lock( wd.mMutex, std::adopt_lock );
             if( wd.mFileWatchers.find( key ) == wd.mFileWatchers.end() ){
                 wd.mFileWatchers.emplace( make_pair( key, Watcher( p, filter, callback, listCallback ) ) );
             }
@@ -184,14 +232,14 @@ protected:
         else {
             // if the path is empty we unwatch all files
             if( path.empty() ){
-                std::lock_guard<std::mutex> lock( wd.mMutex );
+                std::lock_guard<std::mutex> lock( wd.mMutex, std::adopt_lock );
                 for( auto it = wd.mFileWatchers.begin(); it != wd.mFileWatchers.end(); ) {
                     it = wd.mFileWatchers.erase( it );
                 }
             }
             // or the specified file or directory
             else {
-                std::lock_guard<std::mutex> lock( wd.mMutex );
+                std::lock_guard<std::mutex> lock( wd.mMutex, std::adopt_lock );
                 auto watcher = wd.mFileWatchers.find( key );
                 if( watcher != wd.mFileWatchers.end() ){
                     wd.mFileWatchers.erase( watcher );
@@ -352,6 +400,8 @@ protected:
         std::map< std::string, time_t >                         mModificationTimes;
     };
     
+    friend class SleepyWatchdog;
+    
     std::mutex                      mMutex;
     std::atomic<bool>               mWatching;
     std::unique_ptr<std::thread>    mThread;
@@ -365,14 +415,28 @@ public:
     //! executes the callback once
     static void watch( const ci::fs::path &path, const std::function<void(const ci::fs::path&)> &callback )
     {
-        // TODO should probably check for wildcards here as well
-        callback( path );
+        auto pathFilter = Watchdog::visitWildCardPath( path, []( const ci::fs::path &p ){ return false; } );
+        if( pathFilter.first.empty() ){
+            throw WatchedFileSystemExc( path );
+        }
+        else {
+            callback( pathFilter.first );
+        }
     }
+#ifdef WIN_AMBIGUITY_FIX
+    static void watchMany( const ci::fs::path &path, const std::function<void(const std::vector<ci::fs::path>&)> &callback )
+#else
     static void watch( const ci::fs::path &path, const std::function<void(const std::vector<ci::fs::path>&)> &callback )
+#endif
     {
-        // TODO should probably check for wildcards here as well
-        // TODO this is wrong
-        callback( std::vector<ci::fs::path>() );
+        auto pathFilter = Watchdog::visitWildCardPath( path, []( const ci::fs::path &p ){ return false; } );
+        if( pathFilter.first.empty() ){
+            throw WatchedFileSystemExc( path );
+        }
+        else {
+            // TODO: this is wrong
+            callback( std::vector<ci::fs::path>() );
+        }
     }
     //! does nothing
     static void unwatch( const ci::fs::path &path ) {}

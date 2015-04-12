@@ -9,6 +9,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	log = Logger::create("ShadersLog.txt");
 	log->logTimedString("Shaders constructor");
 	liveError = true;
+	isLiveShaderSetup = false;
 	previousFileName = "0";
 	currentFileName = "0";
 
@@ -63,54 +64,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 		mError = string(e.what());
 		log->logTimedString("unable to load shader:" + string(e.what()));
 	}
-	//load live shader
-	try
-	{
-		fs::path liveFragFile = getAssetPath("") / "live.frag";
-		if (fs::exists(liveFragFile))
-		{
-			// Load our shader and test if it is correctly compiled
-			try {
-				mLiveShader = gl::GlslProg::create(loadAsset("passthru.vert"), loadFile(liveFragFile));
-				liveError = false;
-			}
-			catch (gl::GlslProgCompileExc exc){
-				console() << exc.what() << endl;
-			}
-			/*wd::watch(liveFragFile, [this](const fs::path &frag) {
 
-				// Load our shader and test if it is correctly compiled
-				try {
-				mLiveShader = gl::GlslProg::create(loadAsset("passthru.vert"), frag);
-				liveError = false;
-				}
-				catch (gl::GlslProgCompileExc exc){
-				console() << exc.what() << endl;
-				}
-				});*/
-		}
-		else
-		{
-			log->logTimedString("live.frag does not exist:");
-		}
-	}
-	catch (gl::GlslProgCompileExc &exc)
-	{
-		mError = string(exc.what());
-		log->logTimedString("unable to load/compile shader:" + string(exc.what()));
-	}
-	catch (const std::exception &e)
-	{
-
-		mError = string(e.what());
-		log->logTimedString("unable to load shader:" + string(e.what()));
-	}
-	if (liveError)
-	{
-		// revert to mix.frag, TODO better quit if mix.frag does not exit
-		fs::path mixFragFile = getAssetPath("") / "mix.frag";
-		mLiveShader = gl::GlslProg::create(loadAsset("passthru.vert"), loadFile(mixFragFile));
-	}
 	//load VertexSphereShader shader
 	try
 	{
@@ -133,13 +87,15 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	{
 		mError = string(e.what());
 		log->logTimedString("unable to load shader:" + string(e.what()));
-	}	
+	}
 	// shadertoy include
 	vs = loadString(loadAsset("passthru.vert"));
 	inc = loadString(loadAsset("shadertoy.inc"));
 
 	validFrag = false;
 	validVert = true;
+	// live frag file
+	liveFragFile = getAssetPath("") / "live.frag";
 
 	//fileName = "default.frag";
 	fs::path localFile; //= getAssetPath("") / "shaders" / fileName;
@@ -175,6 +131,69 @@ void Shaders::setupLoader()
 	//mThreadAbort = false;
 	//mThread = std::make_shared<std::thread>(&Shaders::loader, this);
 }
+void Shaders::setupLiveShader()
+{
+	if (!isLiveShaderSetup)
+	{
+		//load live shader
+		try
+		{
+			if (fs::exists(liveFragFile))
+			{
+				// Load our shader and test if it is correctly compiled
+				try {
+					mLiveShader = gl::GlslProg::create(loadAsset("passthru.vert"), loadFile(liveFragFile));
+					liveError = false;
+				}
+				catch (gl::GlslProgCompileExc exc){
+					console() << exc.what() << endl;
+				}
+				//wd::watch(liveFragFile, [this](const fs::path &livePath)
+				/*wd::watch(liveFragFile, static_cast < function < void(const fs::path &frag)>>([this](const fs::path & liveFragFile)
+				{
+					//this->loadLiveShader();
+					
+				}));*/
+				isLiveShaderSetup = true;
+			}
+			else
+			{
+				log->logTimedString("live.frag does not exist:");
+			}
+		}
+		catch (gl::GlslProgCompileExc &exc)
+		{
+			mError = string(exc.what());
+			log->logTimedString("unable to load/compile shader:" + string(exc.what()));
+		}
+		catch (const std::exception &e)
+		{
+
+			mError = string(e.what());
+			log->logTimedString("unable to load shader:" + string(e.what()));
+		}
+		if (liveError)
+		{
+			// revert to mix.frag, TODO better quit if mix.frag does not exit
+			fs::path mixFragFile = getAssetPath("") / "mix.frag";
+			mLiveShader = gl::GlslProg::create(loadAsset("passthru.vert"), loadFile(mixFragFile));
+		}
+
+	}
+}
+void Shaders::loadLiveShader()
+{
+	// Load our shader and test if it is correctly compiled
+	liveError = true;
+	try 
+	{
+		mLiveShader = gl::GlslProg::create(loadAsset("passthru.vert"), loadFile(liveFragFile));
+		liveError = false;
+	}
+	catch (gl::GlslProgCompileExc exc){
+		console() << exc.what() << endl;
+	}
+}
 void Shaders::shutdownLoader()
 {
 	// Tell the loading thread to abort, then wait for it to stop.
@@ -186,33 +205,33 @@ void Shaders::loader()
 	// Loading loop.
 	/*while (!mThreadAbort)
 	{
-		// Wait for a request.
-		if (mRequests->isNotEmpty())
-		{
-			// Take the request from the buffer.
-			LoaderData data;
-			mRequests->popBack(&data);
+	// Wait for a request.
+	if (mRequests->isNotEmpty())
+	{
+	// Take the request from the buffer.
+	LoaderData data;
+	mRequests->popBack(&data);
 
-			// Try to load, parse and compile the shader.
-			try {
-				//std::string vs = loadString(loadAsset("shaders/templates/passThrough2.vert"));
-				std::string fs = inc + loadString(loadFile(data.path));
-				//data.shader = gl::GlslProg::create(vs.c_str(), fs.c_str());
-				data.shadertext = fs.c_str();
+	// Try to load, parse and compile the shader.
+	try {
+	//std::string vs = loadString(loadAsset("shaders/templates/passThrough2.vert"));
+	std::string fs = inc + loadString(loadFile(data.path));
+	//data.shader = gl::GlslProg::create(vs.c_str(), fs.c_str());
+	data.shadertext = fs.c_str();
 
-				// If the shader compiled successfully, pass it to the main thread.
-				mResponses->pushFront(data);
-			}
-			catch (const std::exception& e) {
-				// Uhoh, something went wrong.
-				console() << e.what() << endl;
-			}
-		}
-		else {
-			// Allow the CPU to do other things for a while.
-			std::chrono::milliseconds duration(100);
-			std::this_thread::sleep_for(duration);
-		}
+	// If the shader compiled successfully, pass it to the main thread.
+	mResponses->pushFront(data);
+	}
+	catch (const std::exception& e) {
+	// Uhoh, something went wrong.
+	console() << e.what() << endl;
+	}
+	}
+	else {
+	// Allow the CPU to do other things for a while.
+	std::chrono::milliseconds duration(100);
+	std::this_thread::sleep_for(duration);
+	}
 	}*/
 }
 void Shaders::loadFragmentShader(boost::filesystem::path aFilePath)
@@ -225,9 +244,9 @@ void Shaders::update()
 
 	// If we are ready for the next shader, take it from the buffer.
 	if (mResponses->isNotEmpty()) {
-		mResponses->popBack(&data);
+	mResponses->popBack(&data);
 
-		setFragString(data.shadertext);
+	setFragString(data.shadertext);
 	}*/
 }
 
@@ -345,11 +364,11 @@ int Shaders::loadPixelFragmentShader(string aFilePath)
 			{
 				mFragmentShadersNames[rtn] = getFileName(aFilePath);
 			}
-			log->logTimedString(mFragFile + " loaded and compiled:" );
+			log->logTimedString(mFragFile + " loaded and compiled:");
 		}
 		else
 		{
-			log->logTimedString(mFragFile + " does not exist:" );
+			log->logTimedString(mFragFile + " does not exist:");
 		}
 	}
 	catch (gl::GlslProgCompileExc &exc)

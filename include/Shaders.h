@@ -64,6 +64,8 @@ namespace Reymenta
 		gl::GlslProgRef					getMixShader() { return mMixShader; };
 		gl::GlslProgRef					getWarpShader() { return mWarpShader; };
 		gl::GlslProgRef					getLiveShader() { return mLiveShader; };
+		void							setupLiveShader();
+		void							loadLiveShader();
 		gl::GlslProgRef					getVertexSphereShader() { return mVertexSphereShader; };
 		gl::GlslProgRef					getShader(int aIndex) { return mFragmentShaders[aIndex]; };
 
@@ -87,6 +89,8 @@ namespace Reymenta
 		bool						validFrag;
 		bool						validVert;
 		bool						liveError;
+		bool						isLiveShaderSetup;
+		fs::path					liveFragFile;
 		// new
 		int							mCurrentRenderShader;
 		int							mCurrentPreviewShader;

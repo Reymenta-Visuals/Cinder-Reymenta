@@ -136,6 +136,9 @@ void Batchass::changeMode(int newMode)
 			mParameterBag->currentSelectedIndex = 5;
 			mParameterBag->iLight = true;
 			break;
+		case 7: // Live
+			//mShaders->setupLiveShader();
+			break;
 
 
 		}
@@ -310,9 +313,10 @@ int Batchass::getWindowsResolution()
 {
 	mParameterBag->mDisplayCount = 0;
 	int w = Display::getMainDisplay()->getWidth();
+	int h = Display::getMainDisplay()->getHeight();
 	// Display sizes
-	mParameterBag->mMainDisplayWidth = Display::getMainDisplay()->getWidth();
-	mParameterBag->mMainDisplayHeight = Display::getMainDisplay()->getHeight();
+	mParameterBag->mMainDisplayWidth = w;
+	mParameterBag->mMainDisplayHeight = h;
 	if (mParameterBag->mCustomLayout)
 	{
 		// for MODE_MIX and triplehead(or doublehead), we only want 1/3 of the screen centered	
