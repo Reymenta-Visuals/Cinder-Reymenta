@@ -103,6 +103,7 @@ namespace Reymenta {
 
 		// code editor
 		Vec2f						mRenderCodeEditorXY;
+		bool						mLiveCode;
 		bool						mShowUI;
 		bool						mCursorVisible;
 		bool						isUIDirty;
@@ -226,7 +227,7 @@ namespace Reymenta {
 		int							mCurrentPreviewFboIndex;
 		int							mSphereFboIndex, mMeshFboIndex, mLiveFboIndex, mMixFboIndex, mAudioFboIndex;
 		int							mLeftFboIndex, mRightFboIndex, mVertexSphereFboIndex, mWarp1FboIndex, mWarp2FboIndex, mABPFboIndex;
-		int							mLeftFragIndex, mRightFragIndex, mPreviewFragIndex, mPreviousFragIndex, mWarp1FragIndex, mWarp2FragIndex;
+		int							mLeftFragIndex, mRightFragIndex, mPreviewFragIndex, mPreviousFragIndex, mWarp1FragIndex, mWarp2FragIndex, mLiveFragIndex;
 		float						iZoomLeft, iZoomRight;
 		// meshes
 		int							mMeshIndex;

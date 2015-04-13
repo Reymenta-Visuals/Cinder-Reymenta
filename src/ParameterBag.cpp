@@ -403,18 +403,6 @@ void ParameterBag::reset()
 	iChannels[4] = 10;
 	// fbo indexes for warp
 	mFboResolution = 2048;
-	/*mCurrentPreviewFboIndex = 0;
-	mMixFboIndex = 1;
-	mAudioFboIndex = 2;
-	mWarpFboIndex = 3;
-	mSphereFboIndex = 4;
-	mMeshFboIndex = 5;
-	mLeftFboIndex = 6;
-	mRightFboIndex = 7;
-	mWarp1FboIndex = 8; 
-	mWarp2FboIndex = 9;
-	mLiveFboIndex = 10;
-	mVertexSphereFboIndex = 11;*/
 	mMixFboIndex = 0;
 	mLeftFboIndex = 1;
 	mRightFboIndex = 2;
@@ -434,6 +422,7 @@ void ParameterBag::reset()
 	mRightFragIndex = 1;
 	mWarp1FragIndex = 2;
 	mWarp2FragIndex = 3;
+	mLiveFragIndex = 4;
 	mFlipH = false;
 	mWarpCount = 3;
 	FPSColor = ColorA(0.0f, 1.0f, 0.0f, 1.0f);
@@ -442,7 +431,7 @@ void ParameterBag::reset()
 	ColorYellow = ColorA(1.0f, 1.0f, 0.0f, 1.0f);
 	ColorPurple = ColorA(0.5f, 0.0f, 1.0f, 1.0f);
 	isUIDirty = true;
-	//isShaderDirty = false;
+	mLiveCode = false;
 	mShaderToLoad = "";
 
 	mStateTransition = 1.0;
