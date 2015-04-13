@@ -734,7 +734,7 @@ void Textures::draw()
 		gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
 		gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, mParameterBag->mOriginUpperLeft);
 
-		aShader = mShaders->getShader(mParameterBag->mLiveFragIndex);
+		aShader = mShaders->getLiveShader();
 		aShader->bind();
 		aShader->uniform("iGlobalTime", mParameterBag->iGlobalTime);
 		aShader->uniform("iResolution", Vec3f(mParameterBag->iResolution.x, mParameterBag->iResolution.y, 1.0));
