@@ -65,7 +65,7 @@ namespace Reymenta
 		gl::GlslProgRef					getWarpShader() { return mWarpShader; };
 		gl::GlslProgRef					getLiveShader() { return mLiveShader; };
 		void							setupLiveShader();
-		void							loadLiveShader();
+		void							loadLiveShader(string frag);
 		gl::GlslProgRef					getVertexSphereShader() { return mVertexSphereShader; };
 		gl::GlslProgRef					getShader(int aIndex) { return mFragmentShaders[aIndex]; };
 

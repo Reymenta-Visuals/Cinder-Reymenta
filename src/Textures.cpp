@@ -737,7 +737,7 @@ void Textures::draw()
 		aShader = mShaders->getShader(mParameterBag->mLiveFragIndex);
 		aShader->bind();
 		aShader->uniform("iGlobalTime", mParameterBag->iGlobalTime);
-		aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
+		aShader->uniform("iResolution", Vec3f(mParameterBag->iResolution.x, mParameterBag->iResolution.y, 1.0));
 		aShader->uniform("iChannelResolution", mParameterBag->iChannelResolution, 4);
 		aShader->uniform("iMouse", Vec4f(mParameterBag->mRenderPosXY.x, mParameterBag->mRenderPosXY.y, mParameterBag->iMouse.z, mParameterBag->iMouse.z));//iMouse =  Vec3i( event.getX(), mRenderHeight - event.getY(), 1 );
 		aShader->uniform("iZoom", mParameterBag->controlValues[13]);
@@ -800,7 +800,7 @@ void Textures::draw()
 
 		aShader->unbind();
 
-		sTextures[4] = mFbos[mParameterBag->mLiveFboIndex].getTexture();
+		sTextures[11] = mFbos[mParameterBag->mLiveFboIndex].getTexture();
 		/*
 		* end of mFbos[mParameterBag->mLiveFboIndex]
 		***********************************************/

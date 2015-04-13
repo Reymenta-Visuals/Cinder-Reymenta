@@ -89,14 +89,29 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 		log->logTimedString("unable to load shader:" + string(e.what()));
 	}
 	// shadertoy include
-	vs = loadString(loadAsset("passthru.vert"));
+	vs = loadString(loadAsset("live.vert"));
 	inc = loadString(loadAsset("shadertoy.inc"));
 
 	validFrag = false;
 	validVert = true;
 	// live frag file
 	liveFragFile = getAssetPath("") / "live.frag";
-
+	if (fs::exists(liveFragFile))
+	{
+		// Load our shader and test if it is correctly compiled
+		try
+		{
+			mLiveShader = gl::GlslProg::create(loadAsset("live.vert"), loadFile(liveFragFile));
+			liveError = false;
+		}
+		catch (gl::GlslProgCompileExc exc){
+			console() << exc.what() << endl;
+		}
+	}
+	else
+	{
+		log->logTimedString("live.frag does not exist");
+	}
 	//fileName = "default.frag";
 	fs::path localFile; //= getAssetPath("") / "shaders" / fileName;
 	//loadPixelFrag(localFile.string());
@@ -138,28 +153,14 @@ void Shaders::setupLiveShader()
 		//load live shader
 		try
 		{
-			if (fs::exists(liveFragFile))
+			//wd::watch(liveFragFile, [this](const fs::path &livePath)
+			/*wd::watch(liveFragFile, static_cast < function < void(const fs::path &frag)>>([this](const fs::path & liveFragFile)
 			{
-				// Load our shader and test if it is correctly compiled
-				try {
-					mLiveShader = gl::GlslProg::create(loadAsset("passthru.vert"), loadFile(liveFragFile));
-					liveError = false;
-				}
-				catch (gl::GlslProgCompileExc exc){
-					console() << exc.what() << endl;
-				}
-				//wd::watch(liveFragFile, [this](const fs::path &livePath)
-				/*wd::watch(liveFragFile, static_cast < function < void(const fs::path &frag)>>([this](const fs::path & liveFragFile)
-				{
-					//this->loadLiveShader();
-					
-				}));*/
-				isLiveShaderSetup = true;
-			}
-			else
-			{
-				log->logTimedString("live.frag does not exist:");
-			}
+			//this->loadLiveShader();
+
+			}));*/
+			isLiveShaderSetup = true;
+
 		}
 		catch (gl::GlslProgCompileExc &exc)
 		{
@@ -176,18 +177,18 @@ void Shaders::setupLiveShader()
 		{
 			// revert to mix.frag, TODO better quit if mix.frag does not exit
 			fs::path mixFragFile = getAssetPath("") / "mix.frag";
-			mLiveShader = gl::GlslProg::create(loadAsset("passthru.vert"), loadFile(mixFragFile));
+			mLiveShader = gl::GlslProg::create(loadAsset("live.vert"), loadFile(mixFragFile));
 		}
 
 	}
 }
-void Shaders::loadLiveShader()
+void Shaders::loadLiveShader(string frag)
 {
 	// Load our shader and test if it is correctly compiled
 	liveError = true;
-	try 
+	try
 	{
-		mLiveShader = gl::GlslProg::create(loadAsset("passthru.vert"), loadFile(liveFragFile));
+		mLiveShader = gl::GlslProg::create(vs.c_str(), frag.c_str());
 		liveError = false;
 	}
 	catch (gl::GlslProgCompileExc exc){

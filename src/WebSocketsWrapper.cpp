@@ -2,9 +2,10 @@
 
 using namespace Reymenta;
 
-WebSockets::WebSockets(ParameterBagRef aParameterBag)
+WebSockets::WebSockets(ParameterBagRef aParameterBag, BatchassRef aBatchass)
 {
 	mParameterBag = aParameterBag;
+	mBatchass = aBatchass;
 	// either a client or a server
 	if (mParameterBag->mIsWebSocketsServer)
 	{
@@ -30,9 +31,9 @@ WebSockets::WebSockets(ParameterBagRef aParameterBag)
 
 }
 
-WebSocketsRef WebSockets::create(ParameterBagRef aParameterBag)
+WebSocketsRef WebSockets::create(ParameterBagRef aParameterBag, BatchassRef aBatchass)
 {
-	return shared_ptr<WebSockets>(new WebSockets(aParameterBag));
+	return shared_ptr<WebSockets>(new WebSockets(aParameterBag, aBatchass));
 }
 void WebSockets::setupSender()
 {
@@ -54,7 +55,7 @@ void WebSockets::update()
 	{
 		mClient.poll();
 		double e = getElapsedSeconds();
-		if ( e - mPingTime > 20.0 ) {
+		if (e - mPingTime > 20.0) {
 			mClient.ping();
 			mPingTime = e;
 		}
@@ -64,7 +65,7 @@ void WebSockets::clientConnect()
 {
 	stringstream s;
 	s << "ws://" << mParameterBag->mWebSocketsHost << ":" << mParameterBag->mWebSocketsPort;
-	mClient.connect( s.str() );//"ws://localhost:9002"
+	mClient.connect(s.str());//"ws://localhost:9002"
 }
 void WebSockets::clientDisconnect()
 {
@@ -96,13 +97,12 @@ void WebSockets::onInterrupt()
 void WebSockets::onPing(string msg)
 {
 	mText = "Ponged";
-	if (!msg.empty()) 
+	if (!msg.empty())
 	{
 		mText += ": " + msg;
 	}
 	mParameterBag->WSMsg = mText;
 	mParameterBag->newWSMsg = true;
-
 }
 
 void WebSockets::onRead(string msg)
@@ -110,13 +110,13 @@ void WebSockets::onRead(string msg)
 	mText = "Read";
 	mParameterBag->WSMsg = msg;
 	mParameterBag->newWSMsg = true;
-	if (!msg.empty()) 
+	if (!msg.empty())
 	{
 		mText += ": " + msg;
 		string first = msg.substr(0, 1);
-		// json
 		if (first == "{")
 		{
+			// json
 			JsonTree json;
 			try
 			{
@@ -135,6 +135,12 @@ void WebSockets::onRead(string msg)
 				mText += exception.what();
 				mText += "  ";
 			}
+		}
+		else if (first == "#")
+		{
+			// fragment shader from live coding
+			mBatchass->getShadersRef()->loadLiveShader(msg);
+
 		}
 
 

@@ -138,6 +138,7 @@ void Batchass::changeMode(int newMode)
 			break;
 		case 7: // Live
 			//mShaders->setupLiveShader();
+			mParameterBag->mLiveCode = true;
 			break;
 
 

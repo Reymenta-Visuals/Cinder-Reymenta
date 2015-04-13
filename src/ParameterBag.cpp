@@ -422,7 +422,7 @@ void ParameterBag::reset()
 	mRightFragIndex = 1;
 	mWarp1FragIndex = 2;
 	mWarp2FragIndex = 3;
-	mLiveFragIndex = 4;
+	mLiveFragIndex = 7;
 	mFlipH = false;
 	mWarpCount = 3;
 	FPSColor = ColorA(0.0f, 1.0f, 0.0f, 1.0f);
