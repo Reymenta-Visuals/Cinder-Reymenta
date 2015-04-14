@@ -887,10 +887,10 @@ void Textures::draw()
 #pragma endregion mix
 
 	auto end = Clock::now();
-	auto nsdur = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
 	auto msdur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-	std::cout << nsdur.count() << "ns,  " << msdur.count() << "ms" << std::endl;
-	sprintf_s(previewTime, "ns: %2d, ms: %2d", nsdur.count(), msdur.count());
+	auto nsdur = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+	//std::cout << msdur.count() << "ms, " << nsdur.count() << "µs" << std::endl;
+	sprintf_s(previewTime, "%2dms,%2d", msdur.count(), nsdur.count());
 
 }
 
