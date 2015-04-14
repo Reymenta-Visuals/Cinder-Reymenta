@@ -182,8 +182,9 @@ void Shaders::setupLiveShader()
 
 	}
 }
-void Shaders::loadLiveShader(string frag)
+string Shaders::loadLiveShader(string frag)
 {
+	string rtn = "";
 	// Load our shader and test if it is correctly compiled
 	liveError = true;
 	try
@@ -191,9 +192,11 @@ void Shaders::loadLiveShader(string frag)
 		mLiveShader = gl::GlslProg::create(vs.c_str(), frag.c_str());
 		liveError = false;
 	}
-	catch (gl::GlslProgCompileExc exc){
-		console() << exc.what() << endl;
+	catch (gl::GlslProgCompileExc exc)
+	{
+		rtn = string(exc.what());
 	}
+	return rtn;
 }
 void Shaders::shutdownLoader()
 {
