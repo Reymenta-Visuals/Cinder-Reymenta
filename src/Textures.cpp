@@ -24,7 +24,7 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	}
 	for (size_t m = 0; m < mShaders->getCount(); m++)
 	{
-		mThumbFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
+		mThumbFbos.push_back(gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
 	}
 	currentShadaThumbIndex = 0;
 	//mFbos[mParameterBag->mMeshFboIndex].getTexture(0).setFlipped(false);
@@ -221,12 +221,12 @@ void Textures::renderShadaThumbFbo()
 
 	// clear the FBO
 	gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
-	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, mParameterBag->mOriginUpperLeft);
+	gl::setMatricesWindow(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight, mParameterBag->mOriginUpperLeft);
 
 	aShader = mShaders->getShader(currentShadaThumbIndex);
 	aShader->bind();
 	aShader->uniform("iGlobalTime", mParameterBag->iGlobalTime);
-	aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
+	aShader->uniform("iResolution", Vec3f(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight, 1.0));
 	aShader->uniform("iChannelResolution", mParameterBag->iChannelResolution, 4);
 	aShader->uniform("iMouse", Vec4f(mParameterBag->mRenderPosXY.x, mParameterBag->mRenderPosXY.y, mParameterBag->iMouse.z, mParameterBag->iMouse.z));//iMouse =  Vec3i( event.getX(), mRenderHeight - event.getY(), 1 );
 	aShader->uniform("iZoom", mParameterBag->iZoomLeft);
@@ -278,7 +278,7 @@ void Textures::renderShadaThumbFbo()
 	{
 		getTexture(m).bind(m);
 	}
-	gl::drawSolidRect(Rectf(0, 0, mParameterBag->mFboWidth, mParameterBag->mFboHeight));
+	gl::drawSolidRect(Rectf(0, 0, mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
 	// stop drawing into the FBO
 	mThumbFbos[currentShadaThumbIndex].unbindFramebuffer();
 
