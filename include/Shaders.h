@@ -50,8 +50,8 @@ namespace Reymenta
 
 		void							doTransition();
 		bool							setFragString(string pixelFrag);
-		int								setGLSLString(string pixelFrag);
-		int								setGLSLStringAtIndex(string pixelFrag, int index);
+		int								setGLSLString(string pixelFrag, string name);
+		int								setGLSLStringAtIndex(string pixelFrag, string name, int index);
 		string							getShaderName(int aIndex);
 		bool							loadTextFile(string aFilePath);
 		void							loadCurrentFrag();
@@ -67,7 +67,7 @@ namespace Reymenta
 		void							setupLiveShader();
 		string							loadLiveShader(string frag);
 		gl::GlslProgRef					getVertexSphereShader() { return mVertexSphereShader; };
-		gl::GlslProgRef					getShader(int aIndex) { return mFragmentShaders[aIndex]; };
+		gl::GlslProgRef					getShader(int aIndex) { return mFragmentShaders[aIndex].shader; };
 
 		int								loadPixelFragmentShader(string aFilePath);
 		void							loadFragmentShader(boost::filesystem::path aFilePath);
@@ -79,33 +79,35 @@ namespace Reymenta
 		int								getCount() { return mFragmentShaders.size(); };
 
 		void							shutdownLoader();
+		void							createThumbsFromDir(string filePath);
 	private:
 		// Logger
-		LoggerRef					log;
+		LoggerRef						log;
 
-		string						mFragFile;
-		string						mFragFileName;
+		string							mFragFile;
+		string							mFragFileName;
 
-		bool						validFrag;
-		bool						validVert;
-		bool						liveError;
-		bool						isLiveShaderSetup;
-		fs::path					liveFragFile;
+		bool							validFrag;
+		bool							validVert;
+		bool							liveError;
+		bool							isLiveShaderSetup;
+		fs::path						liveFragFile;
 		// new
-		int							mCurrentRenderShader;
-		int							mCurrentPreviewShader;
-		vector<gl::GlslProgRef>		mFragmentShaders;
-		vector<string>				mFragmentShadersNames;
+		int								mCurrentRenderShader;
+		int								mCurrentPreviewShader;
 
-		string						fileName, previousFileName, currentFileName, mixFileName;
-		string						mError;
+		//! shaders
+		vector<Shada>					mFragmentShaders;
+
+		string							fileName, previousFileName, currentFileName, mixFileName;
+		string							mError;
 		// parameters
-		ParameterBagRef				mParameterBag;
+		ParameterBagRef					mParameterBag;
 		// current frag string
-		string						currentFrag;
+		string							currentFrag;
 		// thread
-		void setupLoader();
-		void loader();
+		void							setupLoader();
+		void							loader();
 		struct LoaderData
 		{
 			LoaderData() {}
@@ -128,17 +130,17 @@ namespace Reymenta
 		//! Signals if the loading thread should abort.
 		//bool									mThreadAbort;
 		// default vertex shader
-		std::string								vs;
+		std::string						vs;
 		// include shader lines
-		std::string								inc;
+		std::string						inc;
 		// mix shader
-		gl::GlslProgRef							mMixShader;
+		gl::GlslProgRef					mMixShader;
 		// live coding shader
-		gl::GlslProgRef							mLiveShader;
+		gl::GlslProgRef					mLiveShader;
 		//! warp shader
-		gl::GlslProgRef							mWarpShader;
+		gl::GlslProgRef					mWarpShader;
 		// vertex Sphere shader
-		gl::GlslProgRef							mVertexSphereShader;
+		gl::GlslProgRef					mVertexSphereShader;
 
 	};
 }

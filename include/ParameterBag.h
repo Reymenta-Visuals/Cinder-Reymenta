@@ -2,6 +2,7 @@
 
 #include "cinder/app/AppNative.h"
 #include "cinder/gl/gl.h"
+#include "cinder/gl/GlslProg.h"
 #include "cinder/Timeline.h"
 #include "cinder/Json.h"
 #include "cinder/Xml.h"
@@ -35,7 +36,12 @@ namespace Reymenta {
 		int							shadaIndex;
 		bool						active;
 	};
-
+	struct Shada
+	{
+		gl::GlslProgRef				shader;
+		string						name;
+		bool						active;
+	};
 	/*struct WarpInput
 	{
 		int							leftIndex;
