@@ -124,7 +124,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 		loadPixelFragmentShader(localFile.string());
 	}
 	// init with passthru shader if something goes wrong	
-	for (size_t m = mFragmentShaders.size(); m < mParameterBag->MAX; m++)
+	for (size_t m = mFragmentShaders.size(); m < 8; m++)
 	{
 		Shada newShader;
 		newShader.shader = gl::GlslProg::create(loadAsset("passthru.vert"), loadAsset("passthru.frag"));
@@ -606,7 +606,7 @@ void Shaders::createThumbsFromDir(string filePath)
 	fs::path p(filePath);
 	for (fs::directory_iterator it(p); it != fs::directory_iterator(); ++it)
 	{
-		if (fs::is_regular_file(*it) && mFragmentShaders.size() < mParameterBag->MAX)
+		if (fs::is_regular_file(*it))// && mFragmentShaders.size() < mParameterBag->MAX
 		{
 			string fileName = it->path().filename().string();
 			int dotIndex = fileName.find_last_of(".");

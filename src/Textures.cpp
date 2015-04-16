@@ -288,7 +288,9 @@ void Textures::renderShadaThumbFbo()
 	aShader->unbind();
 	// increment shada thumb index
 	currentShadaThumbIndex++;
-	if (currentShadaThumbIndex > mParameterBag->MAX - 1)
+	// mThumbFbos must equal mFragmentShaders size
+	if (mThumbFbos.size() < mShaders->getCount()) mThumbFbos.push_back(gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
+	if (currentShadaThumbIndex > mShaders->getCount() - 1)
 	{
 		currentShadaThumbIndex = 0;
 	}

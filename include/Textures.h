@@ -66,6 +66,7 @@ namespace Reymenta
 		GLuint						getFboTextureId(int index);
 		ci::gl::Fbo					getFbo(int index);
 		int							getFboCount() { return mFbos.size(); };
+		int							getThumbsFboCount() { return mThumbFbos.size(); };
 		void						flipMixFbo(bool flip);
 		void						flipFbo(int index);
 		void						flipMixFboH(bool flip);
