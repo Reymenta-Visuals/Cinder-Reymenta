@@ -67,7 +67,8 @@ namespace Reymenta
 		void							setupLiveShader();
 		string							loadLiveShader(string frag);
 		gl::GlslProgRef					getVertexSphereShader() { return mVertexSphereShader; };
-		gl::GlslProgRef					getShader(int aIndex) { return mFragmentShaders[aIndex].shader; };
+		Shada							getShader(int aIndex) { return mFragmentShaders[aIndex]; };
+		int								getCount() { return mFragmentShaders.size(); };
 
 		int								loadPixelFragmentShader(string aFilePath);
 		void							loadFragmentShader(boost::filesystem::path aFilePath);
@@ -76,7 +77,6 @@ namespace Reymenta
 		string							getNewFragFileName(string aFilePath);
 		string							getFragStringFromFile(string fileName);
 		void							renderPreviewShader();
-		int								getCount() { return mFragmentShaders.size(); };
 
 		void							shutdownLoader();
 		void							createThumbsFromDir(string filePath);

@@ -30,12 +30,12 @@ namespace Reymenta {
 		ci::gl::TextureRef			texture;
 		bool						active;
 	};
-	struct ShadaFbo
+	/*struct ShadaFbo
 	{
 		ci::gl::Fbo					fbo;
 		int							shadaIndex;
 		bool						active;
-	};
+	};*/
 	struct Shada
 	{
 		gl::GlslProgRef				shader;

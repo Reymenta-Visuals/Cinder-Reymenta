@@ -99,7 +99,7 @@ namespace Reymenta
 		//! mixes fbos
 		vector<gl::Fbo>				mMixesFbos;
 		//! shader fbos
-		vector<ShadaFbo>			mShadaFbos;
+		//vector<ShadaFbo>			mShadaFbos;
 		// shaders
 		gl::GlslProgRef				aShader;
 		// parameters

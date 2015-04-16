@@ -20,11 +20,8 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	for (size_t m = mFbos.size(); m < mParameterBag->MAX; m++)
 	{
 		mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
-		//mFbos[mFbos.size() - 1].getTexture(0).setFlipped(true);
-	}
-	for (size_t m = 0; m < mShaders->getCount(); m++)
-	{
 		mThumbFbos.push_back(gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
+		//mFbos[mFbos.size() - 1].getTexture(0).setFlipped(true);
 	}
 	currentShadaThumbIndex = 0;
 	//mFbos[mParameterBag->mMeshFboIndex].getTexture(0).setFlipped(false);
@@ -175,6 +172,7 @@ ci::gl::Fbo Textures::getFbo(int index)
 }
 GLuint Textures::getShaderThumbTextureId(int index)
 {
+
 	if (index > mThumbFbos.size() - 1) index = mThumbFbos.size() - 1;
 	return  mThumbFbos[index].getTexture().getId();
 }
@@ -223,7 +221,7 @@ void Textures::renderShadaThumbFbo()
 	gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
 	gl::setMatricesWindow(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight, mParameterBag->mOriginUpperLeft);
 
-	aShader = mShaders->getShader(currentShadaThumbIndex);
+	aShader = mShaders->getShader(currentShadaThumbIndex).shader;
 	aShader->bind();
 	aShader->uniform("iGlobalTime", mParameterBag->iGlobalTime);
 	aShader->uniform("iResolution", Vec3f(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight, 1.0));
@@ -290,7 +288,10 @@ void Textures::renderShadaThumbFbo()
 	aShader->unbind();
 	// increment shada thumb index
 	currentShadaThumbIndex++;
-	if (currentShadaThumbIndex > mShaders->getCount() - 1) currentShadaThumbIndex = 0;
+	if (currentShadaThumbIndex > mParameterBag->MAX - 1)
+	{
+		currentShadaThumbIndex = 0;
+	}
 }
 
 void Textures::draw()
@@ -312,7 +313,7 @@ void Textures::draw()
 	gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
 	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, mParameterBag->mOriginUpperLeft);
 
-	aShader = mShaders->getShader(mParameterBag->mLeftFragIndex);
+	aShader = mShaders->getShader(mParameterBag->mLeftFragIndex).shader;
 	aShader->bind();
 	aShader->uniform("iGlobalTime", mParameterBag->iGlobalTime);
 	//aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
@@ -395,7 +396,7 @@ void Textures::draw()
 	gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
 	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, mParameterBag->mOriginUpperLeft);
 
-	aShader = mShaders->getShader(mParameterBag->mRightFragIndex);
+	aShader = mShaders->getShader(mParameterBag->mRightFragIndex).shader;
 	aShader->bind();
 	aShader->uniform("iGlobalTime", mParameterBag->iGlobalTime);
 	aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
@@ -479,7 +480,7 @@ void Textures::draw()
 		gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
 		gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, mParameterBag->mOriginUpperLeft);
 
-		aShader = mShaders->getShader(mParameterBag->mWarp1FragIndex);
+		aShader = mShaders->getShader(mParameterBag->mWarp1FragIndex).shader;
 		aShader->bind();
 		aShader->uniform("iGlobalTime", mParameterBag->iGlobalTime);
 		aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
@@ -561,7 +562,7 @@ void Textures::draw()
 		gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
 		gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, mParameterBag->mOriginUpperLeft);
 
-		aShader = mShaders->getShader(mParameterBag->mWarp2FragIndex);
+		aShader = mShaders->getShader(mParameterBag->mWarp2FragIndex).shader;
 		aShader->bind();
 		aShader->uniform("iGlobalTime", mParameterBag->iGlobalTime);
 		aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
@@ -646,7 +647,7 @@ void Textures::draw()
 		gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
 		gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, mParameterBag->mOriginUpperLeft);
 
-		aShader = mShaders->getShader(mParameterBag->mPreviewFragIndex);
+		aShader = mShaders->getShader(mParameterBag->mPreviewFragIndex).shader;
 		aShader->bind();
 		aShader->uniform("iGlobalTime", mParameterBag->iGlobalTime);
 		aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));

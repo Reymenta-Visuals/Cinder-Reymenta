@@ -332,7 +332,7 @@ int Shaders::loadPixelFragmentShaderAtIndex(string aFilePath, int index)
 		}
 		else
 		{
-			log->logTimedString(mFragFile + " loaded and compiled, does not exist:" + aFilePath);
+			log->logTimedString(mFragFile + " does not exist:" + aFilePath);
 		}
 	}
 	catch (gl::GlslProgCompileExc &exc)
@@ -606,18 +606,40 @@ void Shaders::createThumbsFromDir(string filePath)
 	fs::path p(filePath);
 	for (fs::directory_iterator it(p); it != fs::directory_iterator(); ++it)
 	{
-		if (fs::is_regular_file(*it))
+		if (fs::is_regular_file(*it) && mFragmentShaders.size() < mParameterBag->MAX)
 		{
 			string fileName = it->path().filename().string();
-			if (fileName.find_last_of(".") != std::string::npos) ext = fileName.substr(fileName.find_last_of(".") + 1);
-			if (ext == "glsl")
-			{
+			int dotIndex = fileName.find_last_of(".");
 
-				//sequenceTextures.push_back(ci::gl::Texture(loadImage(filePath + fileName)));
+			if (dotIndex != std::string::npos)
+			{
+				ext = fileName.substr(dotIndex + 1);
+				if (ext == "glsl")
+				{
+					try
+					{
+						std::string fs = inc + loadString(loadFile(it->path()));
+
+						Shada newShader;
+						newShader.shader = gl::GlslProg::create(NULL, fs.c_str());
+						newShader.name = fileName;
+						newShader.active = false;
+						mFragmentShaders.push_back(newShader);
+						log->logTimedString("createThumbsFromDir loaded and compiled " + fileName);
+
+						/*mParameterBag->mPreviewFragIndex = mFragmentShaders.size() - 1;*/
+					}
+					catch (gl::GlslProgCompileExc &exc)
+					{
+						validFrag = false;
+						mError = string(exc.what());
+						log->logTimedString("createThumbsFromDir error: " + mError + " on " + fileName);
+					}
+					//sequenceTextures.push_back(ci::gl::Texture(loadImage(filePath + fileName)));
+				}
 			}
 		}
 	}
-
 }
 
 #pragma warning(pop) // _CRT_SECURE_NO_WARNINGS
