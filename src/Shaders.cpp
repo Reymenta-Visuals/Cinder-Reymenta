@@ -370,22 +370,22 @@ int Shaders::loadPixelFragmentShader(string aFilePath)
 			{
 				//mFragmentShadersNames[rtn] = name;
 			}
-			log->logTimedString(mFragFile + " loaded and compiled:");
+			log->logTimedString(mFragFile + " loaded and compiled");
 		}
 		else
 		{
-			log->logTimedString(mFragFile + " does not exist:");
+			log->logTimedString(mFragFile + " does not exist");
 		}
 	}
 	catch (gl::GlslProgCompileExc &exc)
 	{
 		mError = string(exc.what());
-		log->logTimedString(aFilePath + " unable to load/compile shader:" + string(exc.what()));
+		log->logTimedString(aFilePath + " unable to load/compile shader err:" + string(exc.what()));
 	}
 	catch (const std::exception &e)
 	{
 		mError = string(e.what());
-		log->logTimedString(aFilePath + " unable to load shader:" + string(e.what()));
+		log->logTimedString(aFilePath + " unable to load shader err:" + string(e.what()));
 	}
 
 	return rtn;

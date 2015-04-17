@@ -306,8 +306,8 @@ void ParameterBag::reset()
 	mPreviewFragXY = Vec2f(0.0, 0.0);
 	mFboWidth = 640;
 	mFboHeight = 480;
-	mPreviewFboWidth = 64;
-	mPreviewFboHeight = 48;
+	mPreviewFboWidth = 80;
+	mPreviewFboHeight = 60;
 	mPreviewWidth = 160;
 	mPreviewHeight = 120;
 	mRenderCodeEditorXY.x = 0;
