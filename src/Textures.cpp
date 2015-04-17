@@ -172,8 +172,16 @@ ci::gl::Fbo Textures::getFbo(int index)
 }
 GLuint Textures::getShaderThumbTextureId(int index)
 {
-
+	if (index == 11)
+	{
+		index = 11;
+	}
+	if (index == 12)
+	{
+		index = 12;
+	}
 	if (index > mThumbFbos.size() - 1) index = mThumbFbos.size() - 1;
+
 	return  mThumbFbos[index].getTexture().getId();
 }
 void Textures::loadImageFile(int index, string aFile)
