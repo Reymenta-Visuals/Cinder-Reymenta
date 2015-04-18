@@ -172,14 +172,6 @@ ci::gl::Fbo Textures::getFbo(int index)
 }
 GLuint Textures::getShaderThumbTextureId(int index)
 {
-	if (index == 11)
-	{
-		index = 11;
-	}
-	if (index == 12)
-	{
-		index = 12;
-	}
 	if (index > mThumbFbos.size() - 1) index = mThumbFbos.size() - 1;
 
 	return  mThumbFbos[index].getTexture().getId();
@@ -238,12 +230,12 @@ void Textures::renderShadaThumbFbo()
 	aShader->uniform("iZoom", mParameterBag->iZoomLeft);
 	aShader->uniform("iChannel0", mParameterBag->iChannels[0]);
 	aShader->uniform("iChannel1", mParameterBag->iChannels[1]);
-	aShader->uniform("iChannel2", mParameterBag->iChannels[2]);
+	/*aShader->uniform("iChannel2", mParameterBag->iChannels[2]);
 	aShader->uniform("iChannel3", mParameterBag->iChannels[3]);
 	aShader->uniform("iChannel4", mParameterBag->iChannels[4]);
 	aShader->uniform("iChannel5", mParameterBag->iChannels[5]);
 	aShader->uniform("iChannel6", mParameterBag->iChannels[6]);
-	aShader->uniform("iChannel7", mParameterBag->iChannels[7]);
+	aShader->uniform("iChannel7", mParameterBag->iChannels[7]);*/
 	aShader->uniform("iAudio0", 0);
 	aShader->uniform("iFreq0", mParameterBag->iFreqs[0]);
 	aShader->uniform("iFreq1", mParameterBag->iFreqs[1]);
@@ -280,7 +272,7 @@ void Textures::renderShadaThumbFbo()
 	aShader->uniform("iTempoTime", mParameterBag->iTempoTime);
 	aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
 
-	for (size_t m = 0; m < mTexturesCount; m++)
+	for (size_t m = 0; m < 2; m++)
 	{
 		getTexture(m).bind(m);
 	}
@@ -288,7 +280,7 @@ void Textures::renderShadaThumbFbo()
 	// stop drawing into the FBO
 	mThumbFbos[currentShadaThumbIndex].unbindFramebuffer();
 
-	for (size_t m = 0; m < mTexturesCount; m++)
+	for (size_t m = 0; m < 2; m++)
 	{
 		getTexture(m).unbind();
 	}
@@ -309,7 +301,7 @@ void Textures::draw()
 	// start profiling
 	auto start = Clock::now();
 	//renderWarpFbos();
-	renderShadaThumbFbo();
+	if (mParameterBag->mRenderThumbs) renderShadaThumbFbo();
 #pragma region left
 	/**********************************************
 	* library FBOs

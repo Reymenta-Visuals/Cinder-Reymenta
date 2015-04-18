@@ -154,7 +154,7 @@ namespace Reymenta {
 		string						mCurrentFilePath;
 		// Textures
 		bool						mOriginUpperLeft;
-
+		bool						mRenderThumbs;
 		int							currentSelectedIndex;
 
 		// modes, should be the same in App

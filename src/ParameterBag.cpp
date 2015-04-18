@@ -283,8 +283,7 @@ bool ParameterBag::restore()
 void ParameterBag::reset()
 {
 	// parameters exposed in XML
-	mMIDIOpenAllInputPorts = true;
-	mAutoLayout = true;
+	mMIDIOpenAllInputPorts = mRenderThumbs = mAutoLayout = true;
 	mCustomLayout = false;
 	mStandalone = false;
 	mShowUI = true;
