@@ -133,6 +133,7 @@ namespace Reymenta {
 		bool						iRepeat;
 		bool						iLight;
 		bool						iLightAuto;
+		int							iBlendMode;
 		//float						iCrossfade, iPreviewCrossfade;
 		bool						iShowFps;
 		bool						iDebug;

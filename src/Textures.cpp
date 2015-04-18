@@ -250,7 +250,7 @@ void Textures::renderShadaThumbFbo()
 	aShader->uniform("height", 1);
 	aShader->uniform("iRenderXY", mParameterBag->mLeftRenderXY);
 	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
-	aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[20]);
+	aShader->uniform("iBlendmode", mParameterBag->iBlendMode);
 	aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
 	aShader->uniform("iCrossfade", mParameterBag->controlValues[17]);
 	aShader->uniform("iPixelate", mParameterBag->controlValues[15]);
@@ -345,7 +345,7 @@ void Textures::draw()
 	aShader->uniform("height", 1);
 	aShader->uniform("iRenderXY", mParameterBag->mLeftRenderXY);
 	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
-	aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[20]);
+	aShader->uniform("iBlendmode", mParameterBag->iBlendMode);
 	aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
 	aShader->uniform("iCrossfade", mParameterBag->controlValues[17]);
 	aShader->uniform("iPixelate", mParameterBag->controlValues[15]);
@@ -427,7 +427,7 @@ void Textures::draw()
 	aShader->uniform("height", 1);
 	aShader->uniform("iRenderXY", mParameterBag->mRightRenderXY);
 	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
-	aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[20]);
+	aShader->uniform("iBlendmode", mParameterBag->iBlendMode);
 	aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
 	aShader->uniform("iCrossfade", mParameterBag->controlValues[17]);
 	aShader->uniform("iPixelate", mParameterBag->controlValues[15]);
@@ -511,7 +511,7 @@ void Textures::draw()
 		aShader->uniform("height", 1);
 		aShader->uniform("iRenderXY", mParameterBag->mWarp1RenderXY);
 		aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
-		aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[20]);
+		aShader->uniform("iBlendmode", mParameterBag->iBlendMode);
 		aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
 		aShader->uniform("iCrossfade", mParameterBag->controlValues[17]);
 		aShader->uniform("iPixelate", mParameterBag->controlValues[15]);
@@ -593,7 +593,7 @@ void Textures::draw()
 		aShader->uniform("height", 1);
 		aShader->uniform("iRenderXY", mParameterBag->mWarp2RenderXY);
 		aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
-		aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[20]);
+		aShader->uniform("iBlendmode", mParameterBag->iBlendMode);
 		aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
 		aShader->uniform("iCrossfade", mParameterBag->controlValues[17]);
 		aShader->uniform("iPixelate", mParameterBag->controlValues[15]);
@@ -679,7 +679,7 @@ void Textures::draw()
 		aShader->uniform("height", 1);
 		aShader->uniform("iRenderXY", mParameterBag->mPreviewFragXY);
 		aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
-		aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[20]);
+		aShader->uniform("iBlendmode", mParameterBag->iBlendMode);
 		aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
 		aShader->uniform("iCrossfade", mParameterBag->controlValues[17]);
 		aShader->uniform("iPixelate", mParameterBag->controlValues[15]);
@@ -765,7 +765,7 @@ void Textures::draw()
 		aShader->uniform("height", 1);
 		aShader->uniform("iRenderXY", mParameterBag->mPreviewFragXY);
 		aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
-		aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[20]);
+		aShader->uniform("iBlendmode", mParameterBag->iBlendMode);
 		aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
 		aShader->uniform("iCrossfade", mParameterBag->controlValues[17]);
 		aShader->uniform("iPixelate", mParameterBag->controlValues[15]);
@@ -849,7 +849,7 @@ void Textures::draw()
 	aShader->uniform("iRenderXY", mParameterBag->mRenderXY);
 	aShader->uniform("iZoom", mParameterBag->controlValues[13]);
 	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
-	aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[20]);
+	aShader->uniform("iBlendmode", mParameterBag->iBlendMode);
 	aShader->uniform("iChromatic", mParameterBag->controlValues[10]);
 	aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
 	aShader->uniform("iCrossfade", mParameterBag->controlValues[18]);

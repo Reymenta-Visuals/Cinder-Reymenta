@@ -513,7 +513,8 @@ void ParameterBag::reset()
 	// RotationSpeed
 	controlValues[19] = 0.0f;
 	// Blendmode 
-	controlValues[20] = 0.0f;
+	iBlendMode = 0;
+	//controlValues[20] = 0.0f; now int iBlendMode
 	// glitch
 	controlValues[45] = 0.0f;
 	// toggle
