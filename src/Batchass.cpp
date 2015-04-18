@@ -18,6 +18,11 @@ Batchass::Batchass(ParameterBagRef aParameterBag)
 	minExposure = 0.0001;
 	maxExposure = 2.0;
 	tExposure = autoExposure = false;
+	// Chromatic
+	defaultChromatic = 0.0;
+	minChromatic = 0.0;
+	maxChromatic = 1.0;
+	tChromatic = autoChromatic = false;
 	// ratio
 	defaultRatio = 1.0;
 	minRatio = 0.00000000001;
@@ -196,6 +201,15 @@ void Batchass::update()
 		else
 		{
 			mParameterBag->controlValues[11] = autoRatio ? lmap<float>(mParameterBag->iTempoTime, 0.00001, mParameterBag->iDeltaTime, minRatio, maxRatio) : mParameterBag->controlValues[11];
+		}
+		// Chromatic
+		if (tChromatic)
+		{
+			mParameterBag->controlValues[10] = (modulo < 0.1) ? maxChromatic : minChromatic;
+		}
+		else
+		{
+			mParameterBag->controlValues[10] = autoChromatic ? lmap<float>(mParameterBag->iTempoTime, 0.00001, mParameterBag->iDeltaTime, minChromatic, maxChromatic) : mParameterBag->controlValues[10];
 		}
 		// RotationSpeed
 		if (tRotationSpeed)
@@ -396,6 +410,19 @@ void Batchass::resetExposure()
 	tExposure = false;
 	mParameterBag->controlValues[14] = defaultExposure;
 }
+// chromatic
+void Batchass::tempoChromatic()
+{
+	tChromatic = !tChromatic;
+	if (!tChromatic) resetChromatic();
+}
+void Batchass::resetChromatic()
+{
+	autoChromatic = false;
+	tChromatic = false;
+	mParameterBag->controlValues[10] = defaultChromatic;
+}
+// ratio
 void Batchass::tempoRatio()
 {
 	tRatio = !tRatio;

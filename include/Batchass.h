@@ -57,6 +57,12 @@ namespace Reymenta
 		float						maxZoom;
 		bool						tZoom;
 		bool						autoZoom;
+		//chromatic
+		float						defaultChromatic;
+		float						minChromatic;
+		float						maxChromatic;
+		bool						tChromatic;
+		bool						autoChromatic;
 		//ratio
 		float						defaultRatio;
 		float						minRatio;
@@ -80,12 +86,15 @@ namespace Reymenta
 		void						tempoExposure();
 		void						resetZoom();
 		void						tempoZoom();
+		void						resetChromatic();
+		void						tempoChromatic();
 		void						resetRatio();
 		void						tempoRatio();
 		void						resetZPos();
 		void						tempoZPos();
 		void						resetRotationSpeed();
 		void						tempoRotationSpeed();
+		void						lockChromatic() { autoChromatic = !autoChromatic; };
 		void						lockRatio() { autoRatio = !autoRatio; };
 		void						lockExposure() { autoExposure = !autoExposure; };
 		void						lockZoom() { autoZoom = !autoZoom; };

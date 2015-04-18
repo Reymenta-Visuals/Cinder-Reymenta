@@ -850,6 +850,7 @@ void Textures::draw()
 	aShader->uniform("iZoom", mParameterBag->controlValues[13]);
 	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
 	aShader->uniform("iBlendmode", (int)mParameterBag->controlValues[20]);
+	aShader->uniform("iChromatic", mParameterBag->controlValues[10]);
 	aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
 	aShader->uniform("iCrossfade", mParameterBag->controlValues[18]);
 	aShader->uniform("iPixelate", mParameterBag->controlValues[15]);

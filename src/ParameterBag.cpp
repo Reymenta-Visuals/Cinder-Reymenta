@@ -492,6 +492,8 @@ void ParameterBag::reset()
 	controlValues[8] = 0.2f;
 	// pointsphere zPosition
 	controlValues[9] = -0.7f;
+	// iChromatic
+	controlValues[10] = 0.0f;
 	// ratio
 	controlValues[11] = 20.0f;
 	// Speed 
