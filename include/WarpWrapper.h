@@ -50,6 +50,7 @@ namespace Reymenta
 		void						save(const std::string &filename = "warps.xml");
 		int							getWarpsCount() { return mWarps.size(); };
 		void						createWarp();
+		bool						isEditModeEnabled() { return Warp::isEditModeEnabled(); };
 	private:
 		// Logger
 		LoggerRef					log;	

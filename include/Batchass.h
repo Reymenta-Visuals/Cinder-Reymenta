@@ -44,6 +44,7 @@ namespace Reymenta
 		ShadersRef					getShadersRef() { return mShaders; };
 		TexturesRef					getTexturesRef() { return mTextures; };
 		WarpWrapperRef				getWarpsRef() { return mWarpings; };
+		bool						isEditModeEnabled() { return mWarpings->isEditModeEnabled(); };
 		// animation
 		// exposure
 		float						defaultExposure;
