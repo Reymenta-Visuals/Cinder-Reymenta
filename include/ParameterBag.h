@@ -82,6 +82,7 @@ namespace Reymenta {
 		// params
 		int							mMode, mPreviousMode, mNewMode;
 		int							mPreviewWidth, mPreviewHeight, mPreviewFboWidth, mPreviewFboHeight;
+		float						mAspectRatio;
 		int							mMainWindowX, mMainWindowY, mMarginSmall, mMainWindowWidth, mMainWindowHeight, mFboWidth, mFboHeight;
 		float						mCodeEditorWidth, mCodeEditorHeight;
 		std::string					mOSCDestinationHost;
@@ -159,16 +160,15 @@ namespace Reymenta {
 		int							currentSelectedIndex;
 
 		// modes, should be the same in App
-		//static const int			MODE_NORMAL = 0;
-		static const int			MODE_MIX = 1;
+		static const int			MODE_MIX = 0;
+		static const int			MODE_WARP = 1;
 		static const int			MODE_AUDIO = 2;
-		static const int			MODE_WARP = 3;
-		static const int			MODE_SPHERE = 4;
-		static const int			MODE_MESH = 5;
-		static const int			MODE_KINECT = 6;
-		static const int			MODE_LIVE = 7;
-		static const int			MODE_ABP = 8;
-		static const int			MODE_VERTEXSPHERE = 9;
+		static const int			MODE_SPHERE = 3;
+		static const int			MODE_MESH = 4;
+		static const int			MODE_LIVE = 5;
+		static const int			MODE_ABP = 6;
+		static const int			MODE_VERTEXSPHERE = 7;
+		static const int			MODE_KINECT = 8;
 		// windows to create, should be the same in App and UI
 		static const int			NONE = 0;
 		static const int			RENDER_1 = 1;

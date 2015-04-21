@@ -11,7 +11,7 @@ Batchass::Batchass(ParameterBagRef aParameterBag)
 	// zoom
 	defaultZoom = 1.0f;
 	minZoom = 0.1;
-	maxZoom = 1.0;
+	maxZoom = 3.0;
 	tZoom = autoZoom = false;
 	// exposure
 	defaultExposure = 1.0;

@@ -81,6 +81,10 @@ bool ParameterBag::save()
 	RenderY.setAttribute("value", toString(mRenderY));
 	settings.push_back(RenderY);
 
+	XmlTree AspectRatio("AspectRatio", "");
+	AspectRatio.setAttribute("value", toString(mAspectRatio));
+	settings.push_back(AspectRatio);
+
 	XmlTree FboWidth("FboWidth", "");
 	FboWidth.setAttribute("value", toString(mFboWidth));
 	settings.push_back(FboWidth);
@@ -172,6 +176,10 @@ bool ParameterBag::restore()
 			if (settings.hasChild("AutoLayout")) {
 				XmlTree AutoLayout = settings.getChild("AutoLayout");
 				mAutoLayout = AutoLayout.getAttributeValue<bool>("value");
+			}
+			if (settings.hasChild("AspectRatio")) {
+				XmlTree AspectRatio = settings.getChild("AspectRatio");
+				mAspectRatio = AspectRatio.getAttributeValue<int>("value");
 			}
 			if (settings.hasChild("FboWidth")) {
 				XmlTree FboWidth = settings.getChild("FboWidth");
@@ -303,12 +311,13 @@ void ParameterBag::reset()
 	mRenderResoXY = Vec2f(mRenderWidth, mRenderHeight);
 	mRenderResolution = Vec2i(mRenderWidth, mRenderHeight);
 	mPreviewFragXY = Vec2f(0.0, 0.0);
+	mAspectRatio = 0.75; // ratio 4:3 (0.75) 16:9 (0.5625)
 	mFboWidth = 640;
-	mFboHeight = 480;
-	mPreviewFboWidth = 80;
-	mPreviewFboHeight = 60;
-	mPreviewWidth = 160;
-	mPreviewHeight = 120;
+	mFboHeight = mFboWidth * mAspectRatio;
+	mPreviewFboWidth = 70;
+	mPreviewFboHeight = mPreviewFboWidth* mAspectRatio;
+	mPreviewWidth = 120;
+	mPreviewHeight = mPreviewWidth * mAspectRatio;
 	mRenderCodeEditorXY.x = 0;
 	mRenderCodeEditorXY.y = 0;
 	mCodeEditorWidth = 800;
