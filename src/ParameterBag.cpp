@@ -179,7 +179,7 @@ bool ParameterBag::restore()
 			}
 			if (settings.hasChild("AspectRatio")) {
 				XmlTree AspectRatio = settings.getChild("AspectRatio");
-				mAspectRatio = AspectRatio.getAttributeValue<int>("value");
+				mAspectRatio = AspectRatio.getAttributeValue<float>("value");
 			}
 			if (settings.hasChild("FboWidth")) {
 				XmlTree FboWidth = settings.getChild("FboWidth");
@@ -466,8 +466,8 @@ void ParameterBag::reset()
 	// OSC
 	mOSCDestinationHost = "127.0.0.1";
 	mOSCDestinationPort = 7001;
-	mOSCDestinationHost = "127.0.0.1";
-	mOSCDestinationPort = 7002;
+	mOSCDestinationHost2 = "127.0.0.1";
+	mOSCDestinationPort2 = 7002;
 	mOSCReceiverPort = 7000;
 	OSCMsg = "";
 	newOSCMsg = false;
