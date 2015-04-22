@@ -479,6 +479,8 @@ void ParameterBag::reset()
 	mIsWebSocketsServer = false;
 	mWebSocketsHost = "localhost";
 	mWebSocketsPort = 9002;
+	// Blendmode 
+	iBlendMode = 0;
 	// abp
 	mBend = 0.0f;
 	// red
@@ -519,9 +521,8 @@ void ParameterBag::reset()
 	controlValues[18] = 1.0f;
 	// RotationSpeed
 	controlValues[19] = 0.0f;
-	// Blendmode 
-	iBlendMode = 0;
-	//controlValues[20] = 0.0f; now int iBlendMode
+	// Trixels
+	controlValues[20] = 0.0f; 
 	// glitch
 	controlValues[45] = 0.0f;
 	// toggle

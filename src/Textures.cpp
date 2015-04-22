@@ -871,6 +871,7 @@ void Textures::draw()
 	aShader->uniform("iFps", mParameterBag->iFps);
 	aShader->uniform("iTempoTime", mParameterBag->iTempoTime);
 	aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
+	aShader->uniform("iTrixels", mParameterBag->controlValues[20]);
 
 	sTextures[6].bind(0);
 	sTextures[7].bind(1);
