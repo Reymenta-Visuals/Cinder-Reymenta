@@ -523,6 +523,8 @@ void ParameterBag::reset()
 	controlValues[19] = 0.0f;
 	// Trixels
 	controlValues[20] = 0.0f; 
+	// GridSize
+	controlValues[21] = 0.0f; 
 	// glitch
 	controlValues[45] = 0.0f;
 	// toggle
