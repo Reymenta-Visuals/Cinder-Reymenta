@@ -325,7 +325,7 @@ void ParameterBag::reset()
 
 	mWindowToCreate = NONE;
 
-	mMode = mPreviousMode = mNewMode = 1; // Mix mode by default
+	mMode = mPreviousMode = mNewMode = 0; // Mix mode by default
 	mCurrentFilePath = "currentMix.frag";
 	mMarginSmall = 2;
 
