@@ -335,7 +335,7 @@ void AudioWrapper::draw()
 		mShaders[currentShaderIndex].uniform("uLeftTex", 0);
 		mShaders[currentShaderIndex].uniform("uRightTex", 1);
 		mShaders[currentShaderIndex].uniform("iRatio", mParameterBag->controlValues[11]);
-		mShaders[currentShaderIndex].uniform("iZoom", mParameterBag->controlValues[13]);
+		mShaders[currentShaderIndex].uniform("iZoom", mParameterBag->controlValues[22]);
 
 		// create textures from our channels and bind them
 		mTextureLeft = gl::Texture(mChannelLeft, mTextureFormat);

@@ -303,7 +303,7 @@ string Shaders::getNewFragFileName(string aFilePath)
 void Shaders::renderPreviewShader()
 {
 	//mShader = mPreviewShader;
-	mParameterBag->controlValues[18] = mParameterBag->controlValues[17];
+	mParameterBag->controlValues[18] = mParameterBag->controlValues[21];
 	mFragmentShaders[mCurrentRenderShader] = mFragmentShaders[mCurrentPreviewShader];
 }
 int Shaders::loadPixelFragmentShaderAtIndex(string aFilePath, int index)
@@ -311,7 +311,7 @@ int Shaders::loadPixelFragmentShaderAtIndex(string aFilePath, int index)
 	int rtn = -1;
 	// reset 
 	mParameterBag->iFade = false;
-	mParameterBag->controlValues[13] = 1.0f;
+	mParameterBag->controlValues[22] = 1.0f;
 	if (index > mFragmentShaders.size() - 1) index = mFragmentShaders.size() - 1;
 	try
 	{
@@ -353,7 +353,7 @@ int Shaders::loadPixelFragmentShader(string aFilePath)
 	int rtn = -1;
 	// reset 
 	mParameterBag->iFade = false;
-	mParameterBag->controlValues[13] = 1.0f;
+	mParameterBag->controlValues[22] = 1.0f;
 	try
 	{
 		fs::path fr = aFilePath;
@@ -437,7 +437,7 @@ void Shaders::doTransition()
 	if (mParameterBag->iTransition > 0)
 	{
 		mParameterBag->iAnim = 128.0;
-		timeline().apply(&mParameterBag->iAnim, 1.0f, mParameterBag->mTransitionDuration, EaseOutCubic()).startFn([&]{ mParameterBag->controlValues[16] = 16.0; }).finishFn([&]{
+		timeline().apply(&mParameterBag->iAnim, 1.0f, mParameterBag->mTransitionDuration, EaseOutCubic()).startFn([&]{ mParameterBag->controlValues[20] = 16.0; }).finishFn([&]{
 			loadCurrentFrag();
 		});
 	}

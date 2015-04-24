@@ -187,11 +187,11 @@ void Batchass::update()
 		// zoom
 		if (tZoom)
 		{
-			mParameterBag->controlValues[13] = (modulo < 0.1) ? maxZoom : minZoom;
+			mParameterBag->controlValues[22] = (modulo < 0.1) ? maxZoom : minZoom;
 		}
 		else
 		{
-			mParameterBag->controlValues[13] = autoZoom ? lmap<float>(mParameterBag->iTempoTime, 0.00001, mParameterBag->iDeltaTime, minZoom, maxZoom) : mParameterBag->controlValues[13];
+			mParameterBag->controlValues[22] = autoZoom ? lmap<float>(mParameterBag->iTempoTime, 0.00001, mParameterBag->iDeltaTime, minZoom, maxZoom) : mParameterBag->controlValues[22];
 		}
 		// ratio
 		if (tRatio)
@@ -373,7 +373,7 @@ void Batchass::resetZoom()
 {
 	autoZoom = false;
 	tZoom = false;
-	mParameterBag->controlValues[13] = defaultZoom;
+	mParameterBag->controlValues[22] = defaultZoom;
 }
 
 void Batchass::tempoZPos()

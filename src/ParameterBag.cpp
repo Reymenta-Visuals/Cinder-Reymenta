@@ -379,7 +379,7 @@ void ParameterBag::reset()
 	{
 		iChannelResolution[i] = Vec3f(mRenderWidth, mRenderHeight, 1.0);
 	}	
-	controlValues[18] = controlValues[17] = 1.0;
+	controlValues[18] = controlValues[21] = 1.0;
 #ifdef _DEBUG
 	iDebug = true;
 #else
@@ -508,23 +508,23 @@ void ParameterBag::reset()
 	// Speed 
 	controlValues[12] = 12.0f;
 	// zoom
-	controlValues[13] = iZoomLeft = iZoomRight = 1.0f;
+	controlValues[22] = iZoomLeft = iZoomRight = 1.0f;
 	// exposure
 	controlValues[14] = 1.0f;
 	// Pixelate
 	controlValues[15] = 1.0f;
-	// Steps
-	controlValues[16] = 16.0f;
-	// iPreviewCrossfade
-	controlValues[17] = 1.0f;
+	// Trixels
+	controlValues[16] = 0.0f; 
+	// GridSize
+	controlValues[17] = 0.0f; 
 	// iCrossfade
 	controlValues[18] = 1.0f;
 	// RotationSpeed
 	controlValues[19] = 0.0f;
-	// Trixels
-	controlValues[20] = 0.0f; 
-	// GridSize
-	controlValues[21] = 0.0f; 
+	// Steps
+	controlValues[20] = 16.0f;
+	// iPreviewCrossfade
+	controlValues[21] = 1.0f;
 	// glitch
 	controlValues[45] = 0.0f;
 	// toggle

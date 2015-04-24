@@ -244,7 +244,7 @@ void Textures::renderShadaThumbFbo()
 	aShader->uniform("iChannelTime", mParameterBag->iChannelTime, 4);
 	aShader->uniform("iColor", Vec3f(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3]));
 	aShader->uniform("iBackgroundColor", Vec3f(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
-	aShader->uniform("iSteps", (int)mParameterBag->controlValues[16]);
+	aShader->uniform("iSteps", (int)mParameterBag->controlValues[20]);
 	aShader->uniform("iRatio", mParameterBag->controlValues[11]);
 	aShader->uniform("width", 1);
 	aShader->uniform("height", 1);
@@ -252,7 +252,7 @@ void Textures::renderShadaThumbFbo()
 	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
 	aShader->uniform("iBlendmode", mParameterBag->iBlendMode);
 	aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
-	aShader->uniform("iCrossfade", mParameterBag->controlValues[17]);
+	aShader->uniform("iCrossfade", mParameterBag->controlValues[21]);
 	aShader->uniform("iPixelate", mParameterBag->controlValues[15]);
 	aShader->uniform("iExposure", mParameterBag->controlValues[14]);
 	aShader->uniform("iDeltaTime", mParameterBag->iDeltaTime);
@@ -339,7 +339,7 @@ void Textures::draw()
 	aShader->uniform("iChannelTime", mParameterBag->iChannelTime, 4);
 	aShader->uniform("iColor", Vec3f(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3]));
 	aShader->uniform("iBackgroundColor", Vec3f(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
-	aShader->uniform("iSteps", (int)mParameterBag->controlValues[16]);
+	aShader->uniform("iSteps", (int)mParameterBag->controlValues[20]);
 	aShader->uniform("iRatio", mParameterBag->controlValues[11]);
 	aShader->uniform("width", 1);
 	aShader->uniform("height", 1);
@@ -347,7 +347,7 @@ void Textures::draw()
 	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
 	aShader->uniform("iBlendmode", mParameterBag->iBlendMode);
 	aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
-	aShader->uniform("iCrossfade", mParameterBag->controlValues[17]);
+	aShader->uniform("iCrossfade", mParameterBag->controlValues[21]);
 	aShader->uniform("iPixelate", mParameterBag->controlValues[15]);
 	aShader->uniform("iExposure", mParameterBag->controlValues[14]);
 	aShader->uniform("iDeltaTime", mParameterBag->iDeltaTime);
@@ -421,7 +421,7 @@ void Textures::draw()
 	aShader->uniform("iChannelTime", mParameterBag->iChannelTime, 4);
 	aShader->uniform("iColor", Vec3f(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3]));// mParameterBag->iColor);
 	aShader->uniform("iBackgroundColor", Vec3f(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));// mParameterBag->iBackgroundColor);
-	aShader->uniform("iSteps", (int)mParameterBag->controlValues[16]);
+	aShader->uniform("iSteps", (int)mParameterBag->controlValues[20]);
 	aShader->uniform("iRatio", mParameterBag->controlValues[11]);//check if needed: +1;//mParameterBag->iRatio); 
 	aShader->uniform("width", 1);
 	aShader->uniform("height", 1);
@@ -429,7 +429,7 @@ void Textures::draw()
 	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
 	aShader->uniform("iBlendmode", mParameterBag->iBlendMode);
 	aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
-	aShader->uniform("iCrossfade", mParameterBag->controlValues[17]);
+	aShader->uniform("iCrossfade", mParameterBag->controlValues[21]);
 	aShader->uniform("iPixelate", mParameterBag->controlValues[15]);
 	aShader->uniform("iExposure", mParameterBag->controlValues[14]);
 	aShader->uniform("iDeltaTime", mParameterBag->iDeltaTime);
@@ -505,7 +505,7 @@ void Textures::draw()
 		aShader->uniform("iChannelTime", mParameterBag->iChannelTime, 4);
 		aShader->uniform("iColor", Vec3f(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3]));// mParameterBag->iColor);
 		aShader->uniform("iBackgroundColor", Vec3f(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));// mParameterBag->iBackgroundColor);
-		aShader->uniform("iSteps", (int)mParameterBag->controlValues[16]);
+		aShader->uniform("iSteps", (int)mParameterBag->controlValues[20]);
 		aShader->uniform("iRatio", mParameterBag->controlValues[11]);//check if needed: +1;//mParameterBag->iRatio); 
 		aShader->uniform("width", 1);
 		aShader->uniform("height", 1);
@@ -513,7 +513,7 @@ void Textures::draw()
 		aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
 		aShader->uniform("iBlendmode", mParameterBag->iBlendMode);
 		aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
-		aShader->uniform("iCrossfade", mParameterBag->controlValues[17]);
+		aShader->uniform("iCrossfade", mParameterBag->controlValues[21]);
 		aShader->uniform("iPixelate", mParameterBag->controlValues[15]);
 		aShader->uniform("iExposure", mParameterBag->controlValues[14]);
 		aShader->uniform("iDeltaTime", mParameterBag->iDeltaTime);
@@ -587,7 +587,7 @@ void Textures::draw()
 		aShader->uniform("iChannelTime", mParameterBag->iChannelTime, 4);
 		aShader->uniform("iColor", Vec3f(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3]));// mParameterBag->iColor);
 		aShader->uniform("iBackgroundColor", Vec3f(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));// mParameterBag->iBackgroundColor);
-		aShader->uniform("iSteps", (int)mParameterBag->controlValues[16]);
+		aShader->uniform("iSteps", (int)mParameterBag->controlValues[20]);
 		aShader->uniform("iRatio", mParameterBag->controlValues[11]);//check if needed: +1;//mParameterBag->iRatio); 
 		aShader->uniform("width", 1);
 		aShader->uniform("height", 1);
@@ -595,7 +595,7 @@ void Textures::draw()
 		aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
 		aShader->uniform("iBlendmode", mParameterBag->iBlendMode);
 		aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
-		aShader->uniform("iCrossfade", mParameterBag->controlValues[17]);
+		aShader->uniform("iCrossfade", mParameterBag->controlValues[21]);
 		aShader->uniform("iPixelate", mParameterBag->controlValues[15]);
 		aShader->uniform("iExposure", mParameterBag->controlValues[14]);
 		aShader->uniform("iDeltaTime", mParameterBag->iDeltaTime);
@@ -656,7 +656,7 @@ void Textures::draw()
 		//aShader->uniform("iResolution", Vec3f(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
 		aShader->uniform("iChannelResolution", mParameterBag->iChannelResolution, 4);
 		aShader->uniform("iMouse", Vec4f(mParameterBag->mRenderPosXY.x, mParameterBag->mRenderPosXY.y, mParameterBag->iMouse.z, mParameterBag->iMouse.z));//iMouse =  Vec3i( event.getX(), mRenderHeight - event.getY(), 1 );
-		aShader->uniform("iZoom", mParameterBag->controlValues[13]);
+		aShader->uniform("iZoom", mParameterBag->controlValues[22]);
 		aShader->uniform("iChannel0", mParameterBag->iChannels[0]);
 		aShader->uniform("iChannel1", mParameterBag->iChannels[1]);
 		aShader->uniform("iChannel2", mParameterBag->iChannels[2]);
@@ -673,7 +673,7 @@ void Textures::draw()
 		aShader->uniform("iChannelTime", mParameterBag->iChannelTime, 4);
 		aShader->uniform("iColor", Vec3f(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3]));// mParameterBag->iColor);
 		aShader->uniform("iBackgroundColor", Vec3f(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));// mParameterBag->iBackgroundColor);
-		aShader->uniform("iSteps", (int)mParameterBag->controlValues[16]);
+		aShader->uniform("iSteps", (int)mParameterBag->controlValues[20]);
 		aShader->uniform("iRatio", mParameterBag->controlValues[11]);
 		aShader->uniform("width", 1);
 		aShader->uniform("height", 1);
@@ -681,7 +681,7 @@ void Textures::draw()
 		aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
 		aShader->uniform("iBlendmode", mParameterBag->iBlendMode);
 		aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
-		aShader->uniform("iCrossfade", mParameterBag->controlValues[17]);
+		aShader->uniform("iCrossfade", mParameterBag->controlValues[21]);
 		aShader->uniform("iPixelate", mParameterBag->controlValues[15]);
 		aShader->uniform("iExposure", mParameterBag->controlValues[14]);
 		aShader->uniform("iDeltaTime", mParameterBag->iDeltaTime);
@@ -742,7 +742,7 @@ void Textures::draw()
 		aShader->uniform("iResolution", Vec3f(mParameterBag->iResolution.x, mParameterBag->iResolution.y, 1.0));
 		aShader->uniform("iChannelResolution", mParameterBag->iChannelResolution, 4);
 		aShader->uniform("iMouse", Vec4f(mParameterBag->mRenderPosXY.x, mParameterBag->mRenderPosXY.y, mParameterBag->iMouse.z, mParameterBag->iMouse.z));//iMouse =  Vec3i( event.getX(), mRenderHeight - event.getY(), 1 );
-		aShader->uniform("iZoom", mParameterBag->controlValues[13]);
+		aShader->uniform("iZoom", mParameterBag->controlValues[22]);
 		aShader->uniform("iChannel0", mParameterBag->iChannels[0]);
 		aShader->uniform("iChannel1", mParameterBag->iChannels[1]);
 		aShader->uniform("iChannel2", mParameterBag->iChannels[2]);
@@ -759,7 +759,7 @@ void Textures::draw()
 		aShader->uniform("iChannelTime", mParameterBag->iChannelTime, 4);
 		aShader->uniform("iColor", Vec3f(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3]));// mParameterBag->iColor);
 		aShader->uniform("iBackgroundColor", Vec3f(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));// mParameterBag->iBackgroundColor);
-		aShader->uniform("iSteps", (int)mParameterBag->controlValues[16]);
+		aShader->uniform("iSteps", (int)mParameterBag->controlValues[20]);
 		aShader->uniform("iRatio", mParameterBag->controlValues[11]);
 		aShader->uniform("width", 1);
 		aShader->uniform("height", 1);
@@ -767,7 +767,7 @@ void Textures::draw()
 		aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
 		aShader->uniform("iBlendmode", mParameterBag->iBlendMode);
 		aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
-		aShader->uniform("iCrossfade", mParameterBag->controlValues[17]);
+		aShader->uniform("iCrossfade", mParameterBag->controlValues[21]);
 		aShader->uniform("iPixelate", mParameterBag->controlValues[15]);
 		aShader->uniform("iExposure", mParameterBag->controlValues[14]);
 		aShader->uniform("iDeltaTime", mParameterBag->iDeltaTime);
@@ -842,12 +842,12 @@ void Textures::draw()
 	aShader->uniform("iChannelTime", mParameterBag->iChannelTime, 4);
 	aShader->uniform("iColor", Vec3f(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3]));// mParameterBag->iColor);
 	aShader->uniform("iBackgroundColor", Vec3f(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));// mParameterBag->iBackgroundColor);
-	aShader->uniform("iSteps", (int)mParameterBag->controlValues[16]);
+	aShader->uniform("iSteps", (int)mParameterBag->controlValues[20]);
 	aShader->uniform("iRatio", mParameterBag->controlValues[11]);//check if needed: +1;//mParameterBag->iRatio); 
 	aShader->uniform("width", 1);
 	aShader->uniform("height", 1);
 	aShader->uniform("iRenderXY", mParameterBag->mRenderXY);
-	aShader->uniform("iZoom", mParameterBag->controlValues[13]);
+	aShader->uniform("iZoom", mParameterBag->controlValues[22]);
 	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
 	aShader->uniform("iBlendmode", mParameterBag->iBlendMode);
 	aShader->uniform("iChromatic", mParameterBag->controlValues[10]);
@@ -871,8 +871,8 @@ void Textures::draw()
 	aShader->uniform("iFps", mParameterBag->iFps);
 	aShader->uniform("iTempoTime", mParameterBag->iTempoTime);
 	aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
-	aShader->uniform("iTrixels", mParameterBag->controlValues[20]);
-	aShader->uniform("iGridSize", mParameterBag->controlValues[21]);
+	aShader->uniform("iTrixels", mParameterBag->controlValues[16]);
+	aShader->uniform("iGridSize", mParameterBag->controlValues[17]);
 
 	sTextures[6].bind(0);
 	sTextures[7].bind(1);
