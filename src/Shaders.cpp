@@ -65,7 +65,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 		log->logTimedString("unable to load shader:" + string(e.what()));
 	}
 
-	//load VertexSphereShader shader
+	//load VertexSphere shader
 	try
 	{
 		fs::path vertexSphereFragFile = getAssetPath("") / "vertexSphere.frag";

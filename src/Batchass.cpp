@@ -26,7 +26,7 @@ Batchass::Batchass(ParameterBagRef aParameterBag)
 	// ratio
 	defaultRatio = 1.0;
 	minRatio = 0.00000000001;
-	maxRatio = 1.0;
+	maxRatio = 20.0;
 	tRatio = autoRatio = false;
 	// z position
 	defaultZPos = -0.7;
@@ -113,7 +113,7 @@ void Batchass::changeMode(int newMode)
 		mParameterBag->mPreviousMode = mParameterBag->mMode;
 		switch (mParameterBag->mPreviousMode)
 		{
-		case 5: //mesh
+		case 4: //mesh
 			mParameterBag->iLight = false;
 			mParameterBag->controlValues[19] = 0.0; //reset rotation
 			break;
@@ -122,18 +122,13 @@ void Batchass::changeMode(int newMode)
 
 		switch (newMode)
 		{
-		case 1: // Mix
-			break;
-		case 2: // Audio
-			break;
-		case 3: // Warp
-			break;
-		case 4: // sphere
+
+		case 3: // sphere
 			mParameterBag->mCamPosXY = Vec2f(-155.6, -87.3);
 			mParameterBag->mCamEyePointZ = -436.f;
 			mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7] = 0;
 			break;
-		case 5: // mesh
+		case 4: // mesh
 			mParameterBag->controlValues[19] = 1.0; //reset rotation
 			mParameterBag->mRenderPosXY = Vec2f(0.0, 0.0);
 			mParameterBag->mCamEyePointZ = -10.f;
@@ -141,12 +136,10 @@ void Batchass::changeMode(int newMode)
 			mParameterBag->currentSelectedIndex = 5;
 			mParameterBag->iLight = true;
 			break;
-		case 7: // Live
+		case 5: // Live
 			//mShaders->setupLiveShader();
 			mParameterBag->mLiveCode = true;
 			break;
-
-
 		}
 	}
 }
