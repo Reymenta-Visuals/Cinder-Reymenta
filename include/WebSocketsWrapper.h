@@ -23,7 +23,7 @@ namespace Reymenta
 	{
 
 	public:
-		WebSockets( ParameterBagRef aParameterBag, BatchassRef aBatchas );
+		WebSockets( ParameterBagRef aParameterBag, BatchassRef aBatchass );
 		static						WebSocketsRef create( ParameterBagRef aParameterBag, BatchassRef aBatchass );
 		void						update();
 		void						setupSender();
