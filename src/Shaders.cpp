@@ -118,7 +118,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	for (size_t m = 0; m < 8; m++)
 	{
 		fileName = toString(m) + ".glsl";
-		localFile = getAssetPath("") / fileName;
+		localFile = getAssetPath("") / mParameterBag->mAssetsPath / fileName;
 		mFragFileName = fileName;
 		mFragFile = localFile.string();
 		loadPixelFragmentShader(localFile.string());

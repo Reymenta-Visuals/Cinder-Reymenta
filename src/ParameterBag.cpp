@@ -149,6 +149,10 @@ bool ParameterBag::save()
 	WindowSize.setAttribute("value", toString(mWindowSize));
 	settings.push_back(WindowSize);
 
+	XmlTree AssetsPath("AssetsPath", "");
+	AssetsPath.setAttribute("value", toString(mAssetsPath));
+	settings.push_back(AssetsPath);
+
 	// write XML file
 	settings.write(writeFile(path));
 
@@ -249,6 +253,10 @@ bool ParameterBag::restore()
 				XmlTree CustomLayout = settings.getChild("CustomLayout");
 				mCustomLayout = CustomLayout.getAttributeValue<bool>("value");
 			}
+			if (settings.hasChild("AssetsPath")) {
+				XmlTree AssetsPath = settings.getChild("AssetsPath");
+				mAssetsPath = AssetsPath.getAttributeValue<string>("value");
+			}
 			// if AutoLayout is false we have to read the custom screen layout
 			if (!mAutoLayout)
 			{
@@ -327,6 +335,7 @@ void ParameterBag::reset()
 
 	mMode = mPreviousMode = mNewMode = 0; // Mix mode by default
 	mCurrentFilePath = "currentMix.frag";
+	mAssetsPath = "";
 	mMarginSmall = 2;
 
 	mCamPosXY = Vec2f::zero();

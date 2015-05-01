@@ -43,10 +43,10 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	for (int j = 0; j < mTexturesCount - 1; j++)
 	{
 		fileName = toString(j) + ".jpg";
-		localFile = getAssetPath("") / fileName;
+		localFile = getAssetPath("") / mParameterBag->mAssetsPath / fileName;
 		if (fs::exists(localFile))
 		{
-			gl::Texture img(loadImage(loadAsset(fileName)));// TODO , gl::Texture::Format().magFilter(GL_LINEAR).minFilter(GL_LINEAR).loadTopDown());
+			gl::Texture img(loadImage(localFile));// TODO , gl::Texture::Format().magFilter(GL_LINEAR).minFilter(GL_LINEAR).loadTopDown());
 			//img.setFlipped();
 			sTextures.push_back(img);
 		}

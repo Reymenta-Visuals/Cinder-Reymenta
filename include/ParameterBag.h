@@ -136,6 +136,7 @@ namespace Reymenta {
 		bool						iLightAuto;
 		int							iBlendMode;
 		const int					maxBlendMode = 28;
+		string						mAssetsPath;
 		//float						iCrossfade, iPreviewCrossfade;
 		bool						iShowFps;
 		bool						iDebug;
