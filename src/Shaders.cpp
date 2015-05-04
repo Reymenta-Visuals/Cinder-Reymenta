@@ -177,6 +177,8 @@ void Shaders::setupLiveShader()
 		}
 		if (liveError)
 		{
+			mParameterBag->WSMsg = mError;
+			mParameterBag->newWSMsg = true;
 			// revert to mix.frag, TODO better quit if mix.frag does not exit
 			fs::path mixFragFile = getAssetPath("") / "mix.frag";
 			mLiveShader = gl::GlslProg::create(loadAsset("live.vert"), loadFile(mixFragFile));
@@ -265,7 +267,10 @@ string Shaders::getFragStringFromFile(string fileName)
 	}
 	catch (const std::exception &e)
 	{
-		log->logTimedString(fileName + " unable to load string from file:" + string(e.what()));
+		mError = string(e.what());
+		log->logTimedString(fileName + " unable to load string from file:" + mError);
+		mParameterBag->WSMsg = mError;
+		mParameterBag->newWSMsg = true;
 	}
 	return rtn;
 }
@@ -338,12 +343,16 @@ int Shaders::loadPixelFragmentShaderAtIndex(string aFilePath, int index)
 	catch (gl::GlslProgCompileExc &exc)
 	{
 		mError = string(exc.what());
-		log->logTimedString(aFilePath + " unable to load/compile shader:" + string(exc.what()));
+		log->logTimedString(aFilePath + " unable to load/compile shader:" + mError);
+		mParameterBag->WSMsg = mError;
+		mParameterBag->newWSMsg = true;
 	}
 	catch (const std::exception &e)
 	{
 		mError = string(e.what());
-		log->logTimedString(aFilePath + " unable to load shader:" + string(e.what()));
+		log->logTimedString(aFilePath + " unable to load shader:" + mError );
+		mParameterBag->WSMsg = mError;
+		mParameterBag->newWSMsg = true;
 	}
 
 	return rtn;
@@ -380,12 +389,16 @@ int Shaders::loadPixelFragmentShader(string aFilePath)
 	catch (gl::GlslProgCompileExc &exc)
 	{
 		mError = string(exc.what());
-		log->logTimedString(aFilePath + " unable to load/compile shader err:" + string(exc.what()));
+		log->logTimedString(aFilePath + " unable to load/compile shader err:" + mError );
+		mParameterBag->WSMsg = mError;
+		mParameterBag->newWSMsg = true;
 	}
 	catch (const std::exception &e)
 	{
 		mError = string(e.what());
-		log->logTimedString(aFilePath + " unable to load shader err:" + string(e.what()));
+		log->logTimedString(aFilePath + " unable to load shader err:" + mError );
+		mParameterBag->WSMsg = mError;
+		mParameterBag->newWSMsg = true;
 	}
 
 	return rtn;
@@ -487,6 +500,8 @@ int Shaders::setGLSLString(string pixelFrag, string name)
 		validFrag = false;
 		mError = string(exc.what());
 		log->logTimedString("setGLSLString error: " + mError);
+		mParameterBag->WSMsg = mError;
+		mParameterBag->newWSMsg = true;
 	}
 	return foundIndex;
 }
@@ -513,6 +528,8 @@ int Shaders::setGLSLStringAtIndex(string pixelFrag, string name, int index)
 		validFrag = false;
 		mError = string(exc.what());
 		log->logTimedString("setGLSLString error: " + mError);
+		mParameterBag->WSMsg = mError;
+		mParameterBag->newWSMsg = true;
 	}
 	return foundIndex;
 }
@@ -561,6 +578,8 @@ bool Shaders::setFragString(string pixelFrag)
 		validFrag = false;
 		mError = string(exc.what());
 		log->logTimedString("setFragString error: " + mError);
+		mParameterBag->WSMsg = mError;
+		mParameterBag->newWSMsg = true;
 	}
 
 	return validFrag;
