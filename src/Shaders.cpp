@@ -177,8 +177,8 @@ void Shaders::setupLiveShader()
 		}
 		if (liveError)
 		{
-			mParameterBag->WSMsg = mError;
-			mParameterBag->newWSMsg = true;
+			mParameterBag->mMsg = mError;
+			mParameterBag->newMsg = true;
 			// revert to mix.frag, TODO better quit if mix.frag does not exit
 			fs::path mixFragFile = getAssetPath("") / "mix.frag";
 			mLiveShader = gl::GlslProg::create(loadAsset("live.vert"), loadFile(mixFragFile));
@@ -269,8 +269,8 @@ string Shaders::getFragStringFromFile(string fileName)
 	{
 		mError = string(e.what());
 		log->logTimedString(fileName + " unable to load string from file:" + mError);
-		mParameterBag->WSMsg = mError;
-		mParameterBag->newWSMsg = true;
+		mParameterBag->mMsg = mError;
+		mParameterBag->newMsg = true;
 	}
 	return rtn;
 }
@@ -333,7 +333,11 @@ int Shaders::loadPixelFragmentShaderAtIndex(string aFilePath, int index)
 			if (rtn > -1)
 			{
 				//mFragmentShadersNames[rtn] = getFileName(aFilePath);
+				mParameterBag->mMsg = name + " loadPixelFragmentShaderAtIndex success";
+				mParameterBag->newMsg = true;
 			}
+			
+
 		}
 		else
 		{
@@ -344,15 +348,15 @@ int Shaders::loadPixelFragmentShaderAtIndex(string aFilePath, int index)
 	{
 		mError = string(exc.what());
 		log->logTimedString(aFilePath + " unable to load/compile shader:" + mError);
-		mParameterBag->WSMsg = mError;
-		mParameterBag->newWSMsg = true;
+		mParameterBag->mMsg = mError;
+		mParameterBag->newMsg = true;
 	}
 	catch (const std::exception &e)
 	{
 		mError = string(e.what());
 		log->logTimedString(aFilePath + " unable to load shader:" + mError );
-		mParameterBag->WSMsg = mError;
-		mParameterBag->newWSMsg = true;
+		mParameterBag->mMsg = mError;
+		mParameterBag->newMsg = true;
 	}
 
 	return rtn;
@@ -380,6 +384,9 @@ int Shaders::loadPixelFragmentShader(string aFilePath)
 				//mFragmentShadersNames[rtn] = name;
 			}
 			log->logTimedString(mFragFile + " loaded and compiled");
+			mParameterBag->mMsg = name + " loadPixelFragmentShader success";
+			mParameterBag->newMsg = true;
+
 		}
 		else
 		{
@@ -390,15 +397,15 @@ int Shaders::loadPixelFragmentShader(string aFilePath)
 	{
 		mError = string(exc.what());
 		log->logTimedString(aFilePath + " unable to load/compile shader err:" + mError );
-		mParameterBag->WSMsg = mError;
-		mParameterBag->newWSMsg = true;
+		mParameterBag->mMsg = mError;
+		mParameterBag->newMsg = true;
 	}
 	catch (const std::exception &e)
 	{
 		mError = string(e.what());
 		log->logTimedString(aFilePath + " unable to load shader err:" + mError );
-		mParameterBag->WSMsg = mError;
-		mParameterBag->newWSMsg = true;
+		mParameterBag->mMsg = mError;
+		mParameterBag->newMsg = true;
 	}
 
 	return rtn;
@@ -492,6 +499,8 @@ int Shaders::setGLSLString(string pixelFrag, string name)
 		//preview the new loaded shader
 		mParameterBag->mPreviewFragIndex = foundIndex;
 		log->logTimedString("setGLSLString success");
+		mParameterBag->mMsg = name + " setGLSLString success";
+		mParameterBag->newMsg = true;
 		mError = "";
 		validFrag = true;
 	}
@@ -500,8 +509,8 @@ int Shaders::setGLSLString(string pixelFrag, string name)
 		validFrag = false;
 		mError = string(exc.what());
 		log->logTimedString("setGLSLString error: " + mError);
-		mParameterBag->WSMsg = mError;
-		mParameterBag->newWSMsg = true;
+		mParameterBag->mMsg = mError;
+		mParameterBag->newMsg = true;
 	}
 	return foundIndex;
 }
@@ -519,17 +528,19 @@ int Shaders::setGLSLStringAtIndex(string pixelFrag, string name, int index)
 		foundIndex = index;
 		//preview the new loaded shader
 		mParameterBag->mPreviewFragIndex = index;
-		log->logTimedString("setGLSLString success");
+		log->logTimedString("setGLSLStringAtIndex success");
 		mError = "";
+		mParameterBag->mMsg = name + " setGLSLStringAtIndex success";
+		mParameterBag->newMsg = true;
 		validFrag = true;
 	}
 	catch (gl::GlslProgCompileExc &exc)
 	{
 		validFrag = false;
 		mError = string(exc.what());
-		log->logTimedString("setGLSLString error: " + mError);
-		mParameterBag->WSMsg = mError;
-		mParameterBag->newWSMsg = true;
+		log->logTimedString("setGLSLStringAtIndex error: " + mError);
+		mParameterBag->mMsg = mError;
+		mParameterBag->newMsg = true;
 	}
 	return foundIndex;
 }
@@ -578,8 +589,8 @@ bool Shaders::setFragString(string pixelFrag)
 		validFrag = false;
 		mError = string(exc.what());
 		log->logTimedString("setFragString error: " + mError);
-		mParameterBag->WSMsg = mError;
-		mParameterBag->newWSMsg = true;
+		mParameterBag->mMsg = mError;
+		mParameterBag->newMsg = true;
 	}
 
 	return validFrag;

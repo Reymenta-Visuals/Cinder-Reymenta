@@ -51,7 +51,5 @@ namespace Reymenta
 		void						serverDisconnect();
 		double						mPingTime;
 
-		//
-		std::string					mText;
 	};
 }

@@ -478,10 +478,8 @@ void ParameterBag::reset()
 	mOSCDestinationHost2 = "127.0.0.1";
 	mOSCDestinationPort2 = 7002;
 	mOSCReceiverPort = 7000;
-	OSCMsg = "";
-	newOSCMsg = false;
-	WSMsg = "";
-	newWSMsg = false;
+	mMsg = "";
+	newMsg = false;
 	InfoMsg = "";
 	mIsOSCSender = false;
 	// web sockets

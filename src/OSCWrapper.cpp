@@ -284,8 +284,8 @@ void OSC::update()
 			ss << a << ": " << sargs[a];
 		}
 		ss << std::endl;
-		mParameterBag->OSCMsg = ss.str();
-		mParameterBag->newOSCMsg = true;
+		mParameterBag->newMsg = true;
+		mParameterBag->mMsg = ss.str();
 		// filter messages
 		if (routeMessage)
 		{

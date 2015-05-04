@@ -65,7 +65,7 @@ void WebSockets::clientConnect()
 {
 	stringstream s;
 	s << "ws://" << mParameterBag->mWebSocketsHost << ":" << mParameterBag->mWebSocketsPort;
-	mClient.connect(s.str());//"ws://localhost:9002"
+	mClient.connect(s.str());
 }
 void WebSockets::clientDisconnect()
 {
@@ -73,46 +73,49 @@ void WebSockets::clientDisconnect()
 }
 void WebSockets::onConnect()
 {
-	mText = "Connected";
+	mParameterBag->mMsg = "Connected";
+	mParameterBag->newMsg = true;
 }
 
 void WebSockets::onDisconnect()
 {
-	mText = "Disconnected";
+	mParameterBag->mMsg = "Disconnected";
+	mParameterBag->newMsg = true;
 }
 
 void WebSockets::onError(string err)
 {
-	mText = "Error";
+	mParameterBag->mMsg = "WS Error";
+	mParameterBag->newMsg = true;
 	if (!err.empty()) {
-		mText += ": " + err;
+		mParameterBag->mMsg += ": " + err;
 	}
+
 }
 
 void WebSockets::onInterrupt()
 {
-	mText = "Interrupted";
+	mParameterBag->mMsg = "WS Interrupted";
+	mParameterBag->newMsg = true;
 }
 
 void WebSockets::onPing(string msg)
 {
-	mText = "Ponged";
+	mParameterBag->mMsg = "WS Ponged";
+	mParameterBag->newMsg = true;
 	if (!msg.empty())
 	{
-		mText += ": " + msg;
+		mParameterBag->mMsg += ": " + msg;
 	}
-	mParameterBag->WSMsg = mText;
-	mParameterBag->newWSMsg = true;
 }
 
 void WebSockets::onRead(string msg)
 {
-	mText = "Read";
-	mParameterBag->WSMsg = msg;
-	mParameterBag->newWSMsg = true;
+	mParameterBag->mMsg = "WS onRead";
+	mParameterBag->newMsg = true;
 	if (!msg.empty())
 	{
-		mText += ": " + msg;
+		mParameterBag->mMsg += ": " + msg;
 		string first = msg.substr(0, 1);
 		if (first == "{")
 		{
@@ -131,9 +134,9 @@ void WebSockets::onRead(string msg)
 			}
 			catch (cinder::JsonTree::Exception exception)
 			{
-				mText += " error jsonparser exception: ";
-				mText += exception.what();
-				mText += "  ";
+				mParameterBag->mMsg += " error jsonparser exception: ";
+				mParameterBag->mMsg += exception.what();
+				mParameterBag->mMsg += "  ";
 			}
 		}
 		else if (first == "#")
@@ -142,8 +145,6 @@ void WebSockets::onRead(string msg)
 			mBatchass->getShadersRef()->loadLiveShader(msg);
 
 		}
-
-
 	}
 }
 void WebSockets::write(string msg)

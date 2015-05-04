@@ -90,10 +90,9 @@ namespace Reymenta {
 		std::string					mOSCDestinationHost2;
 		int							mOSCDestinationPort2;
 		int							mOSCReceiverPort;
-		std::string					OSCMsg;
-		bool						newOSCMsg;
-		std::string					WSMsg;
-		bool						newWSMsg;
+		// log to console
+		std::string					mMsg;
+		bool						newMsg;
 		std::string					InfoMsg;
 		bool						mIsOSCSender;
 		// render windows
