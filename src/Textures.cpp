@@ -248,7 +248,7 @@ void Textures::renderShadaThumbFbo()
 	aShader->uniform("iRatio", mParameterBag->controlValues[11]);
 	aShader->uniform("width", 1);
 	aShader->uniform("height", 1);
-	aShader->uniform("iRenderXY", mParameterBag->mLeftRenderXY);
+	aShader->uniform("iRenderXY", mParameterBag->mRenderXY);
 	aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
 	aShader->uniform("iBlendmode", mParameterBag->iBlendMode);
 	aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
