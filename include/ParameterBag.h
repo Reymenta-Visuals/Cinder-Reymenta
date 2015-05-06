@@ -247,6 +247,7 @@ namespace Reymenta {
 		Vec2f						mCamEyePointXY;
 		float						mCamEyePointZ;
 		// web sockets
+		bool						mAreWebSocketsEnabledAtStartup;
 		bool						mIsWebSocketsServer;
 		uint16_t					mWebSocketsPort;
 		string						mWebSocketsHost;

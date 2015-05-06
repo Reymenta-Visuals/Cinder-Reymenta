@@ -6,6 +6,52 @@ WebSockets::WebSockets(ParameterBagRef aParameterBag, BatchassRef aBatchass)
 {
 	mParameterBag = aParameterBag;
 	mBatchass = aBatchass;
+	clientConnected = false;
+	if (mParameterBag->mAreWebSocketsEnabledAtStartup) connect();
+	mPingTime = getElapsedSeconds();
+}
+
+WebSocketsRef WebSockets::create(ParameterBagRef aParameterBag, BatchassRef aBatchass)
+{
+	return shared_ptr<WebSockets>(new WebSockets(aParameterBag, aBatchass));
+}
+
+void WebSockets::ping()
+{
+	if (clientConnected)
+	{
+		if (!mParameterBag->mIsWebSocketsServer)
+		{
+			mClient.ping();
+		}
+	}
+}
+void WebSockets::update()
+{
+	if (mParameterBag->mAreWebSocketsEnabledAtStartup)
+	{
+		if (mParameterBag->mIsWebSocketsServer)
+		{
+			mServer.poll();
+		}
+		else
+		{
+			if (clientConnected)
+			{
+				mClient.poll();
+				double e = getElapsedSeconds();
+				if (e - mPingTime > 20.0) {
+					mClient.ping();
+					mPingTime = e;
+				}
+
+			}
+		}
+	}
+
+}
+void WebSockets::connect()
+{
 	// either a client or a server
 	if (mParameterBag->mIsWebSocketsServer)
 	{
@@ -27,39 +73,7 @@ WebSockets::WebSockets(ParameterBagRef aParameterBag, BatchassRef aBatchass)
 		mClient.addReadCallback(&WebSockets::onRead, this);
 		clientConnect();
 	}
-	mPingTime = getElapsedSeconds();
-
-}
-
-WebSocketsRef WebSockets::create(ParameterBagRef aParameterBag, BatchassRef aBatchass)
-{
-	return shared_ptr<WebSockets>(new WebSockets(aParameterBag, aBatchass));
-}
-void WebSockets::setupSender()
-{
-}
-void WebSockets::ping()
-{
-	if (!mParameterBag->mIsWebSocketsServer)
-	{
-		mClient.ping();
-	}
-}
-void WebSockets::update()
-{
-	if (mParameterBag->mIsWebSocketsServer)
-	{
-		mServer.poll();
-	}
-	else
-	{
-		mClient.poll();
-		double e = getElapsedSeconds();
-		if (e - mPingTime > 20.0) {
-			mClient.ping();
-			mPingTime = e;
-		}
-	}
+	mParameterBag->mAreWebSocketsEnabledAtStartup = true;
 }
 void WebSockets::clientConnect()
 {
@@ -69,16 +83,21 @@ void WebSockets::clientConnect()
 }
 void WebSockets::clientDisconnect()
 {
-	mClient.disconnect();
+	if (clientConnected)
+	{
+		mClient.disconnect();
+	}
 }
 void WebSockets::onConnect()
 {
+	clientConnected = true;
 	mParameterBag->mMsg = "Connected";
 	mParameterBag->newMsg = true;
 }
 
 void WebSockets::onDisconnect()
 {
+	clientConnected = false;
 	mParameterBag->mMsg = "Disconnected";
 	mParameterBag->newMsg = true;
 }
@@ -149,13 +168,16 @@ void WebSockets::onRead(string msg)
 }
 void WebSockets::write(string msg)
 {
-	if (mParameterBag->mIsWebSocketsServer)
+	if (mParameterBag->mAreWebSocketsEnabledAtStartup)
 	{
-		mServer.write(msg);
-	}
-	else
-	{
-		mClient.write(msg);
+		if (mParameterBag->mIsWebSocketsServer)
+		{
+			mServer.write(msg);
+		}
+		else
+		{
+			if (clientConnected) mClient.write(msg);
 
+		}
 	}
 }

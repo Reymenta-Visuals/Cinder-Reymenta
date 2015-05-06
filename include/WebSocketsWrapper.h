@@ -26,10 +26,10 @@ namespace Reymenta
 		WebSockets( ParameterBagRef aParameterBag, BatchassRef aBatchass );
 		static						WebSocketsRef create( ParameterBagRef aParameterBag, BatchassRef aBatchass );
 		void						update();
-		void						setupSender();
 		void						write(std::string msg);
-		void						clientConnect();
+		void						connect();
 		void						ping();
+		bool						isClientConnected() { return clientConnected; };
 	private:
 		// parameters
 		ParameterBagRef				mParameterBag;
@@ -39,12 +39,14 @@ namespace Reymenta
 		// Web socket client
 		void						clientDisconnect();
 		WebSocketClient				mClient;
+		void						clientConnect();
 		void						onConnect();
 		void						onDisconnect();
 		void						onError(std::string err);
 		void						onInterrupt();
 		void						onPing(std::string msg);
 		void						onRead(std::string msg);
+		bool						clientConnected;
 		// Web socket  server
 		WebSocketServer				mServer;
 		void						serverConnect();

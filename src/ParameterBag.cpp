@@ -129,6 +129,10 @@ bool ParameterBag::save()
 	IsOSCSender.setAttribute("value", toString(mIsOSCSender));
 	settings.push_back(IsOSCSender);
 
+	XmlTree AreWebSocketsEnabledAtStartup("AreWebSocketsEnabledAtStartup", "");
+	AreWebSocketsEnabledAtStartup.setAttribute("value", toString(mAreWebSocketsEnabledAtStartup));
+	settings.push_back(AreWebSocketsEnabledAtStartup);
+
 	XmlTree IsWebSocketsServer("IsWebSocketsServer", "");
 	IsWebSocketsServer.setAttribute("value", toString(mIsWebSocketsServer));
 	settings.push_back(IsWebSocketsServer);
@@ -228,6 +232,10 @@ bool ParameterBag::restore()
 			if (settings.hasChild("CursorVisible")) {
 				XmlTree CursorVisible = settings.getChild("CursorVisible");
 				mCursorVisible = CursorVisible.getAttributeValue<bool>("value");
+			}
+			if (settings.hasChild("AreWebSocketsEnabledAtStartup")) {
+				XmlTree AreWebSocketsEnabledAtStartup = settings.getChild("AreWebSocketsEnabledAtStartup");
+				mAreWebSocketsEnabledAtStartup = AreWebSocketsEnabledAtStartup.getAttributeValue<bool>("value");
 			}
 			if (settings.hasChild("IsWebSocketsServer")) {
 				XmlTree IsWebSocketsServer = settings.getChild("IsWebSocketsServer");
@@ -483,6 +491,7 @@ void ParameterBag::reset()
 	InfoMsg = "";
 	mIsOSCSender = false;
 	// web sockets
+	mAreWebSocketsEnabledAtStartup = false;
 	mIsWebSocketsServer = false;
 	mWebSocketsHost = "localhost";
 	mWebSocketsPort = 9002;
