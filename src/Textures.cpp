@@ -125,7 +125,7 @@ void Textures::flipMixFbo(bool flip)
 }
 void Textures::flipMixFboH(bool flip)
 {
-	mParameterBag->mFlipH = flip;
+	mParameterBag->iFlipHorizontally = flip;
 }
 /*void Textures::setCurrentFboIndex(int aFbo)
 {
@@ -873,6 +873,7 @@ void Textures::draw()
 	aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
 	aShader->uniform("iTrixels", mParameterBag->controlValues[16]);
 	aShader->uniform("iGridSize", mParameterBag->controlValues[17]);
+	aShader->uniform("iFlipH", mParameterBag->iFlipHorizontally);
 
 	sTextures[6].bind(0);
 	sTextures[7].bind(1);

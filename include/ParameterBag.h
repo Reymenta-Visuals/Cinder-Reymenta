@@ -136,6 +136,7 @@ namespace Reymenta {
 		int							iBlendMode;
 		const int					maxBlendMode = 28;
 		string						mAssetsPath;
+		bool						iFlipHorizontally;
 		//float						iCrossfade, iPreviewCrossfade;
 		bool						iShowFps;
 		bool						iDebug;
@@ -215,7 +216,6 @@ namespace Reymenta {
 		int							mFboResolution;
 		int							mOutputVideoResolution;
 		Vec2f						mOutputResolution;
-		bool						mFlipH;
 		// OSC/MIDI/JSON controlled UI and params
 		map<int, float>				controlValues;
 		// indexes for textures

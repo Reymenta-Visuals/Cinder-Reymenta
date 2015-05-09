@@ -307,11 +307,8 @@ bool ParameterBag::restore()
 void ParameterBag::reset()
 {
 	// parameters exposed in XML
-	mMIDIOpenAllInputPorts = mRenderThumbs = mAutoLayout = true;
-	mCustomLayout = false;
-	mStandalone = false;
-	mShowUI = true;
-	mCursorVisible = true;
+	mMIDIOpenAllInputPorts = mRenderThumbs = mAutoLayout =mShowUI = mCursorVisible = true;
+	mStandalone = iFlipHorizontally = mCustomLayout = false;
 	mOutputVideoResolution = 1024;
 
 	// parameters not exposed in XML
@@ -446,7 +443,6 @@ void ParameterBag::reset()
 	mWarp1FragIndex = 2;
 	mWarp2FragIndex = 3;
 	mLiveFragIndex = 7;
-	mFlipH = false;
 	mWarpCount = 3;
 	FPSColor = ColorA(0.0f, 1.0f, 0.0f, 1.0f);
 	ColorGreen = ColorA(0.0f, 1.0f, 0.0f, 1.0f);
