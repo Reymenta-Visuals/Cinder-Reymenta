@@ -307,8 +307,8 @@ bool ParameterBag::restore()
 void ParameterBag::reset()
 {
 	// parameters exposed in XML
-	mMIDIOpenAllInputPorts = mRenderThumbs = mAutoLayout =mShowUI = mCursorVisible = true;
-	mStandalone = iFlipHorizontally = mCustomLayout = false;
+	mMIDIOpenAllInputPorts = mRenderThumbs = mAutoLayout =mShowUI = mCursorVisible = iFlipHorizontally = true;
+	mStandalone = mCustomLayout = false;
 	mOutputVideoResolution = 1024;
 
 	// parameters not exposed in XML

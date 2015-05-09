@@ -74,6 +74,7 @@ void WebSockets::connect()
 		clientConnect();
 	}
 	mParameterBag->mAreWebSocketsEnabledAtStartup = true;
+	clientConnected = true;
 }
 void WebSockets::clientConnect()
 {
