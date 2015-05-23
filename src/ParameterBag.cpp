@@ -93,6 +93,10 @@ bool ParameterBag::save()
 	FboHeight.setAttribute("value", toString(mFboHeight));
 	settings.push_back(FboHeight);
 
+	XmlTree OSCEnabled("OSCEnabled", "");
+	OSCEnabled.setAttribute("value", toString(mOSCEnabled));
+	settings.push_back(OSCEnabled);
+
 	XmlTree OSCReceiverPort("OSCReceiverPort", "");
 	OSCReceiverPort.setAttribute("value", toString(mOSCReceiverPort));
 	settings.push_back(OSCReceiverPort);
@@ -196,6 +200,10 @@ bool ParameterBag::restore()
 			if (settings.hasChild("FboHeight")) {
 				XmlTree FboHeight = settings.getChild("FboHeight");
 				mFboHeight = FboHeight.getAttributeValue<int>("value");
+			}
+			if (settings.hasChild("OSCEnabled")) {
+				XmlTree OSCEnabled = settings.getChild("OSCEnabled");
+				mOSCEnabled = OSCEnabled.getAttributeValue<bool>("value");
 			}
 			if (settings.hasChild("OSCReceiverPort")) {
 				XmlTree OSCReceiverPort = settings.getChild("OSCReceiverPort");
@@ -477,6 +485,7 @@ void ParameterBag::reset()
 		controlValues[c] = 0.01f;
 	}
 	// OSC
+	mOSCEnabled = true;
 	mOSCDestinationHost = "127.0.0.1";
 	mOSCDestinationPort = 7001;
 	mOSCDestinationHost2 = "127.0.0.1";
