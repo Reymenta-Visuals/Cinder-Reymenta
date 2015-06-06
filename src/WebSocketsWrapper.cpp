@@ -144,7 +144,7 @@ void WebSockets::onRead(string msg)
 			try
 			{
 				json = JsonTree(msg);
-				JsonTree jsonParams = json.getChild("colors");
+				JsonTree jsonParams = json.getChild("params");
 				for (JsonTree::ConstIter jsonElement = jsonParams.begin(); jsonElement != jsonParams.end(); ++jsonElement)
 				{
 					int name = jsonElement->getChild("name").getValue<int>();

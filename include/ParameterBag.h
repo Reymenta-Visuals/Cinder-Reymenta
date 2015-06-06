@@ -255,6 +255,7 @@ namespace Reymenta {
 		//abp
 		float						mBend;
 		float						liveMeter;
+		string						mInfo;
 
 	private:
 		const string settingsFileName = "Settings.xml";

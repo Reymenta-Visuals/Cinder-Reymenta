@@ -157,6 +157,10 @@ bool ParameterBag::save()
 	WindowSize.setAttribute("value", toString(mWindowSize));
 	settings.push_back(WindowSize);
 
+	XmlTree Info("Info", "");
+	Info.setAttribute("value", toString(mInfo));
+	settings.push_back(Info);
+
 	XmlTree AssetsPath("AssetsPath", "");
 	AssetsPath.setAttribute("value", toString(mAssetsPath));
 	settings.push_back(AssetsPath);
@@ -269,6 +273,10 @@ bool ParameterBag::restore()
 				XmlTree CustomLayout = settings.getChild("CustomLayout");
 				mCustomLayout = CustomLayout.getAttributeValue<bool>("value");
 			}
+			if (settings.hasChild("Info")) {
+				XmlTree Info = settings.getChild("Info");
+				mInfo = Info.getAttributeValue<string>("value");
+			}
 			if (settings.hasChild("AssetsPath")) {
 				XmlTree AssetsPath = settings.getChild("AssetsPath");
 				mAssetsPath = AssetsPath.getAttributeValue<string>("value");
@@ -318,7 +326,7 @@ void ParameterBag::reset()
 	mMIDIOpenAllInputPorts = mRenderThumbs = mAutoLayout =mShowUI = mCursorVisible = iFlipHorizontally = true;
 	mStandalone = mCustomLayout = false;
 	mOutputVideoResolution = 1024;
-
+	mInfo = "";
 	// parameters not exposed in XML
 	mMainWindowX = 0;
 	mMainWindowY = 0;
