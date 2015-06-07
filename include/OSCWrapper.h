@@ -49,6 +49,5 @@ namespace Reymenta
 		string						sargs[MAX];
 		// ableton liveOSC
 		string						tracks[MAX];
-
 	};
 }

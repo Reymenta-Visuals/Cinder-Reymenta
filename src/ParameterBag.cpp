@@ -165,6 +165,10 @@ bool ParameterBag::save()
 	AssetsPath.setAttribute("value", toString(mAssetsPath));
 	settings.push_back(AssetsPath);
 
+	XmlTree UseLineIn("UseLineIn", "");
+	UseLineIn.setAttribute("value", toString(mUseLineIn));
+	settings.push_back(UseLineIn);
+
 	// write XML file
 	settings.write(writeFile(path));
 
@@ -281,6 +285,10 @@ bool ParameterBag::restore()
 				XmlTree AssetsPath = settings.getChild("AssetsPath");
 				mAssetsPath = AssetsPath.getAttributeValue<string>("value");
 			}
+			if (settings.hasChild("UseLineIn")) {
+				XmlTree UseLineIn = settings.getChild("UseLineIn");
+				mUseLineIn = UseLineIn.getAttributeValue<bool>("value");
+			}
 			// if AutoLayout is false we have to read the custom screen layout
 			if (!mAutoLayout)
 			{
@@ -327,6 +335,7 @@ void ParameterBag::reset()
 	mStandalone = mCustomLayout = false;
 	mOutputVideoResolution = 1024;
 	mInfo = "";
+	mTrackName = "";
 	// parameters not exposed in XML
 	mMainWindowX = 0;
 	mMainWindowY = 0;

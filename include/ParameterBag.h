@@ -255,8 +255,10 @@ namespace Reymenta {
 		//abp
 		float						mBend;
 		float						liveMeter;
+		// info to backup in XML
 		string						mInfo;
-
+		// ableton liveOSC
+		string						mTrackName;
 	private:
 		const string settingsFileName = "Settings.xml";
 	};

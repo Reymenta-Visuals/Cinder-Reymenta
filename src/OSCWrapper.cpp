@@ -172,6 +172,7 @@ void OSC::update()
 		}
 		else if (oscAddress == "/live/name/trackblock")
 		{
+			mParameterBag->mTrackName = sargs[0];
 			for (int a = 0; a < MAX; a++)
 			{
 				tracks[a] = sargs[a];
@@ -278,10 +279,10 @@ void OSC::update()
 			int name = atoi(oscAddress.substr(found + 1).c_str());
 		}
 		stringstream ss;
-		ss << message.getRemoteIp() << " adr:" << oscAddress;
+		ss << message.getRemoteIp() << " adr:" << oscAddress << " ";
 		for (int a = 0; a < MAX; a++)
 		{
-			ss << a << ": " << sargs[a];
+			ss << a << ":" << sargs[a] << " ";
 		}
 		ss << std::endl;
 		mParameterBag->newMsg = true;
