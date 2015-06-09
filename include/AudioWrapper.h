@@ -1,6 +1,8 @@
 #pragma once
 
-#include "cinder/app/AppNative.h"
+#include "cinder/app/App.h"
+#include "cinder/app/RendererGl.h"
+
 // Parameters
 #include "ParameterBag.h"
 // textures
@@ -19,6 +21,9 @@
 #include "cinder/audio/NodeEffects.h"
 #include "cinder/audio/MonitorNode.h"
 #include "cinder/gl/Vbo.h"
+// camera
+#include "cinder/CameraUi.h"
+
 
 using namespace ci;
 using namespace ci::app;
@@ -72,7 +77,7 @@ namespace Reymenta
 		Channel32f			mChannelLeft;
 		Channel32f			mChannelRight;
 		CameraPersp			mCamera;
-		MayaCamUI			mMayaCam;
+		CameraUi			mCamUi;
 		vector<gl::GlslProg> mShaders;
 		int					currentShaderIndex;
 		/*gl::Texture			mTextureLeft;

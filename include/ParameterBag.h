@@ -1,6 +1,7 @@
 #pragma once
 
-#include "cinder/app/AppNative.h"
+#include "cinder/app/App.h"
+#include "cinder/app/RendererGl.h"
 #include "cinder/gl/gl.h"
 #include "cinder/Timeline.h"
 #include "cinder/Json.h"
@@ -9,7 +10,7 @@
 // webcam
 #include "cinder/Capture.h"
 #include "cinder/Surface.h"
-#include "cinder/MayaCamUI.h"
+#include "cinder/CameraUi.h"
 // fonts
 #include "Resources.h"
 
@@ -189,7 +190,7 @@ namespace Reymenta {
 		int							mMeshIndex;
 		// camera
 		CameraPersp					mCamera;
-		MayaCamUI					mMayaCam;
+		CameraUi					mCamUi;
 		vec2						mCamEyePointXY;
 		float						mCamEyePointZ;
 		//abp

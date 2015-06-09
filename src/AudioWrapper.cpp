@@ -348,15 +348,15 @@ void AudioWrapper::mouseDown(MouseEvent event)
 	// handle mouse down
 	mIsMouseDown = true;
 
-	mMayaCam.setCurrentCam(mCamera);
-	mMayaCam.mouseDown(mParameterBag->mCamPosXY);
+	mCamUi.setCurrentCam(mCamera);
+	mCamUi.mouseDown(mParameterBag->mCamPosXY);
 }
 
 void AudioWrapper::mouseDrag(MouseEvent event)
 {
 	// handle mouse drag
-	mMayaCam.mouseDrag(mParameterBag->mCamPosXY, event.isLeftDown(), event.isMiddleDown(), event.isRightDown());
-	mCamera = mMayaCam.getCamera();
+	mCamUi.mouseDrag(mParameterBag->mCamPosXY, event.isLeftDown(), event.isMiddleDown(), event.isRightDown());
+	mCamera = mCamUi.getCamera();
 }
 
 void AudioWrapper::mouseUp(MouseEvent event)
