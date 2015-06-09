@@ -54,7 +54,8 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 	// setup camera
 	mCamera.setPerspective(50.0f, 1.0f, 1.0f, 10000.0f);
 	mCamera.setEyePoint(vec3(-kWidth / 4, kHeight / 2, -kWidth / 8));
-	mCamera.setCenterOfInterestPoint(vec3(kWidth / 4, -kHeight / 8, kWidth / 4));
+	//mCamera.setCenterOfInterestPoint(vec3(kWidth / 4, -kHeight / 8, kWidth / 4));
+	mCamUi = CameraUi(&mCamera, getWindow());
 
 	// create channels from which we can construct our textures
 	mChannelLeft = Channel32f(kBands, kHistory);
@@ -348,7 +349,7 @@ void AudioWrapper::mouseDown(MouseEvent event)
 	// handle mouse down
 	mIsMouseDown = true;
 
-	mCamUi.setCurrentCam(mCamera);
+	mCamUi = CameraUi(&mCamera, getWindow());
 	mCamUi.mouseDown(mParameterBag->mCamPosXY);
 }
 

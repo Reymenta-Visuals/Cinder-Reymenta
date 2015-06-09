@@ -49,23 +49,23 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 
 void Shaders::resize()
 {
+	int i;
 	// change iResolution
 	for (auto &shader : mFragmentShaders)
 	{
-		auto map = shader.prog->getActiveUniformTypes();
-		if (map.find("iResolution") != map.end())
+		if (shader.prog->findUniform("iResolution", &i))
 		{
 			shader.prog->uniform("iResolution", vec3(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 0.0f));
 			//shader.prog->uniform("iResolution", vec3(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, 0.0f));
 		}
 	}
-	auto mixMap = mMixShader->getActiveUniformTypes();
-	if (mixMap.find("iResolution") != mixMap.end())
+
+	if (mMixShader->findUniform("iResolution", &i))
 	{
 		mMixShader->uniform("iResolution", vec3(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, 0.0f));
 	}
-	auto warpMap = mWarpShader->getActiveUniformTypes();
-	if (warpMap.find("iResolution") != warpMap.end())
+
+	if (mWarpShader->findUniform("iResolution", &i))
 	{
 		mWarpShader->uniform("iResolution", vec3(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 0.0f));
 	}
