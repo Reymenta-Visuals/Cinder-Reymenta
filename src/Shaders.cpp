@@ -47,6 +47,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 		if (fs::exists(warpFragFile))
 		{
 			mWarpShader = gl::GlslProg::create(loadAsset("passthru.vert"), loadFile(warpFragFile));
+			mPassThruShader = gl::GlslProg::create(loadAsset("passthru.vert"), loadFile(warpFragFile));
 		}
 		else
 		{
@@ -310,6 +311,12 @@ void Shaders::renderPreviewShader()
 	//mShader = mPreviewShader;
 	mParameterBag->controlValues[18] = mParameterBag->controlValues[21];
 	mFragmentShaders[mCurrentRenderShader] = mFragmentShaders[mCurrentPreviewShader];
+}
+void Shaders::removePixelFragmentShaderAtIndex(int index)
+{
+	mFragmentShaders[index].shader = mPassThruShader;
+	mFragmentShaders[index].name = "passthru";
+	mFragmentShaders[index].active = true;
 }
 int Shaders::loadPixelFragmentShaderAtIndex(string aFilePath, int index)
 {

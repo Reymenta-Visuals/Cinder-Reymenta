@@ -72,6 +72,7 @@ namespace Reymenta
 
 		int								loadPixelFragmentShader(string aFilePath);
 		void							loadFragmentShader(boost::filesystem::path aFilePath);
+		void							removePixelFragmentShaderAtIndex(int index);
 		int								loadPixelFragmentShaderAtIndex(string aFilePath, int index);
 		string							getFileName(string aFilePath);
 		string							getNewFragFileName(string aFilePath);
@@ -141,6 +142,8 @@ namespace Reymenta
 		gl::GlslProgRef					mWarpShader;
 		// vertex Sphere shader
 		gl::GlslProgRef					mVertexSphereShader;
+		//! PassThru shader
+		gl::GlslProgRef					mPassThruShader;
 
 	};
 }
