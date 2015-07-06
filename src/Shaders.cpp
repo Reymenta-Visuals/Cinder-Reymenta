@@ -284,10 +284,7 @@ Shaders::~Shaders()
 {
 	log->logTimedString("Shaders destructor");
 }
-string Shaders::getShaderName(int aIndex)
-{
-	return mFragmentShaders[aIndex].name;
-}
+
 string Shaders::getFileName(string aFilePath)
 {
 	string fName;
@@ -317,6 +314,7 @@ void Shaders::removePixelFragmentShaderAtIndex(int index)
 	mFragmentShaders[index].shader = mPassThruShader;
 	mFragmentShaders[index].name = "passthru";
 	mFragmentShaders[index].active = true;
+
 }
 int Shaders::loadPixelFragmentShaderAtIndex(string aFilePath, int index)
 {
@@ -501,7 +499,6 @@ int Shaders::setGLSLString(string pixelFrag, string name)
 			mFragmentShaders[foundIndex].shader = gl::GlslProg::create(NULL, currentFrag.c_str());
 			mFragmentShaders[foundIndex].name = name;
 			mFragmentShaders[foundIndex].active = true;
-
 		}
 		//preview the new loaded shader
 		mParameterBag->mPreviewFragIndex = foundIndex;
@@ -520,6 +517,10 @@ int Shaders::setGLSLString(string pixelFrag, string name)
 		mParameterBag->newMsg = true;
 	}
 	return foundIndex;
+}
+void Shaders::setShaderMs(int index, int ms)
+{
+	mFragmentShaders[index].ms = ms;
 }
 int Shaders::setGLSLStringAtIndex(string pixelFrag, string name, int index)
 {
@@ -551,6 +552,7 @@ int Shaders::setGLSLStringAtIndex(string pixelFrag, string name, int index)
 	}
 	return foundIndex;
 }
+
 bool Shaders::setFragString(string pixelFrag)
 {
 	currentFrag = pixelFrag;

@@ -52,7 +52,6 @@ namespace Reymenta
 		bool							setFragString(string pixelFrag);
 		int								setGLSLString(string pixelFrag, string name);
 		int								setGLSLStringAtIndex(string pixelFrag, string name, int index);
-		string							getShaderName(int aIndex);
 		bool							loadTextFile(string aFilePath);
 		void							loadCurrentFrag();
 
@@ -81,6 +80,8 @@ namespace Reymenta
 
 		void							shutdownLoader();
 		void							createThumbsFromDir(string filePath);
+		void							setShaderMs(int index, int ms);
+
 	private:
 		// Logger
 		LoggerRef						log;

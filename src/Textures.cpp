@@ -206,6 +206,8 @@ void Textures::renderWarpFbos()
 }
 void Textures::renderShadaThumbFbo()
 {
+	// start profiling
+	auto start = Clock::now();
 	mThumbFbos[currentShadaThumbIndex].bindFramebuffer();
 	gl::setViewport(mThumbFbos[currentShadaThumbIndex].getBounds());
 
@@ -278,6 +280,14 @@ void Textures::renderShadaThumbFbo()
 	}
 
 	aShader->unbind();
+	auto end = Clock::now();
+	auto msdur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+	stringstream s;
+	s << msdur.count() << " ms";
+	int ik = msdur.count();
+	//std::cout << msdur.count() << "ms, " << nsdur.count() << "µs" << std::endl;
+	mShaders->setShaderMs(currentShadaThumbIndex, ik);
+	
 	// increment shada thumb index
 	currentShadaThumbIndex++;
 	// mThumbFbos must equal mFragmentShaders size
@@ -886,9 +896,8 @@ void Textures::draw()
 
 	auto end = Clock::now();
 	auto msdur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-	auto nsdur = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 	//std::cout << msdur.count() << "ms, " << nsdur.count() << "µs" << std::endl;
-	sprintf_s(previewTime, "%2dms,%2d", msdur.count(), nsdur.count());
+	sprintf_s(previewTime, "%2dms,%2d", msdur.count());
 
 }
 

@@ -41,6 +41,7 @@ namespace Reymenta {
 		gl::GlslProgRef				shader;
 		string						name;
 		bool						active;
+		int							ms;
 	};
 	/*struct WarpInput
 	{
