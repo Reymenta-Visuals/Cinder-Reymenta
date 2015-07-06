@@ -203,7 +203,7 @@ void WarpWrapper::draw()
 	// first we need to set the matrices and viewport for 2d drawing,
 	// because we're drawing a 2d texture (the contents of the FBO) to the screen
 	// the GL state is persistent across all framebuffers
-	gl::setMatricesWindow(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, mParameterBag->mOriginUpperLeft);
+	gl::setMatricesWindow(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
 	mViewportArea = Area(0, 0, mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
 
 	gl::setViewport(mViewportArea);

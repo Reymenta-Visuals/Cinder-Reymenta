@@ -436,7 +436,6 @@ void ParameterBag::reset()
 	iAnim = 0.0;
 	mTransitionDuration = 1.0f;
 
-	mOriginUpperLeft = true;
 	multFactor = 126.0;
 	currentSelectedIndex = 0;
 	selectedWarp = 0;

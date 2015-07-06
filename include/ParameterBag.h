@@ -158,7 +158,6 @@ namespace Reymenta {
 		bool						mPreviewEnabled;
 		string						mCurrentFilePath;
 		// Textures
-		bool						mOriginUpperLeft;
 		bool						mRenderThumbs;
 		int							currentSelectedIndex;
 

@@ -44,9 +44,10 @@ void SpoutWrapper::update()
 					receiverIndexes.push_back(mTextures->createSpoutTexture(&SenderNames[i][0], mNewWidth, mNewHeight));
 				}
 				log->logTimedString("create receiver");
+				log->logTimedString(&SenderNames[i][0]);
 				nReceivers++;
 				log->logTimedString("new receiver count:");
-				log->logTimedString(toString(nReceivers));
+				log->logTimedString(mNewSenderName);
 				mParameterBag->mWarpFbos[0].textureIndex = 0;
 				mParameterBag->mWarpFbos[0].textureMode = mParameterBag->TEXTUREMODEINPUT;
 			}

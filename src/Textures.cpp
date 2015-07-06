@@ -24,7 +24,6 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 		//mFbos[mFbos.size() - 1].getTexture(0).setFlipped(true);
 	}
 	currentShadaThumbIndex = 0;
-	//mFbos[mParameterBag->mMeshFboIndex].getTexture(0).setFlipped(false);
 	// audio fbo at index 6
 	mFbos[mParameterBag->mAudioFboIndex] = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
 	mFbos[mParameterBag->mAudioFboIndex].getTexture(0).setFlipped(true);
@@ -55,9 +54,7 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 			gl::Texture img(loadImage(loadAsset("reymenta.jpg")));
 			sTextures.push_back(img);
 		}
-
 	}
-
 }
 
 /*void Textures::createWarpInput()
@@ -117,15 +114,10 @@ void Textures::flipTexture(int index)
 }
 void Textures::flipFbo(int index)
 {
+	stringstream s;
+	s << "flipFbo: " << mFbos[index].getTexture(0).isFlipped();
+	log->logTimedString(s.str());
 	mFbos[index].getTexture(0).setFlipped(!mFbos[index].getTexture(0).isFlipped());
-}
-void Textures::flipMixFbo(bool flip)
-{
-	mFbos[mParameterBag->mMixFboIndex].getTexture(0).setFlipped(flip);
-}
-void Textures::flipMixFboH(bool flip)
-{
-	mParameterBag->iFlipHorizontally = flip;
 }
 /*void Textures::setCurrentFboIndex(int aFbo)
 {
@@ -219,7 +211,7 @@ void Textures::renderShadaThumbFbo()
 
 	// clear the FBO
 	gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
-	gl::setMatricesWindow(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight, mParameterBag->mOriginUpperLeft);
+	gl::setMatricesWindow(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight);
 
 	aShader = mShaders->getShader(currentShadaThumbIndex).shader;
 	aShader->bind();
@@ -313,7 +305,7 @@ void Textures::draw()
 
 	// clear the FBO
 	gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
-	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, mParameterBag->mOriginUpperLeft);
+	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
 
 	aShader = mShaders->getShader(mParameterBag->mLeftFragIndex).shader;
 	aShader->bind();
@@ -396,7 +388,7 @@ void Textures::draw()
 
 	// clear the FBO
 	gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
-	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, mParameterBag->mOriginUpperLeft);
+	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
 
 	aShader = mShaders->getShader(mParameterBag->mRightFragIndex).shader;
 	aShader->bind();
@@ -480,7 +472,7 @@ void Textures::draw()
 
 		// clear the FBO
 		gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
-		gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, mParameterBag->mOriginUpperLeft);
+		gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
 
 		aShader = mShaders->getShader(mParameterBag->mWarp1FragIndex).shader;
 		aShader->bind();
@@ -562,7 +554,7 @@ void Textures::draw()
 
 		// clear the FBO
 		gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
-		gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, mParameterBag->mOriginUpperLeft);
+		gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
 
 		aShader = mShaders->getShader(mParameterBag->mWarp2FragIndex).shader;
 		aShader->bind();
@@ -647,7 +639,7 @@ void Textures::draw()
 
 		// clear the FBO
 		gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
-		gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, mParameterBag->mOriginUpperLeft);
+		gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
 
 		aShader = mShaders->getShader(mParameterBag->mPreviewFragIndex).shader;
 		aShader->bind();
@@ -734,7 +726,7 @@ void Textures::draw()
 
 		// clear the FBO
 		gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
-		gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, mParameterBag->mOriginUpperLeft);
+		gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
 
 		aShader = mShaders->getLiveShader();
 		aShader->bind();
@@ -823,7 +815,7 @@ void Textures::draw()
 
 	// clear the FBO
 	gl::clear();
-	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, mParameterBag->mOriginUpperLeft);
+	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
 
 	aShader = mShaders->getMixShader();
 	aShader->bind();
