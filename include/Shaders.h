@@ -80,7 +80,7 @@ namespace Reymenta
 
 		void							shutdownLoader();
 		void							createThumbsFromDir(string filePath);
-		void							setShaderMs(int index, int ms);
+		void							setShaderMicroSeconds(int index, int micro);
 
 	private:
 		// Logger

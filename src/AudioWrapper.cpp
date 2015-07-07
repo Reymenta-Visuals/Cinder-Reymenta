@@ -216,7 +216,7 @@ void AudioWrapper::update()
 		for (size_t i = 0; i < mDataSize; i++) {
 			float f = mMagSpectrum[i];
 			db = audio::linearToDecibel(f);
-			f = db * mParameterBag->mAudioMultFactor;
+			f = db * mParameterBag->controlValues[13];
 			if (f > mParameterBag->maxVolume)
 			{
 				mParameterBag->maxVolume = f; mv = f;
@@ -269,8 +269,8 @@ void AudioWrapper::update()
 	float* pDataLeft = mChannelLeft.getData() + kBands * mOffset;
 	float* pDataRight = mChannelRight.getData() + kBands * mOffset;
 	for (size_t i = 0; i < mDataSize; i++) {
-		pDataLeft[i] = mMagSpectrum[i] * mParameterBag->mAudioMultFactor;
-		pDataRight[i] = mMagSpectrum[i] * mParameterBag->mAudioMultFactor;
+		pDataLeft[i] = mMagSpectrum[i] * mParameterBag->controlValues[13];
+		pDataRight[i] = mMagSpectrum[i] * mParameterBag->controlValues[13];
 	}
 
 	// increment texture offset

@@ -41,7 +41,7 @@ namespace Reymenta {
 		gl::GlslProgRef				shader;
 		string						name;
 		bool						active;
-		int							ms;
+		int							microseconds;
 	};
 	/*struct WarpInput
 	{
@@ -189,7 +189,7 @@ namespace Reymenta {
 		float						maxVolume;
 		bool						mUseLineIn;
 		bool						mIsPlaying;
-		float						mAudioMultFactor;
+		//float						mAudioMultFactor; mParameterBag->controlValues[13]
 		float						iFreqs[4];
 		int							mBeat;
 		int							mFftSize;

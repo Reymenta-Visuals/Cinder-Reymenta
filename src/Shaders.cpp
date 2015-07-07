@@ -130,7 +130,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 		Shada newShader;
 		newShader.shader = gl::GlslProg::create(loadAsset("passthru.vert"), loadAsset("passthru.frag"));
 		newShader.name = "passthru.frag";
-		newShader.active = false;
+		newShader.active = true;
 		mFragmentShaders.push_back(newShader);
 	}
 	mCurrentPreviewShader = 0;
@@ -313,7 +313,7 @@ void Shaders::removePixelFragmentShaderAtIndex(int index)
 {
 	mFragmentShaders[index].shader = mPassThruShader;
 	mFragmentShaders[index].name = "passthru";
-	mFragmentShaders[index].active = true;
+	mFragmentShaders[index].active = false;
 
 }
 int Shaders::loadPixelFragmentShaderAtIndex(string aFilePath, int index)
@@ -322,7 +322,16 @@ int Shaders::loadPixelFragmentShaderAtIndex(string aFilePath, int index)
 	// reset 
 	mParameterBag->iFade = false;
 	mParameterBag->controlValues[22] = 1.0f;
-	if (index > mFragmentShaders.size() - 1) index = mFragmentShaders.size() - 1;
+	if (index > mFragmentShaders.size() - 1)
+	{
+		// search inactive shader
+		// default to the last element
+		index = mFragmentShaders.size() - 1;
+		for (int i = 0; i < mFragmentShaders.size() - 1; i++)
+		{
+			if (!mFragmentShaders[i].active) index = i;
+		}
+	}
 	try
 	{
 		fs::path fr = aFilePath;
@@ -337,7 +346,6 @@ int Shaders::loadPixelFragmentShaderAtIndex(string aFilePath, int index)
 			rtn = setGLSLStringAtIndex(fs, name, index);
 			if (rtn > -1)
 			{
-				//mFragmentShadersNames[rtn] = getFileName(aFilePath);
 				mParameterBag->mMsg = name + " loadPixelFragmentShaderAtIndex success";
 				mParameterBag->newMsg = true;
 			}
@@ -518,9 +526,10 @@ int Shaders::setGLSLString(string pixelFrag, string name)
 	}
 	return foundIndex;
 }
-void Shaders::setShaderMs(int index, int ms)
+
+void Shaders::setShaderMicroSeconds(int index, int micro)
 {
-	mFragmentShaders[index].ms = ms;
+	mFragmentShaders[index].microseconds = micro;
 }
 int Shaders::setGLSLStringAtIndex(string pixelFrag, string name, int index)
 {
@@ -662,7 +671,7 @@ void Shaders::createThumbsFromDir(string filePath)
 						Shada newShader;
 						newShader.shader = gl::GlslProg::create(NULL, fs.c_str());
 						newShader.name = fileName;
-						newShader.active = false;
+						newShader.active = true;
 						mFragmentShaders.push_back(newShader);
 						log->logTimedString("createThumbsFromDir loaded and compiled " + fileName);
 

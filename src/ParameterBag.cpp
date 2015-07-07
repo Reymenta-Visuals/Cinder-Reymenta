@@ -382,7 +382,7 @@ void ParameterBag::reset()
 	mPreviewEnabled = true;
 	//audio
 	// audio in multiplication factor
-	mAudioMultFactor = 1.0;
+	//mAudioMultFactor = 1.0;
 	mUseLineIn = true;
 	mIsPlaying = false;
 	mBeat = 0;
@@ -544,8 +544,8 @@ void ParameterBag::reset()
 	controlValues[11] = 20.0f;
 	// Speed 
 	controlValues[12] = 12.0f;
-	// zoom
-	controlValues[22] = iZoomLeft = iZoomRight = 1.0f;
+	// Audio multfactor 
+	controlValues[13] = 1.0f;
 	// exposure
 	controlValues[14] = 1.0f;
 	// Pixelate
@@ -562,6 +562,8 @@ void ParameterBag::reset()
 	controlValues[20] = 16.0f;
 	// iPreviewCrossfade
 	controlValues[21] = 1.0f;
+	// zoom
+	controlValues[22] = iZoomLeft = iZoomRight = 1.0f;
 	// glitch
 	controlValues[45] = 0.0f;
 	// toggle
