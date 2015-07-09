@@ -385,7 +385,8 @@ void ParameterBag::reset()
 	//mAudioMultFactor = 1.0;
 	mUseLineIn = true;
 	mIsPlaying = false;
-	mBeat = 0;
+	iBeat = 0;
+	iSeed = 0.1;
 	mFftSize = 512;
 	mWindowSize = 1024;
 
@@ -519,7 +520,7 @@ void ParameterBag::reset()
 	// Blendmode 
 	iBlendMode = 0;
 	// abp
-	mBend = 0.0f;
+	mBend = 1.0f;
 	// red
 	controlValues[1] = 1.0f;
 	// green

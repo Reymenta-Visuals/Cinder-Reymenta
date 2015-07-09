@@ -157,7 +157,7 @@ void OSC::update()
 		}
 		else if (oscAddress == "/live/beat")
 		{
-			mParameterBag->mBeat = iargs[0];
+			mParameterBag->iBeat = iargs[0];
 			routeMessage = true;
 		}
 		else if (oscAddress == "/live/tempo")
@@ -361,46 +361,6 @@ void OSC::updateAndSendOSCFloatMessage(string controlType, int iarg0, float farg
 }
 void OSC::updateParams(int iarg0, float farg1)
 {
-	if (iarg0 > 0 && iarg0 < 9)
-	{
-		// sliders 
-		mParameterBag->controlValues[iarg0] = farg1;
-	}
-	if (iarg0 > 10 && iarg0 < 19)
-	{
-		// rotary 
-		mParameterBag->controlValues[iarg0] = farg1;
-	}
-	// buttons
-	if (iarg0 > 20 && iarg0 < 29)
-	{
-		// select index
-		mParameterBag->selectedWarp = iarg0 - 21;
-	}
-	if (iarg0 > 30 && iarg0 < 39)
-	{
-		// select input
-		mParameterBag->mWarpFbos[mParameterBag->selectedWarp].textureIndex = iarg0 - 31;
-		// activate
-		mParameterBag->mWarpFbos[mParameterBag->selectedWarp].active = !mParameterBag->mWarpFbos[mParameterBag->selectedWarp].active;
-	}
-	if (iarg0 > 40 && iarg0 < 49)
-	{
-		// low row 
-		mParameterBag->controlValues[iarg0] = farg1;
-	}
-	if (iarg0 == 61 && farg1 > 0)
-	{
-		// left arrow
-		mParameterBag->iBlendMode--;
-		if (mParameterBag->iBlendMode < 0) mParameterBag->iBlendMode = mParameterBag->maxBlendMode;
-	}
-	if (iarg0 == 62 && farg1 > 0)
-	{
-		// left arrow
-		mParameterBag->iBlendMode++;
-		if (mParameterBag->iBlendMode > mParameterBag->maxBlendMode) mParameterBag->iBlendMode = 0;
-	}
 	if (farg1 > 0.1)
 	{
 		//avoid to send twice
@@ -408,7 +368,6 @@ void OSC::updateParams(int iarg0, float farg1)
 		if (iarg0 == 53) sendOSCIntMessage("/live/stop", 0);			// stop
 		if (iarg0 == 52) sendOSCIntMessage("/live/next/cue", 0);		// next cue
 		if (iarg0 == 51) sendOSCIntMessage("/live/prev/cue", 0);		// previous cue
-
 	}
 
 }

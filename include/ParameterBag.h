@@ -191,9 +191,10 @@ namespace Reymenta {
 		bool						mIsPlaying;
 		//float						mAudioMultFactor; mParameterBag->controlValues[13]
 		float						iFreqs[4];
-		int							mBeat;
+		int							iBeat;
 		int							mFftSize;
 		int							mWindowSize;
+		float						iSeed;
 
 		// z EyePointZ
 		float						defaultEyePointZ;

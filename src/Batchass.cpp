@@ -16,7 +16,7 @@ Batchass::Batchass(ParameterBagRef aParameterBag)
 	// exposure
 	defaultExposure = 1.0;
 	minExposure = 0.0001;
-	maxExposure = 2.0;
+	maxExposure = 3.0;
 	tExposure = autoExposure = false;
 	// Chromatic
 	defaultChromatic = 0.0;

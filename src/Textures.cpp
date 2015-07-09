@@ -298,6 +298,7 @@ void Textures::draw()
 {
 	// start profiling
 	auto start = Clock::now();
+	mParameterBag->iSeed = randFloat();
 	//renderWarpFbos();
 	if (mParameterBag->mRenderThumbs) renderShadaThumbFbo();
 #pragma region left
@@ -364,6 +365,8 @@ void Textures::draw()
 	aShader->uniform("iFps", mParameterBag->iFps);
 	aShader->uniform("iTempoTime", mParameterBag->iTempoTime);
 	aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
+	aShader->uniform("iBeat", mParameterBag->iBeat);
+	aShader->uniform("iSeed", mParameterBag->iSeed);
 
 	for (size_t m = 0; m < mTexturesCount; m++)
 	{
@@ -446,6 +449,8 @@ void Textures::draw()
 	aShader->uniform("iFps", mParameterBag->iFps);
 	aShader->uniform("iTempoTime", mParameterBag->iTempoTime);
 	aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
+	aShader->uniform("iBeat", mParameterBag->iBeat);
+	aShader->uniform("iSeed", mParameterBag->iSeed);
 
 	for (size_t m = 0; m < mTexturesCount; m++)
 	{
@@ -530,6 +535,8 @@ void Textures::draw()
 		aShader->uniform("iFps", mParameterBag->iFps);
 		aShader->uniform("iTempoTime", mParameterBag->iTempoTime);
 		aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
+		aShader->uniform("iBeat", mParameterBag->iBeat);
+		aShader->uniform("iSeed", mParameterBag->iSeed);
 
 		for (size_t m = 0; m < mTexturesCount; m++)
 		{
@@ -612,6 +619,8 @@ void Textures::draw()
 		aShader->uniform("iFps", mParameterBag->iFps);
 		aShader->uniform("iTempoTime", mParameterBag->iTempoTime);
 		aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
+		aShader->uniform("iBeat", mParameterBag->iBeat);
+		aShader->uniform("iSeed", mParameterBag->iSeed);
 
 		for (size_t m = 0; m < mTexturesCount; m++)
 		{
@@ -698,6 +707,8 @@ void Textures::draw()
 		aShader->uniform("iFps", mParameterBag->iFps);
 		aShader->uniform("iTempoTime", mParameterBag->iTempoTime);
 		aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
+		aShader->uniform("iBeat", mParameterBag->iBeat);
+		aShader->uniform("iSeed", mParameterBag->iSeed);
 
 		for (size_t m = 0; m < mTexturesCount; m++)
 		{
@@ -784,6 +795,8 @@ void Textures::draw()
 		aShader->uniform("iFps", mParameterBag->iFps);
 		aShader->uniform("iTempoTime", mParameterBag->iTempoTime);
 		aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
+		aShader->uniform("iBeat", mParameterBag->iBeat);
+		aShader->uniform("iSeed", mParameterBag->iSeed);
 
 		for (size_t m = 0; m < mTexturesCount; m++)
 		{
@@ -872,6 +885,8 @@ void Textures::draw()
 	aShader->uniform("iTrixels", mParameterBag->controlValues[16]);
 	aShader->uniform("iGridSize", mParameterBag->controlValues[17]);
 	aShader->uniform("iFlipH", mParameterBag->iFlipHorizontally);
+	aShader->uniform("iBeat", mParameterBag->iBeat);
+	aShader->uniform("iSeed", mParameterBag->iSeed);
 
 	sTextures[6].bind(0);
 	sTextures[7].bind(1);
