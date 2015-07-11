@@ -883,7 +883,7 @@ void Textures::draw()
 	aShader->uniform("iTempoTime", mParameterBag->iTempoTime);
 	aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
 	aShader->uniform("iTrixels", mParameterBag->controlValues[16]);
-	aShader->uniform("iGridSize", mParameterBag->controlValues[17]);
+	aShader->uniform("iGridSize", 0.0f);// mParameterBag->controlValues[17]);
 	aShader->uniform("iFlipH", mParameterBag->iFlipHorizontally);
 	aShader->uniform("iBeat", mParameterBag->iBeat);
 	aShader->uniform("iSeed", mParameterBag->iSeed);
