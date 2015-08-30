@@ -446,6 +446,7 @@ void ParameterBag::reset()
 		iChannels[a] = a;
 	}
 	iChannels[4] = 10;
+	selectedChannel = 0;
 	// fbo indexes for warp
 	mFboResolution = 2048;
 	mMixFboIndex = 0;

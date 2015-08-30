@@ -13,10 +13,10 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	//createPreviewFbo();//mFboWidth/4 or 16
 	// mix fbo at index 0
 	mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
+	mFbos[0].getTexture(0).setFlipped(true);
 
 	// preview fbo at index 5
 	//mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));//640x480
-	//mFbos[0].getTexture(0).setFlipped(true);
 	for (size_t m = mFbos.size(); m < mParameterBag->MAX; m++)
 	{
 		mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
@@ -883,7 +883,7 @@ void Textures::draw()
 	aShader->uniform("iTempoTime", mParameterBag->iTempoTime);
 	aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
 	aShader->uniform("iTrixels", mParameterBag->controlValues[16]);
-	aShader->uniform("iGridSize", 0.0f);// mParameterBag->controlValues[17]);
+	aShader->uniform("iGridSize", mParameterBag->controlValues[17]);
 	aShader->uniform("iFlipH", mParameterBag->iFlipHorizontally);
 	aShader->uniform("iBeat", mParameterBag->iBeat);
 	aShader->uniform("iSeed", mParameterBag->iSeed);

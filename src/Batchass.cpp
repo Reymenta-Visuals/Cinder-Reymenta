@@ -99,7 +99,12 @@ void Batchass::assignFboToWarp(int index, int fbo)
 }
 void Batchass::assignTextureToChannel(int selectedTexture_index, int selectedChannel)
 {
-	if (selectedTexture_index > -1 && selectedTexture_index < mTextures->getTextureCount() && selectedChannel > -1 && selectedChannel < mParameterBag->iChannels.size())
+	if (selectedTexture_index < 0 || selectedTexture_index > mTextures->getTextureCount() - 1)
+	{
+		selectedTexture_index = 0;
+	}
+
+	if (selectedChannel > -1 && selectedChannel < mParameterBag->iChannels.size())
 		mParameterBag->iChannels[selectedChannel] = selectedTexture_index;
 }
 

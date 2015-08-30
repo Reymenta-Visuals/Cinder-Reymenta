@@ -139,7 +139,6 @@ namespace Reymenta {
 		const int					maxBlendMode = 28;
 		string						mAssetsPath;
 		bool						iFlipHorizontally;
-		//float						iCrossfade, iPreviewCrossfade;
 		bool						iShowFps;
 		bool						iDebug;
 		float						iFps;
@@ -222,6 +221,7 @@ namespace Reymenta {
 		map<int, float>				controlValues;
 		// indexes for textures
 		map<int, int>				iChannels;
+		int							selectedChannel;
 		// fbo indexes for warping
 		//map<int, int>				iWarpFboChannels;
 		//! warp fbos
