@@ -16,7 +16,7 @@ Batchass::Batchass(ParameterBagRef aParameterBag)
 	// exposure
 	defaultExposure = 1.0;
 	minExposure = 0.0001;
-	maxExposure = 3.0;
+
 	tExposure = autoExposure = false;
 	// Chromatic
 	defaultChromatic = 0.0;
@@ -54,7 +54,7 @@ float Batchass::formatFloat(float f)
 	return (float)i;
 }
 void Batchass::shutdown() {
-	mMIDI->shutdown();
+	mMessageRouter->shutdown();
 }
 
 void Batchass::setup()
@@ -68,27 +68,25 @@ void Batchass::setup()
 	mWarpings = WarpWrapper::create(mParameterBag, mTextures, mShaders);
 	// MessageRouter
 	mMessageRouter = MessageRouter::create(mParameterBag);
-	// instanciate the OSC class
-	mOSC = OSC::create(mParameterBag, mMessageRouter);
-	// instanciate the WebSockets class
-	mWebSockets = WebSockets::create(mParameterBag, mMessageRouter);
-	// midi
-	mMIDI = MIDI::create(mParameterBag, mMessageRouter);
-	if (mParameterBag->mMIDIEnabled) midiSetup();
-	// setup MessageRouter
-	mMessageRouter->setup(mWebSockets, mOSC, mMIDI);
+
 	//createWarpFbos();
 }
 void Batchass::midiSetup() {
 
-	mMIDI->setup();
+	mMessageRouter->midiSetup();
 
 }
-
+void Batchass::sendOSCIntMessage(string controlType, int iarg0, int iarg1, int iarg2, int iarg3, int iarg4, int iarg5)
+{
+	mMessageRouter->sendOSCIntMessage(controlType, iarg0);
+}
 void Batchass::sendJSON(string params) {
 
 	mMessageRouter->sendJSON(params);
 
+}
+void Batchass::colorWrite() {
+	mMessageRouter->colorWrite();
 }
 void Batchass::createWarpFbos()
 {
@@ -175,8 +173,7 @@ void Batchass::changeMode(int newMode)
 }
 void Batchass::update()
 {
-	mWebSockets->update();
-	if (mParameterBag->mOSCEnabled) mOSC->update();
+	mMessageRouter->update();
 	mTextures->update();
 	//mShaders->update();
 	if (mParameterBag->controlValues[12] == 0.0) mParameterBag->controlValues[12] = 0.01;
@@ -202,11 +199,11 @@ void Batchass::update()
 		// exposure
 		if (tExposure)
 		{
-			mParameterBag->controlValues[14] = (modulo < 0.1) ? maxExposure : minExposure;
+			mParameterBag->controlValues[14] = (modulo < 0.1) ? mParameterBag->maxExposure : minExposure;
 		}
 		else
 		{
-			mParameterBag->controlValues[14] = autoExposure ? lmap<float>(mParameterBag->iTempoTime, 0.00001, mParameterBag->iDeltaTime, minExposure, maxExposure) : mParameterBag->controlValues[14];
+			mParameterBag->controlValues[14] = autoExposure ? lmap<float>(mParameterBag->iTempoTime, 0.00001, mParameterBag->iDeltaTime, minExposure, mParameterBag->maxExposure) : mParameterBag->controlValues[14];
 			//mParameterBag->controlValues[14] = autoExposure ? (sin(getElapsedFrames() / (mParameterBag->controlValues[12] + 1.0))) : mParameterBag->controlValues[14];
 		}
 		// zoom

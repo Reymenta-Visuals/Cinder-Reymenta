@@ -15,12 +15,6 @@
 #include "WarpWrapper.h"
 // logger
 #include "Logger.h"
-// MIDI
-#include "MIDIWrapper.h"
-// OSC
-#include "OSCWrapper.h"
-// WebSockets
-#include "WebSocketsWrapper.h"
 // MessageRouter
 #include "MessageRouter.h"
 
@@ -117,13 +111,16 @@ namespace Reymenta
 		void						assignTextureToChannel(int selectedTexture_index, int selectedChannel);
 		// MIDI
 		void						midiSetup();
-		int							midiInCount() { return mMIDI->getMidiInPortsCount(); };
-		string						midiInPortName(int i) { return mMIDI->getMidiInPortName(i); };
-		bool						midiInConnected(int i) { return mMIDI->isMidiInConnected(i); };
-		void						midiInOpenPort(int i) { mMIDI->openMidiInPort(i); };
-		void						midiInClosePort(int i) { mMIDI->closeMidiInPort(i); };
+		int							midiInCount() { return mMessageRouter->getMidiInPortsCount(); };
+		string						midiInPortName(int i) { return mMessageRouter->getMidiInPortName(i); };
+		bool						midiInConnected(int i) { return mMessageRouter->isMidiInConnected(i); };
+		void						midiInOpenPort(int i) { mMessageRouter->openMidiInPort(i); };
+		void						midiInClosePort(int i) { mMessageRouter->closeMidiInPort(i); };
 		// messages
 		void						sendJSON(string params);
+		void						colorWrite();
+		void						sendOSCIntMessage(string controlType, int iarg0 = 0, int iarg1 = 0, int iarg2 = 0, int iarg3 = 0, int iarg4 = 0, int iarg5 = 0);
+
 	private:
 		// parameters
 		ParameterBagRef				mParameterBag;
@@ -135,12 +132,6 @@ namespace Reymenta
 		WarpWrapperRef				mWarpings;
 		// Logger
 		LoggerRef					mLog;
-		// MIDI
-		MIDIRef						mMIDI;
-		// osc
-		OSCRef						mOSC;
-		// WebSockets
-		WebSocketsRef				mWebSockets;
 		// MessageRouter
 		MessageRouterRef			mMessageRouter;
 		// tempo
