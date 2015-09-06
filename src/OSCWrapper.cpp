@@ -2,9 +2,10 @@
 
 using namespace Reymenta;
 
-OSC::OSC(ParameterBagRef aParameterBag)
+OSC::OSC(ParameterBagRef aParameterBag, MessageRouterRef aMessageRouter)
 {
 	mParameterBag = aParameterBag;
+	mMessageRouter = aMessageRouter;
 	for (int i = 0; i < 20; i++)
 	{
 		skeleton[i] = Vec4i::zero();
@@ -16,9 +17,9 @@ OSC::OSC(ParameterBagRef aParameterBag)
 	mOSCReceiver.setup(mParameterBag->mOSCReceiverPort);
 }
 
-OSCRef OSC::create(ParameterBagRef aParameterBag)
+OSCRef OSC::create(ParameterBagRef aParameterBag, MessageRouterRef aMessageRouter)
 {
-	return shared_ptr<OSC>(new OSC(aParameterBag));
+	return shared_ptr<OSC>(new OSC(aParameterBag, aMessageRouter));
 }
 void OSC::setupSender()
 {
@@ -153,7 +154,7 @@ void OSC::update()
 		if (oscAddress == "/cc")
 		{
 			mParameterBag->controlValues[iargs[0]] = fargs[1];
-			mBatchass->updateParams(iargs[0], fargs[1]);
+			mMessageRouter->updateParams(iargs[0], fargs[1]);
 		}
 		else if (oscAddress == "/live/beat")
 		{
@@ -356,6 +357,6 @@ void OSC::sendOSCFloatMessage(string controlType, int iarg0, float farg1, float 
 }
 void OSC::updateAndSendOSCFloatMessage(string controlType, int iarg0, float farg1, float farg2, float farg3, float farg4, float farg5)
 {
-	mBatchass->updateParams(iarg0, farg1);
+	mMessageRouter->updateParams(iarg0, farg1);
 	sendOSCFloatMessage(controlType, iarg0, farg1, farg2);
 }

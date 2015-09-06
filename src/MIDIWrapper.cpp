@@ -2,22 +2,22 @@
 
 using namespace Reymenta;
 
-MIDI::MIDI(ParameterBagRef aParameterBag)
+MIDI::MIDI(ParameterBagRef aParameterBag, MessageRouterRef aMessageRouter)
 {
 	mParameterBag = aParameterBag;
-
+	mMessageRouter = aMessageRouter;
 }
 
-MIDIRef MIDI::create(ParameterBagRef aParameterBag)
+MIDIRef MIDI::create(ParameterBagRef aParameterBag, MessageRouterRef aMessageRouter)
 {
-	return shared_ptr<MIDI>(new MIDI(aParameterBag));
+	return shared_ptr<MIDI>(new MIDI(aParameterBag, aMessageRouter));
 }
 void MIDI::shutdown() {
 	mMidiIn0.closePort();
 	mMidiIn1.closePort();
 	mMidiIn2.closePort();
 }
-void MIDI::setupMidi()
+void MIDI::setup()
 {
 	stringstream ss;
 	ss << "setupMidi: ";

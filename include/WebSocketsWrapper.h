@@ -7,8 +7,9 @@
 #include "WebSocketServer.h"
 
 #include "ParameterBag.h"
-// Utils
-#include "Batchass.h"
+
+// MessageRouter
+#include "MessageRouter.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -23,8 +24,8 @@ namespace Reymenta
 	{
 
 	public:
-		WebSockets( ParameterBagRef aParameterBag );
-		static						WebSocketsRef create( ParameterBagRef aParameterBag );
+		WebSockets(ParameterBagRef aParameterBag, MessageRouterRef aMessageRouter);
+		static						WebSocketsRef create(ParameterBagRef aParameterBag, MessageRouterRef aMessageRouter);
 		void						update();
 		void						write(std::string msg);
 		void						connect();
@@ -33,8 +34,8 @@ namespace Reymenta
 	private:
 		// parameters
 		ParameterBagRef				mParameterBag;
-		// utils
-		//BatchassRef					mBatchass;
+		// MessageRouter
+		MessageRouterRef			mMessageRouter;
 
 		// Web socket client
 		void						clientDisconnect();

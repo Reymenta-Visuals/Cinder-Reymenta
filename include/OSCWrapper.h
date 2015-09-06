@@ -5,6 +5,8 @@
 #include "OSCSender.h"
 #include "Resources.h"
 #include "ParameterBag.h"
+// MessageRouter
+#include "MessageRouter.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -19,8 +21,8 @@ namespace Reymenta
 	{
 
 	public:
-		OSC( ParameterBagRef aParameterBag );
-		static	OSCRef create( ParameterBagRef aParameterBag );
+		OSC(ParameterBagRef aParameterBag, MessageRouterRef aMessageRouter);
+		static	OSCRef create(ParameterBagRef aParameterBag, MessageRouterRef aMessageRouter);
 
 		void	update();
 
@@ -36,6 +38,8 @@ namespace Reymenta
 
 		// parameters
 		ParameterBagRef				mParameterBag;
+		// MessageRouter
+		MessageRouterRef			mMessageRouter;
 
 		osc::Listener 				mOSCReceiver;
 		osc::Sender					mOSCSender;

@@ -140,6 +140,8 @@ namespace Reymenta {
 		bool						iLightAuto;
 		int							iBlendMode;
 		const int					maxBlendMode = 28;
+		const float					maxExposure;
+
 		string						mAssetsPath;
 		bool						iFlipHorizontally;
 		bool						iShowFps;

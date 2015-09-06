@@ -7,6 +7,8 @@
 #include "MidiIn.h"
 #include "MidiMessage.h"
 #include "MidiConstants.h"
+// MessageRouter
+#include "MessageRouter.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -26,9 +28,9 @@ namespace Reymenta
 	{
 
 	public:
-		MIDI(ParameterBagRef aParameterBag);
-		static	MIDIRef create(ParameterBagRef aParameterBag);
-		void						setupMidi();
+		MIDI(ParameterBagRef aParameterBag, MessageRouterRef aMessageRouter);
+		static	MIDIRef create(ParameterBagRef aParameterBag, MessageRouterRef aMessageRouter);
+		void						setup();
 		int							getMidiInPortsCount() { return mMidiInputs.size(); };
 		string						getMidiInPortName(int i) { return (i<mMidiInputs.size()) ? mMidiInputs[i].portName : "No midi in ports"; };
 		bool						isMidiInConnected(int i) { return (i<mMidiInputs.size()) ? mMidiInputs[i].isConnected : false; };
@@ -39,6 +41,8 @@ namespace Reymenta
 	private:
 		// parameters
 		ParameterBagRef				mParameterBag;
+		// MessageRouter
+		MessageRouterRef			mMessageRouter;
 		// midi
 		vector<midiInput>			mMidiInputs;
 		void						midiListener(midi::Message msg);

@@ -21,6 +21,8 @@
 #include "OSCWrapper.h"
 // WebSockets
 #include "WebSocketsWrapper.h"
+// MessageRouter
+#include "MessageRouter.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -55,7 +57,6 @@ namespace Reymenta
 		// exposure
 		float						defaultExposure;
 		float						minExposure;
-		float						maxExposure;
 		bool						tExposure;
 		bool						autoExposure;
 		//zoom
@@ -121,6 +122,8 @@ namespace Reymenta
 		bool						midiInConnected(int i) { return mMIDI->isMidiInConnected(i); };
 		void						midiInOpenPort(int i) { mMIDI->openMidiInPort(i); };
 		void						midiInClosePort(int i) { mMIDI->closeMidiInPort(i); };
+		// messages
+		void						sendJSON(string params);
 	private:
 		// parameters
 		ParameterBagRef				mParameterBag;
@@ -138,6 +141,8 @@ namespace Reymenta
 		OSCRef						mOSC;
 		// WebSockets
 		WebSocketsRef				mWebSockets;
+		// MessageRouter
+		MessageRouterRef			mMessageRouter;
 		// tempo
 		void						calculateTempo();
 		std::deque <double>			buffer;
@@ -148,9 +153,6 @@ namespace Reymenta
 		double						startTime;
 		float						previousTime;
 		int							beatIndex; //0 to 3
-
-		// message routing
-		void						updateParams(int iarg0, float farg1);
 
 	};
 }
