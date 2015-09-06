@@ -23,8 +23,8 @@ namespace Reymenta
 	{
 
 	public:
-		WebSockets( ParameterBagRef aParameterBag, BatchassRef aBatchass );
-		static						WebSocketsRef create( ParameterBagRef aParameterBag, BatchassRef aBatchass );
+		WebSockets( ParameterBagRef aParameterBag );
+		static						WebSocketsRef create( ParameterBagRef aParameterBag );
 		void						update();
 		void						write(std::string msg);
 		void						connect();
@@ -34,7 +34,7 @@ namespace Reymenta
 		// parameters
 		ParameterBagRef				mParameterBag;
 		// utils
-		BatchassRef					mBatchass;
+		//BatchassRef					mBatchass;
 
 		// Web socket client
 		void						clientDisconnect();

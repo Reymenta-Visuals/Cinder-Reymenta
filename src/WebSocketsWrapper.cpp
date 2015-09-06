@@ -2,18 +2,17 @@
 
 using namespace Reymenta;
 
-WebSockets::WebSockets(ParameterBagRef aParameterBag, BatchassRef aBatchass)
+WebSockets::WebSockets(ParameterBagRef aParameterBag)
 {
 	mParameterBag = aParameterBag;
-	mBatchass = aBatchass;
 	clientConnected = false;
 	if (mParameterBag->mAreWebSocketsEnabledAtStartup) connect();
 	mPingTime = getElapsedSeconds();
 }
 
-WebSocketsRef WebSockets::create(ParameterBagRef aParameterBag, BatchassRef aBatchass)
+WebSocketsRef WebSockets::create(ParameterBagRef aParameterBag)
 {
-	return shared_ptr<WebSockets>(new WebSockets(aParameterBag, aBatchass));
+	return shared_ptr<WebSockets>(new WebSockets(aParameterBag));
 }
 
 void WebSockets::ping()

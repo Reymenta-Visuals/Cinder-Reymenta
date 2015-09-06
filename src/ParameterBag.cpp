@@ -93,6 +93,10 @@ bool ParameterBag::save()
 	FboHeight.setAttribute("value", toString(mFboHeight));
 	settings.push_back(FboHeight);
 
+	XmlTree MIDIEnabled("MIDIEnabled", "");
+	MIDIEnabled.setAttribute("value", toString(mMIDIEnabled));
+	settings.push_back(MIDIEnabled);
+
 	XmlTree OSCEnabled("OSCEnabled", "");
 	OSCEnabled.setAttribute("value", toString(mOSCEnabled));
 	settings.push_back(OSCEnabled);
@@ -205,9 +209,17 @@ bool ParameterBag::restore()
 				XmlTree FboWidth = settings.getChild("FboWidth");
 				mFboWidth = FboWidth.getAttributeValue<int>("value");
 			}
+			if (settings.hasChild("OSCEnabled")) {
+				XmlTree OSCEnabled = settings.getChild("OSCEnabled");
+				mOSCEnabled = OSCEnabled.getAttributeValue<bool>("value");
+			}
 			if (settings.hasChild("FboHeight")) {
 				XmlTree FboHeight = settings.getChild("FboHeight");
 				mFboHeight = FboHeight.getAttributeValue<int>("value");
+			}
+			if (settings.hasChild("MIDIEnabled")) {
+				XmlTree MIDIEnabled = settings.getChild("MIDIEnabled");
+				mMIDIEnabled = MIDIEnabled.getAttributeValue<bool>("value");
 			}
 			if (settings.hasChild("OSCEnabled")) {
 				XmlTree OSCEnabled = settings.getChild("OSCEnabled");
@@ -498,6 +510,7 @@ void ParameterBag::reset()
 	mUIRefresh = 1;
 
 	// midi
+	mMIDIEnabled = true;
 	for (int c = 0; c < 128; c++)
 	{
 		controlValues[c] = 0.01f;

@@ -153,7 +153,7 @@ void OSC::update()
 		if (oscAddress == "/cc")
 		{
 			mParameterBag->controlValues[iargs[0]] = fargs[1];
-			updateParams(iargs[0], fargs[1]);
+			mBatchass->updateParams(iargs[0], fargs[1]);
 		}
 		else if (oscAddress == "/live/beat")
 		{
@@ -356,18 +356,6 @@ void OSC::sendOSCFloatMessage(string controlType, int iarg0, float farg1, float 
 }
 void OSC::updateAndSendOSCFloatMessage(string controlType, int iarg0, float farg1, float farg2, float farg3, float farg4, float farg5)
 {
-	updateParams(iarg0, farg1);
+	mBatchass->updateParams(iarg0, farg1);
 	sendOSCFloatMessage(controlType, iarg0, farg1, farg2);
-}
-void OSC::updateParams(int iarg0, float farg1)
-{
-	if (farg1 > 0.1)
-	{
-		//avoid to send twice
-		if (iarg0 == 54) sendOSCIntMessage("/live/play", 0);			// play
-		if (iarg0 == 53) sendOSCIntMessage("/live/stop", 0);			// stop
-		if (iarg0 == 52) sendOSCIntMessage("/live/next/cue", 0);		// next cue
-		if (iarg0 == 51) sendOSCIntMessage("/live/prev/cue", 0);		// previous cue
-	}
-
 }

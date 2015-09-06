@@ -15,6 +15,12 @@
 #include "WarpWrapper.h"
 // logger
 #include "Logger.h"
+// MIDI
+#include "MIDIWrapper.h"
+// OSC
+#include "OSCWrapper.h"
+// WebSockets
+#include "WebSocketsWrapper.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -25,7 +31,6 @@ namespace Reymenta
 	// stores the pointer to the Reymenta instance
 	typedef std::shared_ptr<class Batchass> BatchassRef;
 
-
 	class Batchass {
 	public:
 		Batchass(ParameterBagRef aParameterBag);
@@ -35,6 +40,7 @@ namespace Reymenta
 		}
 		void						setup();
 		void						update();
+		void						shutdown();
 		// TODO move to private when shadamixa upgraded
 		void						createWarpFbos();
 		int							getWindowsResolution();
@@ -108,6 +114,13 @@ namespace Reymenta
 		void						createWarp();
 		void						assignFboToWarp(int index, int fbo);
 		void						assignTextureToChannel(int selectedTexture_index, int selectedChannel);
+		// MIDI
+		void						midiSetup();
+		int							midiInCount() { return mMIDI->getMidiInPortsCount(); };
+		string						midiInPortName(int i) { return mMIDI->getMidiInPortName(i); };
+		bool						midiInConnected(int i) { return mMIDI->isMidiInConnected(i); };
+		void						midiInOpenPort(int i) { mMIDI->openMidiInPort(i); };
+		void						midiInClosePort(int i) { mMIDI->closeMidiInPort(i); };
 	private:
 		// parameters
 		ParameterBagRef				mParameterBag;
@@ -119,6 +132,12 @@ namespace Reymenta
 		WarpWrapperRef				mWarpings;
 		// Logger
 		LoggerRef					mLog;
+		// MIDI
+		MIDIRef						mMIDI;
+		// osc
+		OSCRef						mOSC;
+		// WebSockets
+		WebSocketsRef				mWebSockets;
 		// tempo
 		void						calculateTempo();
 		std::deque <double>			buffer;
@@ -129,5 +148,9 @@ namespace Reymenta
 		double						startTime;
 		float						previousTime;
 		int							beatIndex; //0 to 3
+
+		// message routing
+		void						updateParams(int iarg0, float farg1);
+
 	};
 }

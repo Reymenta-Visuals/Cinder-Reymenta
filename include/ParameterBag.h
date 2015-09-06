@@ -86,6 +86,9 @@ namespace Reymenta {
 		float						mAspectRatio;
 		int							mMainWindowX, mMainWindowY, mMarginSmall, mMainWindowWidth, mMainWindowHeight, mFboWidth, mFboHeight;
 		float						mCodeEditorWidth, mCodeEditorHeight;
+		// MIDI
+		bool						mMIDIEnabled;
+		// OSC
 		bool						mOSCEnabled;
 		std::string					mOSCDestinationHost;
 		int							mOSCDestinationPort;
