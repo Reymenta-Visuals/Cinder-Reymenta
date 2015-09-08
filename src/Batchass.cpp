@@ -67,7 +67,7 @@ void Batchass::setup()
 	// instanciate the warps class
 	mWarpings = WarpWrapper::create(mParameterBag, mTextures, mShaders);
 	// MessageRouter
-	mMessageRouter = MessageRouter::create(mParameterBag);
+	mMessageRouter = MessageRouter::create(mParameterBag, mTextures, mShaders);
 
 	//createWarpFbos();
 }
@@ -76,6 +76,23 @@ void Batchass::midiSetup() {
 	mMessageRouter->midiSetup();
 
 }
+void Batchass::selectShader(bool left, int index) {
+	mMessageRouter->selectShader( left,  index);
+
+	if (mParameterBag->mOSCEnabled) {
+		sendOSCIntMessage("/selectShader", left, index);
+	}
+	if (mParameterBag->mIsWebSocketsServer)
+	{
+		stringstream aParams;
+		aParams << "{\"selectShader\" :[{\"left\" : " << left << ",\"index\" : " << index << "}]}";
+		string msg = aParams.str();
+		mMessageRouter->wsWrite(msg);
+	}
+
+	
+}
+
 void Batchass::sendOSCIntMessage(string controlType, int iarg0, int iarg1, int iarg2, int iarg3, int iarg4, int iarg5)
 {
 	mMessageRouter->sendOSCIntMessage(controlType, iarg0);

@@ -8,10 +8,13 @@
 #include "cinder/gl/GlslProg.h"
 #include "cinder/Camera.h"
 #include "Logger.h"
+#if !defined( NOWARPING )
 // warp
 #include "WarpBilinear.h"
 #include "WarpPerspective.h"
 #include "WarpPerspectiveBilinear.h"
+#endif
+
 // textures
 #include "Textures.h"
 // shaders

@@ -3,6 +3,11 @@
 #include "cinder/app/AppNative.h"
 #include "Resources.h"
 #include "ParameterBag.h"
+// textures
+#include "Textures.h"
+// shaders
+#include "Shaders.h"
+
 #include "cinder/Json.h"
 // MIDI
 #include "MidiIn.h"
@@ -35,8 +40,8 @@ namespace Reymenta
 	{
 
 	public:
-		MessageRouter(ParameterBagRef aParameterBag);
-		static	MessageRouterRef create(ParameterBagRef aParameterBag);
+		MessageRouter(ParameterBagRef aParameterBag, TexturesRef aTexturesRef, ShadersRef aShadersRef);
+		static	MessageRouterRef create(ParameterBagRef aParameterBag, TexturesRef aTexturesRef, ShadersRef aShadersRef);
 		void						update();
 		// messages
 		void						sendJSON(string params);
@@ -65,9 +70,15 @@ namespace Reymenta
 		bool						isWsClientConnected() { return clientConnected; };
 		void						colorWrite();
 
+		// utils
+		void						selectShader(bool left, int index);
 	private:
 		// parameters
 		ParameterBagRef				mParameterBag;
+		// Shaders
+		ShadersRef					mShaders;
+		// Textures
+		TexturesRef					mTextures;
 		// MIDI
 		vector<midiInput>			mMidiInputs;
 		void						midiListener(midi::Message msg);

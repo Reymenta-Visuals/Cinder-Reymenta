@@ -2,9 +2,11 @@
 
 using namespace Reymenta;
 
-MessageRouter::MessageRouter(ParameterBagRef aParameterBag)
+MessageRouter::MessageRouter(ParameterBagRef aParameterBag, TexturesRef aTexturesRef, ShadersRef aShadersRef)
 {
 	mParameterBag = aParameterBag;
+	mTextures = aTexturesRef;
+	mShaders = aShadersRef;
 	for (int i = 0; i < 20; i++)
 	{
 		skeleton[i] = Vec4i::zero();
@@ -21,9 +23,9 @@ MessageRouter::MessageRouter(ParameterBagRef aParameterBag)
 
 }
 
-MessageRouterRef MessageRouter::create(ParameterBagRef aParameterBag)
+MessageRouterRef MessageRouter::create(ParameterBagRef aParameterBag, TexturesRef aTexturesRef, ShadersRef aShadersRef)
 {
-	return shared_ptr<MessageRouter>(new MessageRouter(aParameterBag));
+	return shared_ptr<MessageRouter>(new MessageRouter(aParameterBag, aTexturesRef, aShadersRef));
 }
 void MessageRouter::shutdown() {
 	mMidiIn0.closePort();
@@ -452,6 +454,10 @@ void MessageRouter::update()
 			// green
 			mParameterBag->controlValues[2] = x;
 		}
+		else if (oscAddress == "/selectShader")
+		{
+			selectShader(iargs[0], iargs[1]);
+		}
 
 		else if (oscAddress == "/joint")
 		{
@@ -696,6 +702,13 @@ void MessageRouter::onWsRead(string msg)
 					float value = jsonElement->getChild("value").getValue<float>();
 					mParameterBag->controlValues[name] = value;
 				}
+				JsonTree jsonSelectShader = json.getChild("selectShader");
+				for (JsonTree::ConstIter jsonElement = jsonSelectShader.begin(); jsonElement != jsonSelectShader.end(); ++jsonElement)
+				{
+					int left = jsonElement->getChild("left").getValue<int>();
+					int index = jsonElement->getChild("index").getValue<int>();
+					selectShader(left, index);
+				}
 			}
 			catch (cinder::JsonTree::Exception exception)
 			{
@@ -724,6 +737,15 @@ void MessageRouter::wsWrite(string msg)
 		{
 			if (clientConnected) mClient.write(msg);
 		}
+	}
+}
+void MessageRouter::selectShader(bool left, int index)
+{
+	if (left) {
+		mParameterBag->mLeftFragIndex = index;
+	}
+	else {
+		mParameterBag->mRightFragIndex = index;
 	}
 }
 void MessageRouter::colorWrite()

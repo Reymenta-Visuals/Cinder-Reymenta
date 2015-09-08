@@ -11,8 +11,10 @@
 #include "Shaders.h"
 // textures
 #include "Textures.h"
+#if !defined( NOWARPING )
 // warps
 #include "WarpWrapper.h"
+#endif
 // logger
 #include "Logger.h"
 // MessageRouter
@@ -120,7 +122,7 @@ namespace Reymenta
 		void						sendJSON(string params);
 		void						colorWrite();
 		void						sendOSCIntMessage(string controlType, int iarg0 = 0, int iarg1 = 0, int iarg2 = 0, int iarg3 = 0, int iarg4 = 0, int iarg5 = 0);
-
+		void						selectShader(bool left, int index);
 	private:
 		// parameters
 		ParameterBagRef				mParameterBag;
