@@ -48,20 +48,9 @@ void MessageRouter::midiSetup()
 			mMidiInputs.push_back(mIn);
 			if (mParameterBag->mMIDIOpenAllInputPorts)
 			{
-				if (i == 0)
-				{
-					mMidiIn0.openPort(i);
-					mMidiIn0.midiSignal.connect(boost::bind(&MessageRouter::midiListener, this, boost::arg<1>::arg()));
-				}
-				if (i == 1)
-				{
-					mMidiIn1.openPort(i);
-					mMidiIn1.midiSignal.connect(boost::bind(&MessageRouter::midiListener, this, boost::arg<1>::arg()));
-				}
-				if (i == 2)				{
-					mMidiIn2.openPort(i);
-					mMidiIn2.midiSignal.connect(boost::bind(&MessageRouter::midiListener, this, boost::arg<1>::arg()));
-				}
+				openMidiInPort(i);
+				openMidiInPort(1);
+				openMidiInPort(2);
 				mMidiInputs[i].isConnected = true;
 				ss << "Opening MIDI port " << i << " " << mMidiInputs[i].portName;
 			}
@@ -700,14 +689,28 @@ void MessageRouter::onWsRead(string msg)
 				{
 					int name = jsonElement->getChild("name").getValue<int>();
 					float value = jsonElement->getChild("value").getValue<float>();
-					mParameterBag->controlValues[name] = value;
+					if (name > mParameterBag->controlValues.size()) {
+						switch (name)
+						{
+						case 300:
+							//selectShader
+							int left = jsonElement->getChild("left").getValue<int>();
+							int index = jsonElement->getChild("index").getValue<int>();
+							selectShader(left, index);
+							break;
+						default:
+							break;
+						}
+
+					}
+					else {
+						// basic name value 
+						mParameterBag->controlValues[name] = value;
+					}
 				}
 				JsonTree jsonSelectShader = json.getChild("selectShader");
 				for (JsonTree::ConstIter jsonElement = jsonSelectShader.begin(); jsonElement != jsonSelectShader.end(); ++jsonElement)
 				{
-					int left = jsonElement->getChild("left").getValue<int>();
-					int index = jsonElement->getChild("index").getValue<int>();
-					selectShader(left, index);
 				}
 			}
 			catch (cinder::JsonTree::Exception exception)

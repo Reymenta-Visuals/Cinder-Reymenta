@@ -83,9 +83,10 @@ void Batchass::selectShader(bool left, int index) {
 		sendOSCIntMessage("/selectShader", left, index);
 	}
 	if (mParameterBag->mIsWebSocketsServer)
-	{
+	{//					sParams << ",{ << backcolor[i] << "}";
+
 		stringstream aParams;
-		aParams << "{\"selectShader\" :[{\"left\" : " << left << ",\"index\" : " << index << "}]}";
+		aParams << "{\"params\" :[{\"name\" : 300 \"value\" : 0,\"left\" : " << left << ",\"index\" : " << index << "}]}";
 		string msg = aParams.str();
 		mMessageRouter->wsWrite(msg);
 	}
