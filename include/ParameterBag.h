@@ -68,7 +68,7 @@ namespace Reymenta {
 		static ParameterBagRef create();
 
 		//! maximum number of fbos, shaders, textures
-		static const int			MAX = 12;
+		static const int			MAX = 14;
 		static const int			TEXTUREMODEINPUT = 0;
 		static const int			TEXTUREMODESHADER = 1;
 

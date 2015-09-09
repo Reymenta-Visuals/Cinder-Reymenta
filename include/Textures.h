@@ -19,6 +19,9 @@
 #include "ParameterBag.h"
 // shaders
 #include "Shaders.h"
+// quicktime
+#include "cinder/qtime/QuickTime.h"
+
 // to use UI element for update background image
 //#include "UIElement.h"
 
@@ -73,10 +76,13 @@ namespace Reymenta
 		// spout
 		void						setSenderTextureSize(int index, int width, int height);
 		int							createSpoutTexture(char name[256], unsigned int width, unsigned int height);
+		// image sequence
+		void						createFromDir(string filePath, int index);
 
 		// image
 		void						loadImageFile( int index, string aFile );
-
+		// quicktime video
+		void						loadMovieFile(int index, string aFile);
 		void						update();
 		void						draw();
 		//void						createWarpInput();
@@ -107,6 +113,27 @@ namespace Reymenta
 		ShadersRef					mShaders;
 		// profiling
 		char						previewTime[256];
-
+		// quicktime movie
+		qtime::MovieGlRef			mMovie;
+		int							mMovieIndex;
+		// image sequence
+		void						updateSequence();
+		void						pause();
+		void						play();
+		void						stop();
+		void						setPlayheadPosition(int newPosition);
+		void						createFromPathList(vector<string> paths);
+		void						createFromTextureList(vector<ci::gl::Texture> textureList);
+		ci::gl::Texture				getCurrentSequenceTexture();
+		ci::gl::Texture				getCurrentSequenceTextureAtIndex(int index);
+		bool						paused;
+		bool						playing;
+		bool						complete;
+		bool						looping;
+		int							playheadPosition;
+		int							totalFrames;
+		int							playheadFrameInc;
+		vector<ci::gl::Texture>		sequenceTextures;
+		int							sequenceTextureIndex;
 	};
 }

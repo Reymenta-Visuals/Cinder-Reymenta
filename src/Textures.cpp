@@ -55,6 +55,13 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 			sTextures.push_back(img);
 		}
 	}
+	// image sequence
+	playing = complete = looping = true;
+	playheadPosition = totalFrames = playheadFrameInc = 0;
+	playheadFrameInc = 1;
+	paused = false;
+
+
 }
 
 /*void Textures::createWarpInput()
@@ -178,14 +185,38 @@ void Textures::loadImageFile(int index, string aFile)
 	}
 	catch (...)
 	{
-		log->logTimedString("Error loading image:" + aFile);
+		log->logTimedString("Error loading image: " + aFile);
 	}
 }
 
+void Textures::loadMovieFile(int index, string aFile)
+{
+	try
+	{
+		mMovieIndex = index;
+		// try loading video file
+		mMovie = qtime::MovieGl::create(aFile);
+		mMovie->setLoop();
+		mMovie->play();
+	}
+	catch (...)
+	{
+		log->logTimedString("Error loading video: " + aFile);
+		mMovie->reset();
+
+	}
+}
 
 void Textures::update()
 {
-
+	if (mMovie) {
+		if (mMovie->hasVisuals()) {
+			if (mMovie->isPlaying()) {
+				// binding crashes later on:  sTextures[mMovieIndex] = mMovie->getTexture();
+			}
+		}
+	}
+	if (playing) updateSequence();
 }
 void Textures::renderWarpFbos()
 {
@@ -907,54 +938,13 @@ void Textures::draw()
 
 	auto end = Clock::now();
 	auto msdur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-	
+
 	//std::cout << msdur.count() << "ms, " << nsdur.count() << "µs" << std::endl;
 	sprintf_s(previewTime, "%2d", msdur.count());
 
 }
 
-/*void Textures::updateSequence()
-{
-// sequence
-previousTexture = getCurrentSequenceTexture();
-//timeline().apply( &mAlpha, 1.0f, 2.0f ).finishFn( [&]{ textureSequence.update(); mAlpha= 1.0f; } );
 
-// Call on each frame to update the playhead
-
-if (!paused && playing)
-{
-int newPosition = playheadPosition + playheadFrameInc;
-if (newPosition > totalFrames - 1)
-{
-if (looping)
-{
-complete = false;
-playheadPosition = newPosition - totalFrames;
-}
-else {
-complete = true;
-}
-
-}
-else if (newPosition < 0) {
-if (looping)
-{
-complete = false;
-playheadPosition = totalFrames - abs(newPosition);
-}
-else {
-complete = true;
-}
-
-}
-else {
-complete = false;
-playheadPosition = newPosition;
-}
-}
-sTextures[9] = getCurrentSequenceTexture();
-currentTexture = getCurrentSequenceTexture();
-}*/
 Textures::~Textures()
 {
 	log->logTimedString("Textures destructor");
@@ -963,87 +953,140 @@ Textures::~Textures()
 }
 
 // sequence
-
-/*
 //Begins playback of sequence
 void Textures::play()
 {
-paused = false;
-playing = true;
+	paused = false;
+	playing = true;
 }
-
 // Pauses playback
 void Textures::pause()
 {
-paused = true;
-playing = false;
+	paused = true;
+	playing = false;
 }
 
 // Stops playback and resets the playhead to zero
 void Textures::stop()
 {
-playheadPosition = 0;
-playing = false;
-paused = false;
+	playheadPosition = 0;
+	playing = false;
+	paused = false;
 }
-
 // Seek to a new position in the sequence
 void Textures::setPlayheadPosition(int newPosition)
 {
-playheadPosition = max(0, min(newPosition, totalFrames));
-}*/
+	playheadPosition = max(0, min(newPosition, totalFrames));
+}
+
 
 /**
 *  -- Loads all files contained in the supplied folder and creates Textures from them
 */
-/*void Textures::createFromDir(string filePath)
+void Textures::createFromDir(string filePath, int index)
 {
-bool noValidFile = true; // if no valid files in the folder, we keep existing vector
-int i = 0;
-string ext = "";
-fs::path p(filePath);
-for (fs::directory_iterator it(p); it != fs::directory_iterator(); ++it)
-{
-if (fs::is_regular_file(*it))
-{
-string fileName = it->path().filename().string();
-if (fileName.find_last_of(".") != std::string::npos) ext = fileName.substr(fileName.find_last_of(".") + 1);
-if (ext == "png" || ext == "jpg")
-{
-if (noValidFile)
-{
-// we found a valid file
-noValidFile = false;
-sequenceTextures.clear();
-// reset playhead to the start
-playheadPosition = 0;
-}
-sequenceTextures.push_back(ci::gl::Texture(loadImage(filePath + fileName)));
-}
-}
-}
-
-totalFrames = sequenceTextures.size();
+	sequenceTextureIndex = index;
+	bool noValidFile = true; // if no valid files in the folder, we keep existing vector
+	int i = 0;
+	string ext = "";
+	string prefix = "";
+	fs::path p(filePath);
+	for (fs::directory_iterator it(p); it != fs::directory_iterator(); ++it)
+	{
+		if (fs::is_regular_file(*it))
+		{
+			string fileName = it->path().filename().string();
+			if (fileName.find_last_of(".") != std::string::npos) {
+				ext = fileName.substr(fileName.find_last_of(".") + 1);
+				prefix = fileName.substr(0, fileName.find_last_of(".") - 4);
+			}
+			if (ext == "png" || ext == "jpg")
+			{
+				if (noValidFile)
+				{
+					// we found a valid file
+					noValidFile = false;
+					sequenceTextures.clear();
+					// reset playhead to the start
+					playheadPosition = 0;
+				}
+				sequenceTextures.push_back(ci::gl::Texture(loadImage(filePath + fileName)));
+			}
+		}
+	}
+	previousTexture = getCurrentSequenceTexture();
+	currentTexture = getCurrentSequenceTexture();
+	totalFrames = sequenceTextures.size();
 }
 
 // Loads all of the images in the supplied list of file paths
-
 void Textures::createFromPathList(vector<string> paths)
 {
-sequenceTextures.clear();
-for (int i = 0; i < paths.size(); ++i)
-{
-sequenceTextures.push_back(ci::gl::Texture(loadImage(paths[i])));
-}
-totalFrames = sequenceTextures.size();
+	sequenceTextures.clear();
+	for (int i = 0; i < paths.size(); ++i)
+	{
+		sequenceTextures.push_back(ci::gl::Texture(loadImage(paths[i])));
+	}
+	totalFrames = sequenceTextures.size();
 }
 
 void Textures::createFromTextureList(vector<ci::gl::Texture> textureList)
 {
-sequenceTextures.clear();
-sequenceTextures = textureList;
-totalFrames = sequenceTextures.size();
-}*/
+	sequenceTextures.clear();
+	sequenceTextures = textureList;
+	totalFrames = sequenceTextures.size();
+}
+ci::gl::Texture Textures::getCurrentSequenceTexture()
+{
+	return sequenceTextures[playheadPosition];
+}
+ci::gl::Texture Textures::getCurrentSequenceTextureAtIndex(int index)
+{
+	if (index > totalFrames - 1) index = totalFrames - 1;
+	return sequenceTextures[index];
+}
+void Textures::updateSequence()
+{
+	// sequence
+	previousTexture = getCurrentSequenceTexture();
+	//timeline().apply( &mAlpha, 1.0f, 2.0f ).finishFn( [&]{ textureSequence.update(); mAlpha= 1.0f; } );
+
+	// Call on each frame to update the playhead
+
+	if (!paused && playing)
+	{
+		int newPosition = playheadPosition + playheadFrameInc;
+		if (newPosition > totalFrames - 1)
+		{
+			if (looping)
+			{
+				complete = false;
+				playheadPosition = newPosition - totalFrames;
+			}
+			else {
+				complete = true;
+			}
+
+		}
+		else if (newPosition < 0) {
+			if (looping)
+			{
+				complete = false;
+				playheadPosition = totalFrames - abs(newPosition);
+			}
+			else {
+				complete = true;
+			}
+
+		}
+		else {
+			complete = false;
+			playheadPosition = newPosition;
+		}
+	}
+	sTextures[sequenceTextureIndex] = getCurrentSequenceTexture();
+	currentTexture = getCurrentSequenceTexture();
+}
 void Textures::setSenderTextureSize(int index, int width, int height)
 {
 	sTextures[10] = gl::Texture(width, height);

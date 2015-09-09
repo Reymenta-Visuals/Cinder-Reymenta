@@ -671,6 +671,8 @@ void MessageRouter::onWsPing(string msg)
 
 void MessageRouter::onWsRead(string msg)
 {
+	int left;
+	int index;
 	mParameterBag->mMsg = "WS onRead";
 	mParameterBag->newMsg = true;
 	if (!msg.empty())
@@ -694,8 +696,8 @@ void MessageRouter::onWsRead(string msg)
 						{
 						case 300:
 							//selectShader
-							int left = jsonElement->getChild("left").getValue<int>();
-							int index = jsonElement->getChild("index").getValue<int>();
+							left = jsonElement->getChild("left").getValue<int>();
+							index = jsonElement->getChild("index").getValue<int>();
 							selectShader(left, index);
 							break;
 						default:
