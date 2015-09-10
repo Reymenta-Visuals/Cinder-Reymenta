@@ -40,7 +40,19 @@ namespace Reymenta
 	// stores the pointer to the Textures instance
 	typedef std::shared_ptr<class Textures> TexturesRef;
 	typedef std::chrono::high_resolution_clock Clock;
-
+	// structure for loaded image files
+	struct sequence {
+		string						filePath;
+		string						prefix;
+		int							nextIndexFrameToTry;
+		int							currentLoadedFrame;
+		int							index;
+		int							framesLoaded;
+		int							totalFrames;
+		int							playheadPosition;
+		bool						loadingFilesComplete;
+		vector<ci::gl::Texture>		sequenceTextures;
+	};
 	class Textures {
 	public:		
 		Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef);
@@ -124,16 +136,16 @@ namespace Reymenta
 		void						setPlayheadPosition(int newPosition);
 		void						createFromPathList(vector<string> paths);
 		void						createFromTextureList(vector<ci::gl::Texture> textureList);
-		ci::gl::Texture				getCurrentSequenceTexture();
-		ci::gl::Texture				getCurrentSequenceTextureAtIndex(int index);
+		ci::gl::Texture				getCurrentSequenceTexture(int currentSeq);
+		int							currentSequence;
+		//ci::gl::Texture				getCurrentSequenceTextureAtIndex(int index);
 		bool						paused;
 		bool						playing;
 		bool						complete;
 		bool						looping;
-		int							playheadPosition;
-		int							totalFrames;
 		int							playheadFrameInc;
-		vector<ci::gl::Texture>		sequenceTextures;
 		int							sequenceTextureIndex;
+		vector<sequence>			sequences;
+		void						loadNextImageFromDisk(int currentSeq);
 	};
 }
