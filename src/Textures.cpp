@@ -56,10 +56,10 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 		}
 	}
 	// image sequence
-	playing = complete = looping = true;
+	complete = looping = true;
 	playheadPosition = totalFrames = playheadFrameInc = 0;
 	playheadFrameInc = 1;
-	paused = false;
+	playing = paused = false;
 
 
 }
@@ -985,6 +985,7 @@ void Textures::setPlayheadPosition(int newPosition)
 */
 void Textures::createFromDir(string filePath, int index)
 {
+	int count = 0;
 	sequenceTextureIndex = index;
 	bool noValidFile = true; // if no valid files in the folder, we keep existing vector
 	int i = 0;
@@ -1002,21 +1003,28 @@ void Textures::createFromDir(string filePath, int index)
 			}
 			if (ext == "png" || ext == "jpg")
 			{
-				if (noValidFile)
+				count++;
+				if (count < 14)
 				{
-					// we found a valid file
-					noValidFile = false;
-					sequenceTextures.clear();
-					// reset playhead to the start
-					playheadPosition = 0;
+					if (noValidFile)
+					{
+						// we found a valid file
+						noValidFile = false;
+						sequenceTextures.clear();
+						// reset playhead to the start
+						playheadPosition = 0;
+					}
+					sequenceTextures.push_back(ci::gl::Texture(loadImage(filePath + fileName)));
+
 				}
-				sequenceTextures.push_back(ci::gl::Texture(loadImage(filePath + fileName)));
 			}
 		}
 	}
 	previousTexture = getCurrentSequenceTexture();
 	currentTexture = getCurrentSequenceTexture();
 	totalFrames = sequenceTextures.size();
+	playing = true;
+	paused = false;
 }
 
 // Loads all of the images in the supplied list of file paths
