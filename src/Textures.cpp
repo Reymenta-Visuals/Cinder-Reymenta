@@ -13,7 +13,7 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	//createPreviewFbo();//mFboWidth/4 or 16
 	// mix fbo at index 0
 	mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
-	mFbos[0].getTexture(0).setFlipped(true);
+	//mFbos[0].getTexture(0).setFlipped(true);
 
 	// preview fbo at index 5
 	//mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));//640x480
@@ -978,7 +978,7 @@ void Textures::stop()
 // Seek to a new position in the sequence
 void Textures::setPlayheadPosition(int newPosition)
 {
-	sequences[currentSequence].playheadPosition = max(0, min(newPosition, sequences[currentSequence].totalFrames));
+	sequences[currentSequence].playheadPosition = max(0, min(newPosition, (int)sequences[currentSequence].sequenceTextures.size()));
 }
 
 
@@ -992,14 +992,13 @@ void Textures::createFromDir(string filePath, int index)
 	seq.index = index;
 	seq.loadingFilesComplete = false;
 	seq.framesLoaded = 0;
-	seq.totalFrames = 0;
 	seq.currentLoadedFrame = 0;
 	seq.nextIndexFrameToTry = 0;
 	// index of the texture being used for display
 	sequenceTextureIndex = index;
 	bool noValidFile = true; // if no valid files in the folder, we keep existing vector
+	bool firstIndexFound = false;
 	int i = 0;
-	string ext = "";
 	fs::path p(filePath);
 	// loading 2000 files takes a while, I load only 2
 	for (fs::directory_iterator it(p); it != fs::directory_iterator(); ++it)
@@ -1008,12 +1007,18 @@ void Textures::createFromDir(string filePath, int index)
 		{
 			string fileName = it->path().filename().string();
 			if (fileName.find_last_of(".") != std::string::npos) {
-				ext = fileName.substr(fileName.find_last_of(".") + 1);
+				int dotIndex = fileName.find_last_of(".");
+				seq.ext = fileName.substr(dotIndex + 1);
 				// get the prefix for the image sequence
 				// the files are named from p0000.jpg to p2253.jpg for instance
-				seq.prefix = fileName.substr(0, fileName.find_last_of(".") - 4);
+				int prefixIndex = fileName.find_last_of(".") - 4;
+				seq.prefix = fileName.substr(0, prefixIndex);
+				if (!firstIndexFound) {
+					firstIndexFound = true;
+					seq.nextIndexFrameToTry = std::stoi(fileName.substr(prefixIndex, dotIndex));
+				}
 			}
-			if (ext == "png" || ext == "jpg")
+			if (seq.ext == "png" || seq.ext == "jpg")
 			{
 				if (seq.framesLoaded < 2)
 				{
@@ -1032,34 +1037,9 @@ void Textures::createFromDir(string filePath, int index)
 		}
 	}
 	if (!noValidFile) {
-		previousTexture = getCurrentSequenceTexture(currentSequence);
-		currentTexture = getCurrentSequenceTexture(currentSequence);
-		seq.totalFrames = seq.sequenceTextures.size() + 1;
 		playing = true;
 		paused = false;
 
-	}
-	// at this point we got 2 frames of the image sequence
-	// other frames will be loaded in the update() loop one by one
-}
-void Textures::loadNextImageFromDisk(int currentSeq) {
-	string restOfFileName;
-	int nextIndexFrameToTry = sequences[currentSeq].nextIndexFrameToTry;
-	string numFrame = toString(nextIndexFrameToTry);
-	if (nextIndexFrameToTry < 1000) restOfFileName = "0" + numFrame;
-	if (nextIndexFrameToTry < 100) restOfFileName = "00" + numFrame;
-	if (nextIndexFrameToTry < 10) restOfFileName = "000" + numFrame;
-	// what if the files are not numbered from 0...
-	fs::path fileToLoad = sequences[currentSeq].filePath + restOfFileName;
-	if (fs::exists(fileToLoad)) {
-		sequences[currentSeq].sequenceTextures.push_back(ci::gl::Texture(loadImage(fileToLoad)));
-		sequences[currentSeq].currentLoadedFrame = sequences[currentSeq].framesLoaded;
-		sequences[currentSeq].framesLoaded++;
-	}
-	else {
-		// file does not exist, increment counter for next filename
-		sequences[currentSeq].nextIndexFrameToTry++;
-		if (sequences[currentSeq].nextIndexFrameToTry > 9999) sequences[currentSeq].loadingFilesComplete = true;
 	}
 }
 ci::gl::Texture Textures::getCurrentSequenceTexture(int currentSeq) {
@@ -1068,6 +1048,38 @@ ci::gl::Texture Textures::getCurrentSequenceTexture(int currentSeq) {
 	}
 	return sequences[currentSequence].sequenceTextures[sequences[currentSequence].playheadPosition];
 }
+void Textures::loadNextImageFromDisk(int currentSeq) {
+
+	if (!sequences[currentSeq].loadingFilesComplete) {
+		// thank you Omar!
+		char restOfFileName[32];
+		sprintf(restOfFileName, "%04d", sequences[currentSeq].nextIndexFrameToTry);
+
+		fs::path fileToLoad = sequences[currentSeq].filePath + sequences[currentSeq].prefix + restOfFileName + "." + sequences[currentSeq].ext;
+		if (fs::exists(fileToLoad)) {
+			sequences[currentSeq].sequenceTextures.push_back(ci::gl::Texture(loadImage(fileToLoad)));
+			sequences[currentSeq].currentLoadedFrame = sequences[currentSeq].framesLoaded;
+			sequences[currentSeq].framesLoaded++;
+			mParameterBag->mMsg = fileToLoad.string + " loaded";
+
+		}
+		else {
+			mParameterBag->mMsg = fileToLoad.string + " does not exist";
+			if (sequences[currentSeq].framesLoaded > 0) {
+				// if frames have been loaded we hit the last file of the image sequence at this point
+				mParameterBag->mMsg = "last image loaded";
+				sequences[currentSeq].loadingFilesComplete = true;
+			}
+		}
+		mParameterBag->newMsg = true;
+		// increment counter for next filename
+		sequences[currentSeq].nextIndexFrameToTry++;
+		if (sequences[currentSeq].nextIndexFrameToTry > 9999) sequences[currentSeq].loadingFilesComplete = true;
+
+	}
+
+}
+
 
 // Loads all of the images in the supplied list of file paths
 void Textures::createFromPathList(vector<string> paths)
@@ -1091,47 +1103,47 @@ void Textures::createFromTextureList(vector<ci::gl::Texture> textureList)
 //	if (index > totalFrames - 1) index = totalFrames - 1;
 //	return sequenceTextures[index];
 //}
+//timeline().apply( &mAlpha, 1.0f, 2.0f ).finishFn( [&]{ textureSequence.update(); mAlpha= 1.0f; } );
 void Textures::updateSequence()
 {
-	// sequence
-	previousTexture = getCurrentSequenceTexture(currentSequence);
-	//timeline().apply( &mAlpha, 1.0f, 2.0f ).finishFn( [&]{ textureSequence.update(); mAlpha= 1.0f; } );
+	if (sequences[currentSequence].sequenceTextures.size() > 0) {
+		// sequence
+		previousTexture = getCurrentSequenceTexture(currentSequence);
 
-	// Call on each frame to update the playhead
-
-	if (!paused && playing)
-	{
-		int newPosition = sequences[currentSequence].playheadPosition + playheadFrameInc;
-		if (newPosition > sequences[currentSequence].totalFrames - 1)
+		// Call on each frame to update the playhead
+		if (!paused && playing)
 		{
-			if (looping)
+			int newPosition = sequences[currentSequence].playheadPosition + playheadFrameInc;
+			if (newPosition > sequences[currentSequence].sequenceTextures.size() - 1)
 			{
-				complete = false;
-				sequences[currentSequence].playheadPosition = newPosition - sequences[currentSequence].totalFrames;
+				if (looping)
+				{
+					complete = false;
+					sequences[currentSequence].playheadPosition = newPosition - sequences[currentSequence].sequenceTextures.size();
+				}
+				else {
+					complete = true;
+				}
+			}
+			else if (newPosition < 0) {
+				if (looping)
+				{
+					complete = false;
+					sequences[currentSequence].playheadPosition = sequences[currentSequence].sequenceTextures.size() - abs(newPosition);
+				}
+				else {
+					complete = true;
+				}
 			}
 			else {
-				complete = true;
-			}
-
-		}
-		else if (newPosition < 0) {
-			if (looping)
-			{
 				complete = false;
-				sequences[currentSequence].playheadPosition = sequences[currentSequence].totalFrames - abs(newPosition);
+				sequences[currentSequence].playheadPosition = newPosition;
 			}
-			else {
-				complete = true;
-			}
-
 		}
-		else {
-			complete = false;
-			sequences[currentSequence].playheadPosition = newPosition;
-		}
+		sTextures[sequenceTextureIndex] = getCurrentSequenceTexture(currentSequence);
+		currentTexture = getCurrentSequenceTexture(currentSequence);
 	}
-	sTextures[sequenceTextureIndex] = getCurrentSequenceTexture(currentSequence);
-	currentTexture = getCurrentSequenceTexture(currentSequence);
+
 }
 void Textures::setSenderTextureSize(int index, int width, int height)
 {

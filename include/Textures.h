@@ -44,11 +44,11 @@ namespace Reymenta
 	struct sequence {
 		string						filePath;
 		string						prefix;
+		string						ext;
 		int							nextIndexFrameToTry;
 		int							currentLoadedFrame;
 		int							index;
 		int							framesLoaded;
-		int							totalFrames;
 		int							playheadPosition;
 		bool						loadingFilesComplete;
 		vector<ci::gl::Texture>		sequenceTextures;
