@@ -76,6 +76,17 @@ void Batchass::midiSetup() {
 	mMessageRouter->midiSetup();
 
 }
+void Batchass::wsConnect() {
+
+	mMessageRouter->wsConnect();
+
+}
+void Batchass::wsPing() {
+
+	mMessageRouter->wsPing();
+
+}
+
 void Batchass::selectShader(bool left, int index) {
 	mMessageRouter->selectShader( left,  index);
 

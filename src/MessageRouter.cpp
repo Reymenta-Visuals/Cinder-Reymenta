@@ -231,11 +231,11 @@ void MessageRouter::update()
 			if (clientConnected)
 			{
 				mClient.poll();
-				double e = getElapsedSeconds();
+				/*double e = getElapsedSeconds();
 				if (e - mPingTime > 20.0) {
 					mClient.ping();
 					mPingTime = e;
-				}
+				}*/
 
 			}
 		}

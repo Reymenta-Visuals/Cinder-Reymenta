@@ -149,11 +149,10 @@ namespace Reymenta
 		void						createFromPathList(vector<string> paths);
 		void						createFromTextureList(vector<ci::gl::Texture> textureList);
 		ci::gl::Texture				getCurrentSequenceTexture(int sequenceIndex);
-		bool						complete;
-		bool						looping;
+		//bool						complete;
+		//bool						looping;
 		int							playheadFrameInc;
 		vector<sequence>			sequences;
 		void						loadNextImageFromDisk(int currentSeq);
-		int							getSequenceIndexFromTextureIndex(int textureIndex);
 	};
 }

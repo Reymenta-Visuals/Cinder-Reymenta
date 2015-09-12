@@ -56,10 +56,7 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 		}
 	}
 	// image sequence
-	complete = looping = true;
 	playheadFrameInc = 1;
-	//currentSequence = 0;
-
 }
 
 /*void Textures::createWarpInput()
@@ -965,10 +962,6 @@ Textures::~Textures()
 }
 
 // sequence
-int Textures::getSequenceIndexFromTextureIndex(int textureIndex) {
-	// to be implemented.. or not
-	return 0;
-}
 
 //Begins playback of sequence
 void Textures::playSequence(int textureIndex)
@@ -1006,7 +999,7 @@ int Textures::getMaxFrames(int textureIndex) {
 	int rtn = 0;
 	for (int i = 0; i < sequences.size(); i++) {
 		if (sequences[i].index == textureIndex) {
-			rtn = sequences[i].framesLoaded - 1;
+			rtn = sequences[i].framesLoaded;
 		}
 	}
 	return rtn;
@@ -1025,7 +1018,7 @@ void Textures::setPlayheadPosition(int textureIndex, int position) {
 
 	for (int i = 0; i < sequences.size(); i++) {
 		if (sequences[i].index == textureIndex) {
-			sequences[i].playheadPosition = max(0, min(position, (int)sequences[textureIndex].sequenceTextures.size()));
+			sequences[i].playheadPosition = max(0, min(position, (int)sequences[i].sequenceTextures.size()-1));
 		}
 	}
 }
@@ -1051,7 +1044,7 @@ void Textures::setSpeed(int textureIndex, int speed) {
 
 	for (int i = 0; i < sequences.size(); i++) {
 		if (sequences[i].index == textureIndex) {
-			sequences[i].speed = speed;
+			sequences[i].speed = speed; //setting the speed negative -> RTE
 		}
 	}
 }bool Textures::isLoadingFromDisk(int textureIndex){
@@ -1132,6 +1125,9 @@ ci::gl::Texture Textures::getCurrentSequenceTexture(int sequenceIndex) {
 	if (sequenceIndex > sequences.size()) {
 		sequenceIndex = 0;
 	}
+	if (sequences[sequenceIndex].playheadPosition > sequences[sequenceIndex].framesLoaded) {
+		//error
+	}
 	return sequences[sequenceIndex].sequenceTextures[sequences[sequenceIndex].playheadPosition];
 }
 void Textures::loadNextImageFromDisk(int currentSeq) {
@@ -1184,54 +1180,52 @@ void Textures::createFromTextureList(vector<ci::gl::Texture> textureList)
 	sequenceTextures = textureList;
 	totalFrames = sequenceTextures.size();*/
 }
-//ci::gl::Texture Textures::getCurrentSequenceTextureAtIndex(int index)
-//{
-//	if (index > totalFrames - 1) index = totalFrames - 1;
-//	return sequenceTextures[index];
-//}
+
 //timeline().apply( &mAlpha, 1.0f, 2.0f ).finishFn( [&]{ textureSequence.update(); mAlpha= 1.0f; } );
 void Textures::updateSequence(int sequenceIndex)
 {
 	if (sequences[sequenceIndex].sequenceTextures.size() > 0) {
-		// sequence
-		//previousTexture = getCurrentSequenceTexture(currentSequence);
-
 		// Call on each frame to update the playhead
 		if (sequences[sequenceIndex].playing)
 		{
 			int newPosition = sequences[sequenceIndex].playheadPosition + (playheadFrameInc * sequences[sequenceIndex].speed);
-			if (newPosition > sequences[sequenceIndex].sequenceTextures.size() - 1)
+			if (newPosition < 0) newPosition = sequences[sequenceIndex].sequenceTextures.size() - 1;
+			if (newPosition > sequences[sequenceIndex].sequenceTextures.size() - 1) newPosition = 0;
+			sequences[sequenceIndex].playheadPosition = max(0, min(newPosition, (int)sequences[sequenceIndex].sequenceTextures.size()-1));
+			
+			/*
+			
 			{
-				if (looping)
-				{
-					complete = false;
-					sequences[sequenceIndex].playheadPosition = newPosition - sequences[sequenceIndex].sequenceTextures.size();
-				}
-				else {
-					complete = true;
-				}
-			}
-			else if (newPosition < 0) {
-				if (looping)
-				{
-					complete = false;
-					sequences[sequenceIndex].playheadPosition = sequences[sequenceIndex].sequenceTextures.size() - abs(newPosition);
-				}
-				else {
-					complete = true;
-				}
+			if (looping)
+			{
+			complete = false;
+			sequences[sequenceIndex].playheadPosition = newPosition - sequences[sequenceIndex].sequenceTextures.size();
 			}
 			else {
-				complete = false;
-				sequences[sequenceIndex].playheadPosition = newPosition;
+			complete = true;
 			}
+			}
+			else if (newPosition < 0) {
+			if (looping)
+			{
+			complete = false;
+			sequences[sequenceIndex].playheadPosition = sequences[sequenceIndex].sequenceTextures.size() - abs(newPosition);
+			}
+			else {
+			complete = true;
+			}
+			}
+			else {
+			complete = false;
+			sequences[sequenceIndex].playheadPosition = newPosition;
+			}*/
+
+
+
 		}
 		sTextures[sequences[sequenceIndex].index] = getCurrentSequenceTexture(sequenceIndex);
-		//currentTexture = getCurrentSequenceTexture(currentSequence);
 	}
-	sprintf(buf, "playing frame: %d", sequences[sequenceIndex].playheadPosition);
-	mParameterBag->mMsg = buf;
-	mParameterBag->newMsg = true;
+
 }
 void Textures::setSenderTextureSize(int index, int width, int height)
 {
