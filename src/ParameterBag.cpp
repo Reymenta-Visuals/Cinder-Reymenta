@@ -535,6 +535,11 @@ void ParameterBag::reset()
 	iBlendMode = 0;
 	// abp
 	mBend = 1.0f;
+	// mix shader color multipliers
+	iRedMultiplier = 1.0f;
+	iGreenMultiplier = 1.0f;
+	iBlueMultiplier = 1.0f;
+
 	// red
 	controlValues[1] = 1.0f;
 	// green

@@ -58,8 +58,7 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	// image sequence
 	complete = looping = true;
 	playheadFrameInc = 1;
-	playing = paused = false;
-	currentSequence = 0;
+	//currentSequence = 0;
 
 }
 
@@ -117,13 +116,17 @@ void Textures::setTexture(int index, string fileName)
 void Textures::flipTexture(int index)
 {
 	sTextures[index].setFlipped(!sTextures[index].isFlipped());
+	sprintf(buf, "flipTexture index %d after: %d", index, sTextures[index].isFlipped());
+	mParameterBag->mMsg = buf;
+	mParameterBag->newMsg = true;
 }
 void Textures::flipFbo(int index)
 {
-	stringstream s;
-	s << "flipFbo: " << mFbos[index].getTexture(0).isFlipped();
-	log->logTimedString(s.str());
 	mFbos[index].getTexture(0).setFlipped(!mFbos[index].getTexture(0).isFlipped());
+	sprintf(buf, "flipFbo index %d after: %d", index, mFbos[index].getTexture(0).isFlipped());
+	mParameterBag->mMsg = buf;
+	mParameterBag->newMsg = true;
+
 }
 /*void Textures::setCurrentFboIndex(int aFbo)
 {
@@ -215,10 +218,14 @@ void Textures::update()
 			}
 		}
 	}
-	if (playing) {
-		updateSequence();
-		loadNextImageFromDisk(currentSequence);
+	if (sequences.size() > 0) {
+		for (int i = 0; i < sequences.size(); i++) {
+			if (sequences[i].playing) updateSequence(i);
+			if (!sequences[i].loadingFilesComplete) loadNextImageFromDisk(i);
+		}
+
 	}
+
 }
 void Textures::renderWarpFbos()
 {
@@ -920,6 +927,9 @@ void Textures::draw()
 	aShader->uniform("iFlipH", mParameterBag->iFlipHorizontally);
 	aShader->uniform("iBeat", mParameterBag->iBeat);
 	aShader->uniform("iSeed", mParameterBag->iSeed);
+	aShader->uniform("iRedMultiplier", mParameterBag->iRedMultiplier);
+	aShader->uniform("iGreenMultiplier", mParameterBag->iGreenMultiplier);
+	aShader->uniform("iBlueMultiplier", mParameterBag->iBlueMultiplier);
 
 	sTextures[6].bind(0);
 	sTextures[7].bind(1);
@@ -955,33 +965,113 @@ Textures::~Textures()
 }
 
 // sequence
+int Textures::getSequenceIndexFromTextureIndex(int textureIndex) {
+	// to be implemented.. or not
+	return 0;
+}
+
 //Begins playback of sequence
-void Textures::play()
+void Textures::playSequence(int textureIndex)
 {
-	paused = false;
-	playing = true;
+	for (int i = 0; i < sequences.size(); i++) {
+		if (sequences[i].index == textureIndex) {
+			sequences[i].playing = true;
+		}
+	}
 }
 // Pauses playback
-void Textures::pause()
+void Textures::pauseSequence(int textureIndex)
 {
-	paused = true;
-	playing = false;
+
+	for (int i = 0; i < sequences.size(); i++) {
+		if (sequences[i].index == textureIndex) {
+			sequences[i].playing = false;
+		}
+	}
 }
 
 // Stops playback and resets the playhead to zero
-void Textures::stop()
+void Textures::stopSequence(int textureIndex)
 {
-	sequences[currentSequence].playheadPosition = 0;
-	playing = false;
-	paused = false;
+
+	for (int i = 0; i < sequences.size(); i++) {
+		if (sequences[i].index == textureIndex) {
+			sequences[i].playing = false;
+			sequences[i].playheadPosition = 0;
+		}
+	}
+}
+
+int Textures::getMaxFrames(int textureIndex) {
+	int rtn = 0;
+	for (int i = 0; i < sequences.size(); i++) {
+		if (sequences[i].index == textureIndex) {
+			rtn = sequences[i].framesLoaded - 1;
+		}
+	}
+	return rtn;
+}
+int Textures::getPlayheadPosition(int textureIndex) {
+	int rtn = 0;
+	for (int i = 0; i < sequences.size(); i++) {
+		if (sequences[i].index == textureIndex) {
+			rtn = sequences[i].playheadPosition;
+		}
+	}
+	return rtn;
 }
 // Seek to a new position in the sequence
-void Textures::setPlayheadPosition(int newPosition)
-{
-	sequences[currentSequence].playheadPosition = max(0, min(newPosition, (int)sequences[currentSequence].sequenceTextures.size()));
+void Textures::setPlayheadPosition(int textureIndex, int position) {
+
+	for (int i = 0; i < sequences.size(); i++) {
+		if (sequences[i].index == textureIndex) {
+			sequences[i].playheadPosition = max(0, min(position, (int)sequences[textureIndex].sequenceTextures.size()));
+		}
+	}
 }
 
+void Textures::reverseSequence(int textureIndex) {
 
+	for (int i = 0; i < sequences.size(); i++) {
+		if (sequences[i].index == textureIndex) {
+			sequences[i].speed *= -1;
+		}
+	}
+}
+int Textures::getSpeed(int textureIndex) {
+	int rtn = 1;
+	for (int i = 0; i < sequences.size(); i++) {
+		if (sequences[i].index == textureIndex) {
+			rtn = sequences[i].speed;
+		}
+	}
+	return rtn;
+}
+void Textures::setSpeed(int textureIndex, int speed) {
+
+	for (int i = 0; i < sequences.size(); i++) {
+		if (sequences[i].index == textureIndex) {
+			sequences[i].speed = speed;
+		}
+	}
+}bool Textures::isLoadingFromDisk(int textureIndex){
+	bool rtn = false;
+	for (int i = 0; i < sequences.size(); i++) {
+		if (sequences[i].index == textureIndex) {
+			rtn = sequences[i].loadingFilesComplete;
+		}
+	}
+	return rtn;
+}
+
+void Textures::toggleLoadingFromDisk(int textureIndex) {
+	for (int i = 0; i < sequences.size(); i++) {
+		if (sequences[i].index == textureIndex) {
+			sequences[i].loadingPaused = !sequences[i].loadingPaused;
+		}
+	}
+
+}
 /**
 *  -- Loads all files contained in the supplied folder and creates Textures from them
 */
@@ -991,11 +1081,12 @@ void Textures::createFromDir(string filePath, int index)
 	seq.filePath = filePath;
 	seq.index = index;
 	seq.loadingFilesComplete = false;
+	seq.loadingPaused = false;
 	seq.framesLoaded = 0;
 	seq.currentLoadedFrame = 0;
 	seq.nextIndexFrameToTry = 0;
-	// index of the texture being used for display
-	sequenceTextureIndex = index;
+	seq.playing = false;
+	seq.speed = 1;
 	bool noValidFile = true; // if no valid files in the folder, we keep existing vector
 	bool firstIndexFound = false;
 	int i = 0;
@@ -1020,64 +1111,59 @@ void Textures::createFromDir(string filePath, int index)
 			}
 			if (seq.ext == "png" || seq.ext == "jpg")
 			{
-				if (seq.framesLoaded < 2)
+
+				if (noValidFile)
 				{
-					if (noValidFile)
-					{
-						// we found a valid file
-						noValidFile = false;
-						seq.sequenceTextures.clear();
-						// reset playhead to the start
-						seq.playheadPosition = 0;
-						sequences.push_back(seq);
-					}
-					loadNextImageFromDisk(currentSequence);
+					// we found a valid file
+					noValidFile = false;
+					seq.sequenceTextures.clear();
+					// reset playhead to the start
+					seq.playheadPosition = 0;
+					sequences.push_back(seq);
+					loadNextImageFromDisk(sequences.size() - 1);
+					seq.playing = true;
 				}
 			}
 		}
 	}
-	if (!noValidFile) {
-		playing = true;
-		paused = false;
 
-	}
 }
-ci::gl::Texture Textures::getCurrentSequenceTexture(int currentSeq) {
-	if (currentSeq > sequences.size()) {
-		currentSequence = 0;
+ci::gl::Texture Textures::getCurrentSequenceTexture(int sequenceIndex) {
+	if (sequenceIndex > sequences.size()) {
+		sequenceIndex = 0;
 	}
-	return sequences[currentSequence].sequenceTextures[sequences[currentSequence].playheadPosition];
+	return sequences[sequenceIndex].sequenceTextures[sequences[sequenceIndex].playheadPosition];
 }
 void Textures::loadNextImageFromDisk(int currentSeq) {
+	if (!sequences[currentSeq].loadingPaused) {
 
-	if (!sequences[currentSeq].loadingFilesComplete) {
-		// thank you Omar!
-		char restOfFileName[32];
-		sprintf(restOfFileName, "%04d", sequences[currentSeq].nextIndexFrameToTry);
+		if (!sequences[currentSeq].loadingFilesComplete) {
+			// thank you Omar!
+			char restOfFileName[32];
+			sprintf(restOfFileName, "%04d", sequences[currentSeq].nextIndexFrameToTry);
 
-		fs::path fileToLoad = sequences[currentSeq].filePath + sequences[currentSeq].prefix + restOfFileName + "." + sequences[currentSeq].ext;
-		if (fs::exists(fileToLoad)) {
-			sequences[currentSeq].sequenceTextures.push_back(ci::gl::Texture(loadImage(fileToLoad)));
-			sequences[currentSeq].currentLoadedFrame = sequences[currentSeq].framesLoaded;
-			sequences[currentSeq].framesLoaded++;
-			mParameterBag->mMsg = fileToLoad.string + " loaded";
-
-		}
-		else {
-			mParameterBag->mMsg = fileToLoad.string + " does not exist";
-			if (sequences[currentSeq].framesLoaded > 0) {
-				// if frames have been loaded we hit the last file of the image sequence at this point
-				mParameterBag->mMsg = "last image loaded";
-				sequences[currentSeq].loadingFilesComplete = true;
+			fs::path fileToLoad = sequences[currentSeq].filePath + sequences[currentSeq].prefix + restOfFileName + "." + sequences[currentSeq].ext;
+			if (fs::exists(fileToLoad)) {
+				sequences[currentSeq].sequenceTextures.push_back(ci::gl::Texture(loadImage(fileToLoad)));
+				sequences[currentSeq].currentLoadedFrame = sequences[currentSeq].framesLoaded;
+				sequences[currentSeq].framesLoaded++;
+				mParameterBag->mMsg = fileToLoad.string() + " loaded";
 			}
+			else {
+				mParameterBag->mMsg = fileToLoad.string() + " does not exist";
+				if (sequences[currentSeq].framesLoaded > 0) {
+					// if frames have been loaded we hit the last file of the image sequence at this point
+					mParameterBag->mMsg = "last image loaded";
+					sequences[currentSeq].loadingFilesComplete = true;
+				}
+			}
+			mParameterBag->newMsg = true;
+			// increment counter for next filename
+			sequences[currentSeq].nextIndexFrameToTry++;
+			if (sequences[currentSeq].nextIndexFrameToTry > 9999) sequences[currentSeq].loadingFilesComplete = true;
+
 		}
-		mParameterBag->newMsg = true;
-		// increment counter for next filename
-		sequences[currentSeq].nextIndexFrameToTry++;
-		if (sequences[currentSeq].nextIndexFrameToTry > 9999) sequences[currentSeq].loadingFilesComplete = true;
-
 	}
-
 }
 
 
@@ -1104,22 +1190,22 @@ void Textures::createFromTextureList(vector<ci::gl::Texture> textureList)
 //	return sequenceTextures[index];
 //}
 //timeline().apply( &mAlpha, 1.0f, 2.0f ).finishFn( [&]{ textureSequence.update(); mAlpha= 1.0f; } );
-void Textures::updateSequence()
+void Textures::updateSequence(int sequenceIndex)
 {
-	if (sequences[currentSequence].sequenceTextures.size() > 0) {
+	if (sequences[sequenceIndex].sequenceTextures.size() > 0) {
 		// sequence
-		previousTexture = getCurrentSequenceTexture(currentSequence);
+		//previousTexture = getCurrentSequenceTexture(currentSequence);
 
 		// Call on each frame to update the playhead
-		if (!paused && playing)
+		if (sequences[sequenceIndex].playing)
 		{
-			int newPosition = sequences[currentSequence].playheadPosition + playheadFrameInc;
-			if (newPosition > sequences[currentSequence].sequenceTextures.size() - 1)
+			int newPosition = sequences[sequenceIndex].playheadPosition + (playheadFrameInc * sequences[sequenceIndex].speed);
+			if (newPosition > sequences[sequenceIndex].sequenceTextures.size() - 1)
 			{
 				if (looping)
 				{
 					complete = false;
-					sequences[currentSequence].playheadPosition = newPosition - sequences[currentSequence].sequenceTextures.size();
+					sequences[sequenceIndex].playheadPosition = newPosition - sequences[sequenceIndex].sequenceTextures.size();
 				}
 				else {
 					complete = true;
@@ -1129,7 +1215,7 @@ void Textures::updateSequence()
 				if (looping)
 				{
 					complete = false;
-					sequences[currentSequence].playheadPosition = sequences[currentSequence].sequenceTextures.size() - abs(newPosition);
+					sequences[sequenceIndex].playheadPosition = sequences[sequenceIndex].sequenceTextures.size() - abs(newPosition);
 				}
 				else {
 					complete = true;
@@ -1137,13 +1223,15 @@ void Textures::updateSequence()
 			}
 			else {
 				complete = false;
-				sequences[currentSequence].playheadPosition = newPosition;
+				sequences[sequenceIndex].playheadPosition = newPosition;
 			}
 		}
-		sTextures[sequenceTextureIndex] = getCurrentSequenceTexture(currentSequence);
-		currentTexture = getCurrentSequenceTexture(currentSequence);
+		sTextures[sequences[sequenceIndex].index] = getCurrentSequenceTexture(sequenceIndex);
+		//currentTexture = getCurrentSequenceTexture(currentSequence);
 	}
-
+	sprintf(buf, "playing frame: %d", sequences[sequenceIndex].playheadPosition);
+	mParameterBag->mMsg = buf;
+	mParameterBag->newMsg = true;
 }
 void Textures::setSenderTextureSize(int index, int width, int height)
 {

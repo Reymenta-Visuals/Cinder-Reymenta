@@ -139,6 +139,9 @@ namespace Reymenta {
 		bool						iLight;
 		bool						iLightAuto;
 		int							iBlendMode;
+		float						iRedMultiplier;
+		float						iGreenMultiplier;
+		float						iBlueMultiplier;
 		const int					maxBlendMode = 28;
 		const float					maxExposure = 3.0;
 

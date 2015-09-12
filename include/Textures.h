@@ -50,7 +50,10 @@ namespace Reymenta
 		int							index;
 		int							framesLoaded;
 		int							playheadPosition;
+		bool						loadingPaused;
 		bool						loadingFilesComplete;
+		bool						playing;
+		int							speed;
 		vector<ci::gl::Texture>		sequenceTextures;
 	};
 	class Textures {
@@ -90,7 +93,18 @@ namespace Reymenta
 		int							createSpoutTexture(char name[256], unsigned int width, unsigned int height);
 		// image sequence
 		void						createFromDir(string filePath, int index);
+		void						playSequence(int textureIndex);
+		void						stopSequence(int textureIndex);
+		void						pauseSequence(int textureIndex);
+		void						toggleLoadingFromDisk(int textureIndex);
+		int							getPlayheadPosition(int textureIndex);
+		void						setPlayheadPosition(int textureIndex, int position);
 
+		int							getSpeed(int textureIndex);
+		void						setSpeed(int textureIndex, int speed);
+		void						reverseSequence(int textureIndex);
+		bool						isLoadingFromDisk(int textureIndex);
+		int							getMaxFrames(int textureIndex);
 		// image
 		void						loadImageFile( int index, string aFile );
 		// quicktime video
@@ -102,10 +116,12 @@ namespace Reymenta
 	private:
 		// Logger
 		LoggerRef					log;	
+		char						buf[32];
+
 		static const int			mTexturesCount = 12; //match MAX from mParameterBag
 
-		ci::gl::Texture				previousTexture;
-		ci::gl::Texture				currentTexture;
+		//ci::gl::Texture				previousTexture;
+		//ci::gl::Texture				currentTexture;
 		unsigned char				dTexture[1024];
 		vector<ci::gl::Texture>		sTextures;
 		char						spoutSenderName[256];
@@ -129,23 +145,15 @@ namespace Reymenta
 		qtime::MovieGlRef			mMovie;
 		int							mMovieIndex;
 		// image sequence
-		void						updateSequence();
-		void						pause();
-		void						play();
-		void						stop();
-		void						setPlayheadPosition(int newPosition);
+		void						updateSequence(int sequenceIndex);
 		void						createFromPathList(vector<string> paths);
 		void						createFromTextureList(vector<ci::gl::Texture> textureList);
-		ci::gl::Texture				getCurrentSequenceTexture(int currentSeq);
-		int							currentSequence;
-		//ci::gl::Texture				getCurrentSequenceTextureAtIndex(int index);
-		bool						paused;
-		bool						playing;
+		ci::gl::Texture				getCurrentSequenceTexture(int sequenceIndex);
 		bool						complete;
 		bool						looping;
 		int							playheadFrameInc;
-		int							sequenceTextureIndex;
 		vector<sequence>			sequences;
 		void						loadNextImageFromDisk(int currentSeq);
+		int							getSequenceIndexFromTextureIndex(int textureIndex);
 	};
 }
