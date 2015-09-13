@@ -421,7 +421,8 @@ void ParameterBag::reset()
 	iTempoTime = 0.0;
 	iTimeFactor = 1.0;
 	// shader uniforms
-	iGlobalTime = 1.0f;
+	iFlipVertically = iFlipHorizontally = false;
+	iGlobalTime = iSpeedMultiplier = 1.0f;
 	iResolution = Vec3f(mRenderWidth, mRenderHeight, 1.0);
 	for (int i = 0; i < 4; i++)
 	{

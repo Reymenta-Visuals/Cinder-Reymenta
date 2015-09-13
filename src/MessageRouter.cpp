@@ -42,22 +42,27 @@ void MessageRouter::midiSetup()
 		mMidiIn0.listPorts();
 		for (int i = 0; i < mMidiIn0.getNumPorts(); i++)
 		{
-
-			midiInput mIn;
-			mIn.portName = mMidiIn0.mPortNames[i];
-			mMidiInputs.push_back(mIn);
-			if (mParameterBag->mMIDIOpenAllInputPorts)
+			bool alreadyListed = false;
+			for (int j = 0; j < mMidiInputs.size(); j++)
 			{
-				openMidiInPort(i);
-				openMidiInPort(1);
-				openMidiInPort(2);
-				mMidiInputs[i].isConnected = true;
-				ss << "Opening MIDI port " << i << " " << mMidiInputs[i].portName;
+				if (mMidiInputs[j].portName == mMidiIn0.mPortNames[i]) alreadyListed = true;
 			}
-			else
-			{
-				mMidiInputs[i].isConnected = false;
-				ss << "Available MIDI port " << i << " " << mMidiIn0.mPortNames[i];
+			if (!alreadyListed) {
+				midiInput mIn;
+				mIn.portName = mMidiIn0.mPortNames[i];
+				mMidiInputs.push_back(mIn);
+				if (mParameterBag->mMIDIOpenAllInputPorts)
+				{
+					openMidiInPort(i);
+					mMidiInputs[i].isConnected = true;
+					ss << "Opening MIDI port " << i << " " << mMidiInputs[i].portName;
+				}
+				else
+				{
+					mMidiInputs[i].isConnected = false;
+					ss << "Available MIDI port " << i << " " << mMidiIn0.mPortNames[i];
+				}
+
 			}
 		}
 	}
@@ -121,11 +126,12 @@ void MessageRouter::midiListener(midi::Message msg)
 		midiControl = msg.control;
 		midiValue = msg.value;
 		midiNormalizedValue = lmap<float>(midiValue, 0.0, 127.0, 0.0, 1.0);
-		if (mParameterBag->mOSCEnabled)
-		{
+		if (mParameterBag->mOSCEnabled) {
 			updateAndSendOSCFloatMessage(midiControlType, midiControl, midiNormalizedValue, midiChannel);
 		}
-		updateParams(midiControl, midiNormalizedValue);
+		else {
+			updateParams(midiControl, midiNormalizedValue);
+		}
 
 		//mWebSockets->write("{\"params\" :[{" + controlType);
 		break;
@@ -199,7 +205,7 @@ void MessageRouter::updateParams(int iarg0, float farg1)
 	}
 	if (iarg0 == 61 && farg1 > 0.1)
 	{
-		// left arrow
+		// right arrow
 		mParameterBag->iBlendMode--;
 		if (mParameterBag->iBlendMode < 0) mParameterBag->iBlendMode = mParameterBag->maxBlendMode;
 	}

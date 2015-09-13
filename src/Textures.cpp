@@ -36,6 +36,11 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 
 	for (int i = 0; i < 1024; ++i) dTexture[i] = (unsigned char)(Rand::randUint() & 0xFF);
 	// store it as a 512x2 texture in the first texture
+	Texta audioTex;
+	sprintf_s(audioTex.name, "Audio");
+	audioTex.sequenceIndex = 0;
+	audioTex.isSequence = false;
+	textas.push_back(audioTex);
 	sTextures.push_back(gl::Texture(dTexture, GL_LUMINANCE, 512, 2));
 
 	fs::path localFile;
@@ -54,9 +59,51 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 			gl::Texture img(loadImage(loadAsset("reymenta.jpg")));
 			sTextures.push_back(img);
 		}
+		Texta tex;
+		sprintf_s(tex.name, "tex%d", j);
+		tex.sequenceIndex = 0;
+		tex.isSequence = false;
+		textas.push_back(tex);
+
 	}
+	sprintf_s(textas[1].name, "img1");
+	sprintf_s(textas[2].name, "img2");
+	sprintf_s(textas[3].name, "img3");
+	sprintf_s(textas[4].name, "4pvwFbo");
+	sprintf_s(textas[5].name, "5mixFbo");
+	sprintf_s(textas[6].name, "6leftFbo");
+	sprintf_s(textas[7].name, "7rightFbo");
+	sprintf_s(textas[8].name, "8warp1Fbo");
+	sprintf_s(textas[9].name, "9warp2Fbo");
+	sprintf_s(textas[10].name, "10spout");
+	sprintf_s(textas[11].name, "11LiveFbo");
+
 	// image sequence
 	playheadFrameInc = 1;
+	// init with one sequence
+	sequence seq;
+	seq.filePath = "none";
+	sprintf_s(seq.folder, "none");
+	seq.index = 0;
+	seq.loadingFilesComplete = true;
+	seq.loadingPaused = true;
+	seq.framesLoaded = 0;
+	seq.currentLoadedFrame = 0;
+	seq.nextIndexFrameToTry = 0;
+	seq.playing = false;
+	seq.speed = 1;
+	seq.ext = "png";
+	seq.prefix = "none";
+	seq.nextIndexFrameToTry = 0;
+	seq.playheadPosition = 0;
+	sequences.push_back(seq);
+}
+char* Textures::getTextureName(int index) {
+	return textas[index].name;
+}
+void Textures::setTextureName(int index, char* name) {
+	sprintf_s(textas[index].name, name);
+
 }
 
 /*void Textures::createWarpInput()
@@ -922,6 +969,7 @@ void Textures::draw()
 	aShader->uniform("iTrixels", mParameterBag->controlValues[16]);
 	aShader->uniform("iGridSize", mParameterBag->controlValues[17]);
 	aShader->uniform("iFlipH", mParameterBag->iFlipHorizontally);
+	aShader->uniform("iFlipV", mParameterBag->iFlipVertically);
 	aShader->uniform("iBeat", mParameterBag->iBeat);
 	aShader->uniform("iSeed", mParameterBag->iSeed);
 	aShader->uniform("iRedMultiplier", mParameterBag->iRedMultiplier);
@@ -966,110 +1014,63 @@ Textures::~Textures()
 //Begins playback of sequence
 void Textures::playSequence(int textureIndex)
 {
-	for (int i = 0; i < sequences.size(); i++) {
-		if (sequences[i].index == textureIndex) {
-			sequences[i].playing = true;
-		}
-	}
+	sequences[textas[textureIndex].sequenceIndex].playing = true;
 }
 // Pauses playback
 void Textures::pauseSequence(int textureIndex)
 {
 
-	for (int i = 0; i < sequences.size(); i++) {
-		if (sequences[i].index == textureIndex) {
-			sequences[i].playing = false;
-		}
-	}
+	sequences[textas[textureIndex].sequenceIndex].playing = false;
 }
 
 // Stops playback and resets the playhead to zero
 void Textures::stopSequence(int textureIndex)
 {
-
-	for (int i = 0; i < sequences.size(); i++) {
-		if (sequences[i].index == textureIndex) {
-			sequences[i].playing = false;
-			sequences[i].playheadPosition = 0;
-		}
-	}
+	sequences[textas[textureIndex].sequenceIndex].playing = false;
+	sequences[textas[textureIndex].sequenceIndex].playheadPosition = 0;
 }
 
 int Textures::getMaxFrames(int textureIndex) {
-	int rtn = 0;
-	for (int i = 0; i < sequences.size(); i++) {
-		if (sequences[i].index == textureIndex) {
-			rtn = sequences[i].framesLoaded;
-		}
-	}
-	return rtn;
+
+	return sequences[textas[textureIndex].sequenceIndex].framesLoaded;
 }
 int Textures::getPlayheadPosition(int textureIndex) {
-	int rtn = 0;
-	for (int i = 0; i < sequences.size(); i++) {
-		if (sequences[i].index == textureIndex) {
-			rtn = sequences[i].playheadPosition;
-		}
-	}
-	return rtn;
+
+	return sequences[textas[textureIndex].sequenceIndex].playheadPosition;
 }
 // Seek to a new position in the sequence
 void Textures::setPlayheadPosition(int textureIndex, int position) {
 
-	for (int i = 0; i < sequences.size(); i++) {
-		if (sequences[i].index == textureIndex) {
-			sequences[i].playheadPosition = max(0, min(position, (int)sequences[i].sequenceTextures.size()-1));
-		}
-	}
+	sequences[textas[textureIndex].sequenceIndex].playheadPosition = max(0, min(position, (int)sequences[textas[textureIndex].sequenceIndex].sequenceTextures.size() - 1));
 }
 
 void Textures::reverseSequence(int textureIndex) {
 
-	for (int i = 0; i < sequences.size(); i++) {
-		if (sequences[i].index == textureIndex) {
-			sequences[i].speed *= -1;
-		}
-	}
-}
-int Textures::getSpeed(int textureIndex) {
-	int rtn = 1;
-	for (int i = 0; i < sequences.size(); i++) {
-		if (sequences[i].index == textureIndex) {
-			rtn = sequences[i].speed;
-		}
-	}
-	return rtn;
-}
-void Textures::setSpeed(int textureIndex, int speed) {
+	sequences[textas[textureIndex].sequenceIndex].speed *= -1;
 
-	for (int i = 0; i < sequences.size(); i++) {
-		if (sequences[i].index == textureIndex) {
-			sequences[i].speed = speed; //setting the speed negative -> RTE
-		}
-	}
-}bool Textures::isLoadingFromDisk(int textureIndex){
-	bool rtn = false;
-	for (int i = 0; i < sequences.size(); i++) {
-		if (sequences[i].index == textureIndex) {
-			rtn = sequences[i].loadingFilesComplete;
-		}
-	}
-	return rtn;
+}
+float Textures::getSpeed(int textureIndex) {
+
+	return sequences[textas[textureIndex].sequenceIndex].speed;
+}
+void Textures::setSpeed(int textureIndex, float speed) {
+
+	sequences[textas[textureIndex].sequenceIndex].speed = speed;
+}
+bool Textures::isLoadingFromDisk(int textureIndex) {
+	return sequences[textas[textureIndex].sequenceIndex].loadingFilesComplete;
 }
 
 void Textures::toggleLoadingFromDisk(int textureIndex) {
-	for (int i = 0; i < sequences.size(); i++) {
-		if (sequences[i].index == textureIndex) {
-			sequences[i].loadingPaused = !sequences[i].loadingPaused;
-		}
-	}
 
+	sequences[textas[textureIndex].sequenceIndex].loadingPaused = !sequences[textas[textureIndex].sequenceIndex].loadingPaused;
 }
 /**
 *  -- Loads all files contained in the supplied folder and creates Textures from them
 */
 void Textures::createFromDir(string filePath, int index)
 {
+	fs::path p(filePath);
 	sequence seq;
 	seq.filePath = filePath;
 	seq.index = index;
@@ -1080,10 +1081,15 @@ void Textures::createFromDir(string filePath, int index)
 	seq.nextIndexFrameToTry = 0;
 	seq.playing = false;
 	seq.speed = 1;
+	sprintf_s(seq.folder, "");
+	if (filePath.find_last_of("\\") != std::string::npos) {
+		int slashIndex = filePath.find_last_of("\\") + 1;
+		string folder = filePath.substr(slashIndex);
+		sprintf_s(seq.folder, "%s", folder.c_str());
+	}
 	bool noValidFile = true; // if no valid files in the folder, we keep existing vector
 	bool firstIndexFound = false;
 	int i = 0;
-	fs::path p(filePath);
 	// loading 2000 files takes a while, I load only 2
 	for (fs::directory_iterator it(p); it != fs::directory_iterator(); ++it)
 	{
@@ -1104,7 +1110,6 @@ void Textures::createFromDir(string filePath, int index)
 			}
 			if (seq.ext == "png" || seq.ext == "jpg")
 			{
-
 				if (noValidFile)
 				{
 					// we found a valid file
@@ -1113,6 +1118,9 @@ void Textures::createFromDir(string filePath, int index)
 					// reset playhead to the start
 					seq.playheadPosition = 0;
 					sequences.push_back(seq);
+					textas[seq.index].sequenceIndex = sequences.size() - 1;
+					sprintf_s(textas[seq.index].name, "%s", seq.folder);
+					textas[seq.index].isSequence = true;
 					loadNextImageFromDisk(sequences.size() - 1);
 					seq.playing = true;
 				}
@@ -1121,6 +1129,10 @@ void Textures::createFromDir(string filePath, int index)
 	}
 
 }
+bool Textures::isSequence(int textureIndex) {
+	return textas[textureIndex].isSequence;
+}
+
 ci::gl::Texture Textures::getCurrentSequenceTexture(int sequenceIndex) {
 	if (sequenceIndex > sequences.size()) {
 		sequenceIndex = 0;
@@ -1191,10 +1203,10 @@ void Textures::updateSequence(int sequenceIndex)
 			int newPosition = sequences[sequenceIndex].playheadPosition + (playheadFrameInc * sequences[sequenceIndex].speed);
 			if (newPosition < 0) newPosition = sequences[sequenceIndex].sequenceTextures.size() - 1;
 			if (newPosition > sequences[sequenceIndex].sequenceTextures.size() - 1) newPosition = 0;
-			sequences[sequenceIndex].playheadPosition = max(0, min(newPosition, (int)sequences[sequenceIndex].sequenceTextures.size()-1));
-			
+			sequences[sequenceIndex].playheadPosition = max(0, min(newPosition, (int)sequences[sequenceIndex].sequenceTextures.size() - 1));
+
 			/*
-			
+
 			{
 			if (looping)
 			{

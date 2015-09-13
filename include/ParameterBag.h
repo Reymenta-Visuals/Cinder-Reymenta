@@ -22,6 +22,13 @@ using namespace std;
 namespace Reymenta {
 
 	typedef std::shared_ptr<class ParameterBag> ParameterBagRef;
+	//! struct for textures 
+	struct Texta
+	{
+		char						name[32];
+		int							sequenceIndex;
+		bool						isSequence;
+	};
 	//! struct to keep track of the texture names for spout senders and shader fbo-rendered textures 
 	struct Sender
 	{
@@ -130,6 +137,7 @@ namespace Reymenta {
 		bool						mUseTimeWithTempo;
 		// shader uniforms	
 		float						iGlobalTime;        // shader playback time (in seconds)
+		float						iSpeedMultiplier;        // speed multiplier
 		float						iChannelTime[4];
 		Vec3f						iResolution;        // viewport resolution (in pixels)
 		Vec3f						iChannelResolution[4];	// channel resolution (in pixels)
@@ -147,6 +155,7 @@ namespace Reymenta {
 
 		string						mAssetsPath;
 		bool						iFlipHorizontally;
+		bool						iFlipVertically;
 		bool						iShowFps;
 		bool						iDebug;
 		float						iFps;

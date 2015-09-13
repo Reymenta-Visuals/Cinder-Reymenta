@@ -43,6 +43,7 @@ namespace Reymenta
 	// structure for loaded image files
 	struct sequence {
 		string						filePath;
+		char						folder[32];
 		string						prefix;
 		string						ext;
 		int							nextIndexFrameToTry;
@@ -53,7 +54,7 @@ namespace Reymenta
 		bool						loadingPaused;
 		bool						loadingFilesComplete;
 		bool						playing;
-		int							speed;
+		float						speed;
 		vector<ci::gl::Texture>		sequenceTextures;
 	};
 	class Textures {
@@ -77,6 +78,8 @@ namespace Reymenta
 		int							getTextureCount() { return sTextures.size(); };
 		void						flipTexture(int index);
 		void						setTexture(int index, ci::gl::Texture texture);
+		char*						getTextureName(int index);
+		void						setTextureName(int index, char* name);
 		// from audio
 		void						setAudioTexture( unsigned char *signal );
 		// fbos
@@ -100,10 +103,11 @@ namespace Reymenta
 		int							getPlayheadPosition(int textureIndex);
 		void						setPlayheadPosition(int textureIndex, int position);
 
-		int							getSpeed(int textureIndex);
-		void						setSpeed(int textureIndex, int speed);
+		float							getSpeed(int textureIndex);
+		void						setSpeed(int textureIndex, float speed);
 		void						reverseSequence(int textureIndex);
 		bool						isLoadingFromDisk(int textureIndex);
+		bool						isSequence(int textureIndex);
 		int							getMaxFrames(int textureIndex);
 		// image
 		void						loadImageFile( int index, string aFile );
@@ -124,6 +128,7 @@ namespace Reymenta
 		//ci::gl::Texture				currentTexture;
 		unsigned char				dTexture[1024];
 		vector<ci::gl::Texture>		sTextures;
+		vector<Texta>				textas;
 		char						spoutSenderName[256];
 		string						fileName;
 		// fbo
