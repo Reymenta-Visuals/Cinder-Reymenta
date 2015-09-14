@@ -12,27 +12,55 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 
 	//createPreviewFbo();//mFboWidth/4 or 16
 	// mix fbo at index 0
-	mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
-	//mFbos[0].getTexture(0).setFlipped(true);
+	FrameBuffa mixFbo;
+	mixFbo.fbo = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
+	sprintf_s(mixFbo.name, "mix");
+	mixFbo.isFlipV = false;
+	mixFbo.isFlipH = false;
+	mFbos.push_back(mixFbo);
 
 	// preview fbo at index 5
 	//mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));//640x480
-	for (size_t m = mFbos.size(); m < mParameterBag->MAX; m++)
-	{
-		mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
-		mThumbFbos.push_back(gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
-		//mFbos[mFbos.size() - 1].getTexture(0).setFlipped(true);
+	for (size_t m = mFbos.size(); m < mParameterBag->MAX; m++) {
+		//fbo
+		FrameBuffa fb;
+		fb.fbo = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
+		sprintf_s(fb.name, "fbo%d", m);
+		fb.isFlipV = false;
+		fb.isFlipH = false;
+		mFbos.push_back(fb);
+		//thumb fbo
+		FrameBuffa tfb;
+		tfb.fbo = gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight);
+		sprintf_s(tfb.name, "thumbfbo%d", m);
+		tfb.isFlipV = false;
+		tfb.isFlipH = false;
+		mThumbFbos.push_back(tfb);
+		//mFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
+		//mThumbFbos.push_back(gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
 	}
 	currentShadaThumbIndex = 0;
 	// audio fbo at index 6
-	mFbos[mParameterBag->mAudioFboIndex] = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
-	mFbos[mParameterBag->mAudioFboIndex].getTexture(0).setFlipped(true);
+	sprintf_s(mFbos[mParameterBag->mAudioFboIndex].name, "audio");// = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
+	mFbos[mParameterBag->mAudioFboIndex].isFlipV = true;//.getTexture(0).setFlipped(true);
 	// vertex sphere fbo at index 11
 	ci::gl::Fbo::Format mFormat;
 	mFormat.setMinFilter(GL_NEAREST);
 	mFormat.setMagFilter(GL_NEAREST);
 	mFormat.setWrap(GL_REPEAT, GL_REPEAT);
-	mFbos[mParameterBag->mVertexSphereFboIndex] = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight, mFormat);
+	mFbos[mParameterBag->mVertexSphereFboIndex].fbo = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight, mFormat);
+
+	//const char* fboNames[] = { "mix", "", "", "", "", "", "", "", "", "", "audio", "", "1", "2", "3", "4" };
+	sprintf_s(mFbos[1].name, "left");
+	sprintf_s(mFbos[2].name, "right");
+	sprintf_s(mFbos[3].name, "warp1");
+	sprintf_s(mFbos[4].name, "warp2");
+	sprintf_s(mFbos[5].name, "preview");
+	sprintf_s(mFbos[6].name, "abp");
+	sprintf_s(mFbos[7].name, "live");
+	sprintf_s(mFbos[8].name, "sphere");
+	sprintf_s(mFbos[9].name, "mesh");
+	sprintf_s(mFbos[11].name, "vtxsphere");
 
 	for (int i = 0; i < 1024; ++i) dTexture[i] = (unsigned char)(Rand::randUint() & 0xFF);
 	// store it as a 512x2 texture in the first texture
@@ -105,6 +133,9 @@ void Textures::setTextureName(int index, char* name) {
 	sprintf_s(textas[index].name, name);
 
 }
+char* Textures::getFboName(int index) {
+	return mFbos[index].name;
+}
 
 /*void Textures::createWarpInput()
 {
@@ -164,13 +195,13 @@ void Textures::flipTexture(int index)
 	mParameterBag->mMsg = buf;
 	mParameterBag->newMsg = true;
 }
-void Textures::flipFbo(int index)
+void Textures::flipFboV(int index)
 {
-	mFbos[index].getTexture(0).setFlipped(!mFbos[index].getTexture(0).isFlipped());
-	sprintf(buf, "flipFbo index %d after: %d", index, mFbos[index].getTexture(0).isFlipped());
-	mParameterBag->mMsg = buf;
-	mParameterBag->newMsg = true;
-
+	mFbos[index].isFlipV != mFbos[index].isFlipV;
+}
+void Textures::flipFboH(int index)
+{
+	mFbos[index].isFlipH != mFbos[index].isFlipH;
 }
 /*void Textures::setCurrentFboIndex(int aFbo)
 {
@@ -202,24 +233,24 @@ void Textures::setTexture(int index, ci::gl::Texture texture)
 ci::gl::Texture Textures::getFboTexture(int index)
 {
 	if (index > mFbos.size() - 1) index = mFbos.size() - 1;
-	return mFbos[index].getTexture();
+	return mFbos[index].fbo.getTexture();
 }
 GLuint Textures::getFboTextureId(int index)
 {
 	if (index > mFbos.size() - 1) index = mFbos.size() - 1;
-	return  mFbos[index].getTexture().getId();
+	return  mFbos[index].fbo.getTexture().getId();
 }
 
 ci::gl::Fbo Textures::getFbo(int index)
 {
 	// fbo
-	return mFbos[index];
+	return mFbos[index].fbo;
 }
 GLuint Textures::getShaderThumbTextureId(int index)
 {
 	if (index > mThumbFbos.size() - 1) index = mThumbFbos.size() - 1;
 
-	return  mThumbFbos[index].getTexture().getId();
+	return  mThumbFbos[index].fbo.getTexture().getId();
 }
 void Textures::loadImageFile(int index, string aFile)
 {
@@ -292,8 +323,8 @@ void Textures::renderShadaThumbFbo()
 {
 	// start profiling
 	auto start = Clock::now();
-	mThumbFbos[currentShadaThumbIndex].bindFramebuffer();
-	gl::setViewport(mThumbFbos[currentShadaThumbIndex].getBounds());
+	mThumbFbos[currentShadaThumbIndex].fbo.bindFramebuffer();
+	gl::setViewport(mThumbFbos[currentShadaThumbIndex].fbo.getBounds());
 
 	// clear the FBO
 	gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
@@ -352,7 +383,7 @@ void Textures::renderShadaThumbFbo()
 		}
 		gl::drawSolidRect(Rectf(0, 0, mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
 		// stop drawing into the FBO
-		mThumbFbos[currentShadaThumbIndex].unbindFramebuffer();
+		mThumbFbos[currentShadaThumbIndex].fbo.unbindFramebuffer();
 
 		for (size_t m = 0; m < 2; m++)
 		{
@@ -371,7 +402,14 @@ void Textures::renderShadaThumbFbo()
 	// increment shada thumb index
 	currentShadaThumbIndex++;
 	// mThumbFbos must equal mFragmentShaders size
-	if (mThumbFbos.size() < mShaders->getCount()) mThumbFbos.push_back(gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
+	if (mThumbFbos.size() < mShaders->getCount()) {
+		FrameBuffa tfb;
+		tfb.fbo = gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight);
+		sprintf_s(tfb.name, "new");
+		tfb.isFlipV = false;
+		tfb.isFlipH = false;
+		mThumbFbos.push_back(tfb);
+	}
 	if (currentShadaThumbIndex > mShaders->getCount() - 1)
 	{
 		currentShadaThumbIndex = 0;
@@ -391,8 +429,8 @@ void Textures::draw()
 	* start of mLibraryFbos[mParameterBag->mLeftFboIndex]
 	*/
 
-	mFbos[mParameterBag->mLeftFboIndex].bindFramebuffer();
-	gl::setViewport(mFbos[mParameterBag->mLeftFboIndex].getBounds());
+	mFbos[mParameterBag->mLeftFboIndex].fbo.bindFramebuffer();
+	gl::setViewport(mFbos[mParameterBag->mLeftFboIndex].fbo.getBounds());
 
 	// clear the FBO
 	gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
@@ -451,6 +489,8 @@ void Textures::draw()
 	aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
 	aShader->uniform("iBeat", mParameterBag->iBeat);
 	aShader->uniform("iSeed", mParameterBag->iSeed);
+	aShader->uniform("iFlipH", mFbos[mParameterBag->mLeftFboIndex].isFlipH);
+	aShader->uniform("iFlipV", mFbos[mParameterBag->mLeftFboIndex].isFlipV);
 
 	for (size_t m = 0; m < mTexturesCount; m++)
 	{
@@ -458,7 +498,7 @@ void Textures::draw()
 	}
 	gl::drawSolidRect(Rectf(0, 0, mParameterBag->mFboWidth, mParameterBag->mFboHeight));
 	// stop drawing into the FBO
-	mFbos[mParameterBag->mLeftFboIndex].unbindFramebuffer();
+	mFbos[mParameterBag->mLeftFboIndex].fbo.unbindFramebuffer();
 
 	for (size_t m = 0; m < mTexturesCount; m++)
 	{
@@ -466,7 +506,7 @@ void Textures::draw()
 	}
 
 	aShader->unbind();
-	sTextures[6] = mFbos[mParameterBag->mLeftFboIndex].getTexture();
+	sTextures[6] = mFbos[mParameterBag->mLeftFboIndex].fbo.getTexture();
 	/*
 	* end of mLibraryFbos[mParameterBag->mLeftFboIndex]
 	***********************************************/
@@ -476,8 +516,8 @@ void Textures::draw()
 	* start of mLibraryFbos[mParameterBag->mRightFboIndex]
 	*/
 
-	mFbos[mParameterBag->mRightFboIndex].bindFramebuffer();
-	gl::setViewport(mFbos[mParameterBag->mRightFboIndex].getBounds());
+	mFbos[mParameterBag->mRightFboIndex].fbo.bindFramebuffer();
+	gl::setViewport(mFbos[mParameterBag->mRightFboIndex].fbo.getBounds());
 
 	// clear the FBO
 	gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
@@ -535,6 +575,8 @@ void Textures::draw()
 	aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
 	aShader->uniform("iBeat", mParameterBag->iBeat);
 	aShader->uniform("iSeed", mParameterBag->iSeed);
+	aShader->uniform("iFlipH", mFbos[mParameterBag->mRightFboIndex].isFlipH);
+	aShader->uniform("iFlipV", mFbos[mParameterBag->mRightFboIndex].isFlipV);
 
 	for (size_t m = 0; m < mTexturesCount; m++)
 	{
@@ -542,7 +584,7 @@ void Textures::draw()
 	}
 	gl::drawSolidRect(Rectf(0, 0, mParameterBag->mFboWidth, mParameterBag->mFboHeight));
 	// stop drawing into the FBO
-	mFbos[mParameterBag->mRightFboIndex].unbindFramebuffer();
+	mFbos[mParameterBag->mRightFboIndex].fbo.unbindFramebuffer();
 
 	for (size_t m = 0; m < mTexturesCount; m++)
 	{
@@ -550,7 +592,7 @@ void Textures::draw()
 	}
 
 	aShader->unbind();
-	sTextures[7] = mFbos[mParameterBag->mRightFboIndex].getTexture();
+	sTextures[7] = mFbos[mParameterBag->mRightFboIndex].fbo.getTexture();
 	/*
 	* end of mLibraryFbos[mParameterBag->mRightFboLibraryIndex]
 	***********************************************/
@@ -562,8 +604,8 @@ void Textures::draw()
 		* start of mFbos[mParameterBag->mWarp1FboIndex]
 		*/
 
-		mFbos[mParameterBag->mWarp1FboIndex].bindFramebuffer();
-		gl::setViewport(mFbos[mParameterBag->mWarp1FboIndex].getBounds());
+		mFbos[mParameterBag->mWarp1FboIndex].fbo.bindFramebuffer();
+		gl::setViewport(mFbos[mParameterBag->mWarp1FboIndex].fbo.getBounds());
 
 		// clear the FBO
 		gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
@@ -621,6 +663,8 @@ void Textures::draw()
 		aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
 		aShader->uniform("iBeat", mParameterBag->iBeat);
 		aShader->uniform("iSeed", mParameterBag->iSeed);
+		aShader->uniform("iFlipH", mFbos[mParameterBag->mWarp1FboIndex].isFlipH);
+		aShader->uniform("iFlipV", mFbos[mParameterBag->mWarp1FboIndex].isFlipV);
 
 		for (size_t m = 0; m < mTexturesCount; m++)
 		{
@@ -628,7 +672,7 @@ void Textures::draw()
 		}
 		gl::drawSolidRect(Rectf(0, 0, mParameterBag->mFboWidth, mParameterBag->mFboHeight));
 		// stop drawing into the FBO
-		mFbos[mParameterBag->mWarp1FboIndex].unbindFramebuffer();
+		mFbos[mParameterBag->mWarp1FboIndex].fbo.unbindFramebuffer();
 
 		for (size_t m = 0; m < mTexturesCount; m++)
 		{
@@ -636,7 +680,7 @@ void Textures::draw()
 		}
 
 		aShader->unbind();
-		sTextures[8] = mFbos[mParameterBag->mWarp1FboIndex].getTexture();
+		sTextures[8] = mFbos[mParameterBag->mWarp1FboIndex].fbo.getTexture();
 
 		/*
 		* end of mFbos[mParameterBag->mWarp1FboIndex]
@@ -646,8 +690,8 @@ void Textures::draw()
 		* start of mFbos[mParameterBag->mWarp2FboIndex]
 		*/
 
-		mFbos[mParameterBag->mWarp2FboIndex].bindFramebuffer();
-		gl::setViewport(mFbos[mParameterBag->mWarp2FboIndex].getBounds());
+		mFbos[mParameterBag->mWarp2FboIndex].fbo.bindFramebuffer();
+		gl::setViewport(mFbos[mParameterBag->mWarp2FboIndex].fbo.getBounds());
 
 		// clear the FBO
 		gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
@@ -705,6 +749,8 @@ void Textures::draw()
 		aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
 		aShader->uniform("iBeat", mParameterBag->iBeat);
 		aShader->uniform("iSeed", mParameterBag->iSeed);
+		aShader->uniform("iFlipH", mFbos[mParameterBag->mWarp2FboIndex].isFlipH);
+		aShader->uniform("iFlipV", mFbos[mParameterBag->mWarp2FboIndex].isFlipV);
 
 		for (size_t m = 0; m < mTexturesCount; m++)
 		{
@@ -712,7 +758,7 @@ void Textures::draw()
 		}
 		gl::drawSolidRect(Rectf(0, 0, mParameterBag->mFboWidth, mParameterBag->mFboHeight));
 		// stop drawing into the FBO
-		mFbos[mParameterBag->mWarp2FboIndex].unbindFramebuffer();
+		mFbos[mParameterBag->mWarp2FboIndex].fbo.unbindFramebuffer();
 
 		for (size_t m = 0; m < mTexturesCount; m++)
 		{
@@ -720,7 +766,7 @@ void Textures::draw()
 		}
 
 		aShader->unbind();
-		sTextures[9] = mFbos[mParameterBag->mWarp2FboIndex].getTexture();
+		sTextures[9] = mFbos[mParameterBag->mWarp2FboIndex].fbo.getTexture();
 
 		/*
 		* end of mFbos[mParameterBag->mWarp2FboIndex]
@@ -733,8 +779,8 @@ void Textures::draw()
 		/***********************************************
 		* start of mLibraryFbos[mParameterBag->mCurrentPreviewFboIndex]
 		*/
-		mFbos[mParameterBag->mCurrentPreviewFboIndex].bindFramebuffer();
-		gl::setViewport(mFbos[mParameterBag->mCurrentPreviewFboIndex].getBounds());
+		mFbos[mParameterBag->mCurrentPreviewFboIndex].fbo.bindFramebuffer();
+		gl::setViewport(mFbos[mParameterBag->mCurrentPreviewFboIndex].fbo.getBounds());
 
 		// clear the FBO
 		gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
@@ -793,6 +839,8 @@ void Textures::draw()
 		aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
 		aShader->uniform("iBeat", mParameterBag->iBeat);
 		aShader->uniform("iSeed", mParameterBag->iSeed);
+		aShader->uniform("iFlipH", mFbos[mParameterBag->mCurrentPreviewFboIndex].isFlipH);
+		aShader->uniform("iFlipV", mFbos[mParameterBag->mCurrentPreviewFboIndex].isFlipV);
 
 		for (size_t m = 0; m < mTexturesCount; m++)
 		{
@@ -800,7 +848,7 @@ void Textures::draw()
 		}
 		gl::drawSolidRect(Rectf(0, 0, mParameterBag->mFboWidth, mParameterBag->mFboHeight));
 		// stop drawing into the FBO
-		mFbos[mParameterBag->mCurrentPreviewFboIndex].unbindFramebuffer();
+		mFbos[mParameterBag->mCurrentPreviewFboIndex].fbo.unbindFramebuffer();
 
 		for (size_t m = 0; m < mTexturesCount; m++)
 		{
@@ -809,7 +857,7 @@ void Textures::draw()
 
 		aShader->unbind();
 
-		sTextures[4] = mFbos[mParameterBag->mCurrentPreviewFboIndex].getTexture();
+		sTextures[4] = mFbos[mParameterBag->mCurrentPreviewFboIndex].fbo.getTexture();
 		/*
 		* end of mLibraryFbos[mParameterBag->mCurrentPreviewFboIndex]
 		***********************************************/
@@ -822,8 +870,8 @@ void Textures::draw()
 		/***********************************************
 		* start of mLibraryFbos[mParameterBag->mLiveFboIndex]
 		*/
-		mFbos[mParameterBag->mLiveFboIndex].bindFramebuffer();
-		gl::setViewport(mFbos[mParameterBag->mLiveFboIndex].getBounds());
+		mFbos[mParameterBag->mLiveFboIndex].fbo.bindFramebuffer();
+		gl::setViewport(mFbos[mParameterBag->mLiveFboIndex].fbo.getBounds());
 
 		// clear the FBO
 		gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
@@ -881,6 +929,8 @@ void Textures::draw()
 		aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
 		aShader->uniform("iBeat", mParameterBag->iBeat);
 		aShader->uniform("iSeed", mParameterBag->iSeed);
+		aShader->uniform("iFlipH", mFbos[mParameterBag->mLiveFboIndex].isFlipH);
+		aShader->uniform("iFlipV", mFbos[mParameterBag->mLiveFboIndex].isFlipV);
 
 		for (size_t m = 0; m < mTexturesCount; m++)
 		{
@@ -888,7 +938,7 @@ void Textures::draw()
 		}
 		gl::drawSolidRect(Rectf(0, 0, mParameterBag->mFboWidth, mParameterBag->mFboHeight));
 		// stop drawing into the FBO
-		mFbos[mParameterBag->mLiveFboIndex].unbindFramebuffer();
+		mFbos[mParameterBag->mLiveFboIndex].fbo.unbindFramebuffer();
 
 		for (size_t m = 0; m < mTexturesCount; m++)
 		{
@@ -897,7 +947,7 @@ void Textures::draw()
 
 		aShader->unbind();
 
-		sTextures[11] = mFbos[mParameterBag->mLiveFboIndex].getTexture();
+		sTextures[11] = mFbos[mParameterBag->mLiveFboIndex].fbo.getTexture();
 		/*
 		* end of mFbos[mParameterBag->mLiveFboIndex]
 		***********************************************/
@@ -912,9 +962,9 @@ void Textures::draw()
 	*/
 
 	// draw using the mix shader
-	mFbos[mParameterBag->mMixFboIndex].bindFramebuffer();
+	mFbos[mParameterBag->mMixFboIndex].fbo.bindFramebuffer();
 
-	gl::setViewport(mFbos[mParameterBag->mMixFboIndex].getBounds());
+	gl::setViewport(mFbos[mParameterBag->mMixFboIndex].fbo.getBounds());
 
 	// clear the FBO
 	gl::clear();
@@ -968,24 +1018,26 @@ void Textures::draw()
 	aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
 	aShader->uniform("iTrixels", mParameterBag->controlValues[16]);
 	aShader->uniform("iGridSize", mParameterBag->controlValues[17]);
-	aShader->uniform("iFlipH", mParameterBag->iFlipHorizontally);
-	aShader->uniform("iFlipV", mParameterBag->iFlipVertically);
 	aShader->uniform("iBeat", mParameterBag->iBeat);
 	aShader->uniform("iSeed", mParameterBag->iSeed);
 	aShader->uniform("iRedMultiplier", mParameterBag->iRedMultiplier);
 	aShader->uniform("iGreenMultiplier", mParameterBag->iGreenMultiplier);
 	aShader->uniform("iBlueMultiplier", mParameterBag->iBlueMultiplier);
+	aShader->uniform("iFlipH", mFbos[mParameterBag->mMixFboIndex].isFlipH);
+	aShader->uniform("iFlipV", mFbos[mParameterBag->mMixFboIndex].isFlipV);
+	//aShader->uniform("iFlipH", mParameterBag->iFlipHorizontally);
+	//aShader->uniform("iFlipV", mParameterBag->iFlipVertically);
 
 	sTextures[6].bind(0);
 	sTextures[7].bind(1);
 	gl::drawSolidRect(Rectf(0, 0, mParameterBag->mFboWidth, mParameterBag->mFboHeight));
 	// stop drawing into the FBO
-	mFbos[mParameterBag->mMixFboIndex].unbindFramebuffer();
+	mFbos[mParameterBag->mMixFboIndex].fbo.unbindFramebuffer();
 	sTextures[6].unbind();
 	sTextures[7].unbind();
 
 	aShader->unbind();
-	sTextures[5] = mFbos[mParameterBag->mMixFboIndex].getTexture();
+	sTextures[5] = mFbos[mParameterBag->mMixFboIndex].fbo.getTexture();
 
 	//}
 	/***********************************************

@@ -3,6 +3,7 @@
 #include "cinder/app/AppNative.h"
 #include "cinder/gl/gl.h"
 #include "cinder/gl/GlslProg.h"
+#include "cinder/gl/Fbo.h"
 #include "cinder/Timeline.h"
 #include "cinder/Json.h"
 #include "cinder/Xml.h"
@@ -28,6 +29,14 @@ namespace Reymenta {
 		char						name[32];
 		int							sequenceIndex;
 		bool						isSequence;
+	};
+	//! struct for fbos 
+	struct FrameBuffa
+	{
+		char						name[32];
+		gl::Fbo						fbo;
+		bool						isFlipV;
+		bool						isFlipH;
 	};
 	//! struct to keep track of the texture names for spout senders and shader fbo-rendered textures 
 	struct Sender
@@ -154,8 +163,8 @@ namespace Reymenta {
 		const float					maxExposure = 3.0;
 
 		string						mAssetsPath;
-		bool						iFlipHorizontally;
-		bool						iFlipVertically;
+		//bool						iFlipHorizontally;
+		//bool						iFlipVertically;
 		bool						iShowFps;
 		bool						iDebug;
 		float						iFps;

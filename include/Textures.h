@@ -88,7 +88,10 @@ namespace Reymenta
 		ci::gl::Fbo					getFbo(int index);
 		int							getFboCount() { return mFbos.size(); };
 		int							getThumbsFboCount() { return mThumbFbos.size(); };
-		void						flipFbo(int index);
+		void						flipFboV(int index);
+		void						flipFboH(int index);
+		char*						getFboName(int index);
+
 		// shaders
 		GLuint						getShaderThumbTextureId(int index);
 		// spout
@@ -103,7 +106,7 @@ namespace Reymenta
 		int							getPlayheadPosition(int textureIndex);
 		void						setPlayheadPosition(int textureIndex, int position);
 
-		float							getSpeed(int textureIndex);
+		float						getSpeed(int textureIndex);
 		void						setSpeed(int textureIndex, float speed);
 		void						reverseSequence(int textureIndex);
 		bool						isLoadingFromDisk(int textureIndex);
@@ -132,10 +135,10 @@ namespace Reymenta
 		char						spoutSenderName[256];
 		string						fileName;
 		// fbo
-		vector<gl::Fbo>				mFbos;
-		vector<gl::Fbo>				mThumbFbos;
-		//! mixes fbos
-		vector<gl::Fbo>				mMixesFbos;
+		vector<FrameBuffa>			mFbos;
+		//! thumb fbos
+		vector<FrameBuffa>			mThumbFbos;
+
 		//! shader fbos
 		//vector<ShadaFbo>			mShadaFbos;
 		// shaders

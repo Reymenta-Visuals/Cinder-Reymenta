@@ -343,7 +343,7 @@ bool ParameterBag::restore()
 void ParameterBag::reset()
 {
 	// parameters exposed in XML
-	mMIDIOpenAllInputPorts = mRenderThumbs = mAutoLayout =mShowUI = mCursorVisible = iFlipHorizontally = true;
+	mMIDIOpenAllInputPorts = mRenderThumbs = mAutoLayout =mShowUI = mCursorVisible = true;
 	mStandalone = mCustomLayout = false;
 	mOutputVideoResolution = 1024;
 	mInfo = "";
@@ -421,7 +421,6 @@ void ParameterBag::reset()
 	iTempoTime = 0.0;
 	iTimeFactor = 1.0;
 	// shader uniforms
-	iFlipVertically = iFlipHorizontally = false;
 	iGlobalTime = iSpeedMultiplier = 1.0f;
 	iResolution = Vec3f(mRenderWidth, mRenderHeight, 1.0);
 	for (int i = 0; i < 4; i++)
