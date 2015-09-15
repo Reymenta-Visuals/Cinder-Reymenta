@@ -72,7 +72,7 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	sTextures.push_back(gl::Texture(dTexture, GL_LUMINANCE, 512, 2));
 
 	fs::path localFile;
-	for (int j = 0; j < mTexturesCount - 1; j++)
+	for (int j = 0; j < mParameterBag->MAX - 1; j++)
 	{
 		fileName = toString(j) + ".jpg";
 		localFile = getAssetPath("") / mParameterBag->mAssetsPath / fileName;
@@ -157,7 +157,7 @@ void Textures::setAudioTexture(unsigned char *signal)
 }
 void Textures::setTexture(int index, string fileName)
 {
-	if (index > mTexturesCount - 1) index = mTexturesCount - 1;
+	if (index > mParameterBag->MAX - 1) index = mParameterBag->MAX - 1;
 	if (index > 0)
 	{
 		try
@@ -197,11 +197,11 @@ void Textures::flipTexture(int index)
 }
 void Textures::flipFboV(int index)
 {
-	mFbos[index].isFlipV != mFbos[index].isFlipV;
+	mFbos[index].isFlipV = !mFbos[index].isFlipV;
 }
 void Textures::flipFboH(int index)
 {
-	mFbos[index].isFlipH != mFbos[index].isFlipH;
+	mFbos[index].isFlipH = !mFbos[index].isFlipH;
 }
 /*void Textures::setCurrentFboIndex(int aFbo)
 {
@@ -492,7 +492,7 @@ void Textures::draw()
 	aShader->uniform("iFlipH", mFbos[mParameterBag->mLeftFboIndex].isFlipH);
 	aShader->uniform("iFlipV", mFbos[mParameterBag->mLeftFboIndex].isFlipV);
 
-	for (size_t m = 0; m < mTexturesCount; m++)
+	for (size_t m = 0; m < mParameterBag->MAX; m++)
 	{
 		getTexture(m).bind(m);
 	}
@@ -500,7 +500,7 @@ void Textures::draw()
 	// stop drawing into the FBO
 	mFbos[mParameterBag->mLeftFboIndex].fbo.unbindFramebuffer();
 
-	for (size_t m = 0; m < mTexturesCount; m++)
+	for (size_t m = 0; m < mParameterBag->MAX; m++)
 	{
 		getTexture(m).unbind();
 	}
@@ -578,7 +578,7 @@ void Textures::draw()
 	aShader->uniform("iFlipH", mFbos[mParameterBag->mRightFboIndex].isFlipH);
 	aShader->uniform("iFlipV", mFbos[mParameterBag->mRightFboIndex].isFlipV);
 
-	for (size_t m = 0; m < mTexturesCount; m++)
+	for (size_t m = 0; m < mParameterBag->MAX; m++)
 	{
 		getTexture(m).bind(m);
 	}
@@ -586,7 +586,7 @@ void Textures::draw()
 	// stop drawing into the FBO
 	mFbos[mParameterBag->mRightFboIndex].fbo.unbindFramebuffer();
 
-	for (size_t m = 0; m < mTexturesCount; m++)
+	for (size_t m = 0; m < mParameterBag->MAX; m++)
 	{
 		getTexture(m).unbind();
 	}
@@ -666,7 +666,7 @@ void Textures::draw()
 		aShader->uniform("iFlipH", mFbos[mParameterBag->mWarp1FboIndex].isFlipH);
 		aShader->uniform("iFlipV", mFbos[mParameterBag->mWarp1FboIndex].isFlipV);
 
-		for (size_t m = 0; m < mTexturesCount; m++)
+		for (size_t m = 0; m < mParameterBag->MAX; m++)
 		{
 			getTexture(m).bind(m);
 		}
@@ -674,7 +674,7 @@ void Textures::draw()
 		// stop drawing into the FBO
 		mFbos[mParameterBag->mWarp1FboIndex].fbo.unbindFramebuffer();
 
-		for (size_t m = 0; m < mTexturesCount; m++)
+		for (size_t m = 0; m < mParameterBag->MAX; m++)
 		{
 			getTexture(m).unbind();
 		}
@@ -752,7 +752,7 @@ void Textures::draw()
 		aShader->uniform("iFlipH", mFbos[mParameterBag->mWarp2FboIndex].isFlipH);
 		aShader->uniform("iFlipV", mFbos[mParameterBag->mWarp2FboIndex].isFlipV);
 
-		for (size_t m = 0; m < mTexturesCount; m++)
+		for (size_t m = 0; m < mParameterBag->MAX; m++)
 		{
 			getTexture(m).bind(m);
 		}
@@ -760,7 +760,7 @@ void Textures::draw()
 		// stop drawing into the FBO
 		mFbos[mParameterBag->mWarp2FboIndex].fbo.unbindFramebuffer();
 
-		for (size_t m = 0; m < mTexturesCount; m++)
+		for (size_t m = 0; m < mParameterBag->MAX; m++)
 		{
 			getTexture(m).unbind();
 		}
@@ -842,7 +842,7 @@ void Textures::draw()
 		aShader->uniform("iFlipH", mFbos[mParameterBag->mCurrentPreviewFboIndex].isFlipH);
 		aShader->uniform("iFlipV", mFbos[mParameterBag->mCurrentPreviewFboIndex].isFlipV);
 
-		for (size_t m = 0; m < mTexturesCount; m++)
+		for (size_t m = 0; m < mParameterBag->MAX; m++)
 		{
 			getTexture(m).bind(m);
 		}
@@ -850,7 +850,7 @@ void Textures::draw()
 		// stop drawing into the FBO
 		mFbos[mParameterBag->mCurrentPreviewFboIndex].fbo.unbindFramebuffer();
 
-		for (size_t m = 0; m < mTexturesCount; m++)
+		for (size_t m = 0; m < mParameterBag->MAX; m++)
 		{
 			getTexture(m).unbind();
 		}
@@ -932,7 +932,7 @@ void Textures::draw()
 		aShader->uniform("iFlipH", mFbos[mParameterBag->mLiveFboIndex].isFlipH);
 		aShader->uniform("iFlipV", mFbos[mParameterBag->mLiveFboIndex].isFlipV);
 
-		for (size_t m = 0; m < mTexturesCount; m++)
+		for (size_t m = 0; m < mParameterBag->MAX; m++)
 		{
 			getTexture(m).bind(m);
 		}
@@ -940,7 +940,7 @@ void Textures::draw()
 		// stop drawing into the FBO
 		mFbos[mParameterBag->mLiveFboIndex].fbo.unbindFramebuffer();
 
-		for (size_t m = 0; m < mTexturesCount; m++)
+		for (size_t m = 0; m < mParameterBag->MAX; m++)
 		{
 			getTexture(m).unbind();
 		}
@@ -1025,8 +1025,9 @@ void Textures::draw()
 	aShader->uniform("iBlueMultiplier", mParameterBag->iBlueMultiplier);
 	aShader->uniform("iFlipH", mFbos[mParameterBag->mMixFboIndex].isFlipH);
 	aShader->uniform("iFlipV", mFbos[mParameterBag->mMixFboIndex].isFlipV);
-	//aShader->uniform("iFlipH", mParameterBag->iFlipHorizontally);
-	//aShader->uniform("iFlipV", mParameterBag->iFlipVertically);
+	aShader->uniform("iParam1", mParameterBag->iParam1);
+	aShader->uniform("iParam2", mParameterBag->iParam2);
+	aShader->uniform("iXorY", mParameterBag->iXorY);
 
 	sTextures[6].bind(0);
 	sTextures[7].bind(1);

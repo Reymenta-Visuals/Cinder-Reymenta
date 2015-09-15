@@ -340,6 +340,85 @@ bool ParameterBag::restore()
 	}
 }
 
+void ParameterBag::resetSomeParams() {
+	mLockFR = mLockFG = mLockFB = mLockFA = mLockBR = mLockBG = mLockBB = mLockBA = false;
+	tFR = tFG = tFB = tFA = tBR = tBG = tBB = tBA = false;
+	mCamPosXY = Vec2f::zero();
+	mCount = 1;
+
+	// EyePointZ
+	defaultEyePointZ = -400.f;
+	minEyePointZ = -800.0;
+	maxEyePointZ = 0.0;
+	tEyePointZ = autoEyePointZ = false;
+	// unicorns
+	iTempoTime = 0.0;
+	iTimeFactor = iParam1 = iParam2 = 1.0f;
+	iGlobalTime = iSpeedMultiplier = 1.0f;
+
+	iGreyScale = false;
+	iFade = mSendToOutput = iLight = iLightAuto = iRepeat = iXorY = false;
+
+	// transition
+	iTransition = 0;
+	iAnim = 0.0;
+	mTransitionDuration = 1.0f;
+
+	// red
+	controlValues[1] = 1.0f;
+	// green
+	controlValues[2] = 0.3f;
+	// blue
+	controlValues[3] = 0.0f;
+	// Alpha 
+	controlValues[4] = 1.0f;
+	// background red
+	controlValues[5] = 0.1f;
+	// background green
+	controlValues[6] = 0.1f;
+	// background blue
+	controlValues[7] = 0.1f;
+	// background alpha
+	controlValues[8] = 0.2f;
+	// pointsphere zPosition
+	controlValues[9] = -0.7f;
+	// iChromatic
+	controlValues[10] = 0.0f;
+	// ratio
+	controlValues[11] = 20.0f;
+	// Speed 
+	controlValues[12] = 12.0f;
+	// Audio multfactor 
+	controlValues[13] = 1.0f;
+	// exposure
+	controlValues[14] = 1.0f;
+	// Pixelate
+	controlValues[15] = 1.0f;
+	// Trixels
+	controlValues[16] = 0.0f;
+	// GridSize
+	controlValues[17] = 0.0f;
+	// iCrossfade
+	controlValues[18] = 1.0f;
+	// RotationSpeed
+	controlValues[19] = 0.0f;
+	// Steps
+	controlValues[20] = 16.0f;
+	// iPreviewCrossfade
+	controlValues[21] = 1.0f;
+	// zoom
+	controlValues[22] = iZoomLeft = iZoomRight = 1.0f;
+	// glitch
+	controlValues[45] = 0.0f;
+	// toggle
+	controlValues[46] = 0.0f;
+	// vignette
+	controlValues[47] = 0.0f;
+	// invert
+	controlValues[48] = 0.0f;
+	autoInvert = false;
+}
+
 void ParameterBag::reset()
 {
 	// parameters exposed in XML
@@ -379,18 +458,6 @@ void ParameterBag::reset()
 	mCurrentFilePath = "currentMix.frag";
 	mAssetsPath = "";
 	mMarginSmall = 2;
-
-	mCamPosXY = Vec2f::zero();
-	mCount = 1;
-	mLockFR = mLockFG = mLockFB = mLockFA = mLockBR = mLockBG = mLockBB = mLockBA = false;
-	tFR = tFG = tFB = tFA = tBR = tBG = tBB = tBA = false;
-
-	// EyePointZ
-	defaultEyePointZ = -400.f;
-	minEyePointZ = -800.0;
-	maxEyePointZ = 0.0;
-	tEyePointZ = autoEyePointZ = false;
-
 	mPreviewEnabled = true;
 	//audio
 	// audio in multiplication factor
@@ -418,10 +485,7 @@ void ParameterBag::reset()
 	mTempo = 166.0;
 	mUseTimeWithTempo = false;
 	iDeltaTime = 60 / mTempo;
-	iTempoTime = 0.0;
-	iTimeFactor = 1.0;
 	// shader uniforms
-	iGlobalTime = iSpeedMultiplier = 1.0f;
 	iResolution = Vec3f(mRenderWidth, mRenderHeight, 1.0);
 	for (int i = 0; i < 4; i++)
 	{
@@ -437,29 +501,22 @@ void ParameterBag::reset()
 #else
 	iDebug = false;
 #endif  // _DEBUG
-	iFade = mSendToOutput = iLight = iLightAuto = iRepeat = false;
 	iFps = 60.0;
 	sFps = "60";
 	iShowFps = true;
 	iMouse = Vec4f(mRenderWidth / 2, mRenderHeight / 2, 1.0, 1.0);
-	iGreyScale = false;
-
-	// transition
-	iTransition = 0;
-	iAnim = 0.0;
-	mTransitionDuration = 1.0f;
 
 	multFactor = 126.0;
 	currentSelectedIndex = 0;
 	selectedWarp = 0;
-	iChannels[0] = 0;
-	for (int a = 1; a < 8; a++)
+	//iChannels[0] = 0;
+	for (int a = 0; a < MAX; a++)
 	{
 		iChannels[a] = a;
 	}
-	iChannels[4] = 10;
+	iChannels[4] = 10;//spout
 	selectedChannel = 0;
-	// fbo indexes for warp
+	// fbo indexes for warp (should be constants)
 	mFboResolution = 2048;
 	mMixFboIndex = 0;
 	mLeftFboIndex = 1;
@@ -540,58 +597,7 @@ void ParameterBag::reset()
 	iGreenMultiplier = 1.0f;
 	iBlueMultiplier = 1.0f;
 
-	// red
-	controlValues[1] = 1.0f;
-	// green
-	controlValues[2] = 0.3f;
-	// blue
-	controlValues[3] = 0.0f;
-	// Alpha 
-	controlValues[4] = 1.0f;
-	// background red
-	controlValues[5] = 0.1f;
-	// background green
-	controlValues[6] = 0.1f;
-	// background blue
-	controlValues[7] = 0.1f;
-	// background alpha
-	controlValues[8] = 0.2f;
-	// pointsphere zPosition
-	controlValues[9] = -0.7f;
-	// iChromatic
-	controlValues[10] = 0.0f;
-	// ratio
-	controlValues[11] = 20.0f;
-	// Speed 
-	controlValues[12] = 12.0f;
-	// Audio multfactor 
-	controlValues[13] = 1.0f;
-	// exposure
-	controlValues[14] = 1.0f;
-	// Pixelate
-	controlValues[15] = 1.0f;
-	// Trixels
-	controlValues[16] = 0.0f; 
-	// GridSize
-	controlValues[17] = 0.0f; 
-	// iCrossfade
-	controlValues[18] = 1.0f;
-	// RotationSpeed
-	controlValues[19] = 0.0f;
-	// Steps
-	controlValues[20] = 16.0f;
-	// iPreviewCrossfade
-	controlValues[21] = 1.0f;
-	// zoom
-	controlValues[22] = iZoomLeft = iZoomRight = 1.0f;
-	// glitch
-	controlValues[45] = 0.0f;
-	// toggle
-	controlValues[46] = 0.0f;
-	// vignette
-	controlValues[47] = 0.0f;
-	// invert
-	controlValues[48] = 0.0f;
-	autoInvert = false;
+	resetSomeParams();
+
 
 }

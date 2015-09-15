@@ -91,6 +91,7 @@ namespace Reymenta {
 		bool						save();
 		bool						restore();
 		void						reset();
+		void						resetSomeParams();
 
 		std::string mParamString;
 		//fonts
@@ -159,12 +160,13 @@ namespace Reymenta {
 		float						iRedMultiplier;
 		float						iGreenMultiplier;
 		float						iBlueMultiplier;
+		float						iParam1;
+		float						iParam2;
+		bool						iXorY;
 		const int					maxBlendMode = 28;
 		const float					maxExposure = 3.0;
 
 		string						mAssetsPath;
-		//bool						iFlipHorizontally;
-		//bool						iFlipVertically;
 		bool						iShowFps;
 		bool						iDebug;
 		float						iFps;

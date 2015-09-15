@@ -125,7 +125,7 @@ namespace Reymenta
 		LoggerRef					log;	
 		char						buf[32];
 
-		static const int			mTexturesCount = 12; //match MAX from mParameterBag
+		//static const int			mTexturesCount = 12; //match MAX from mParameterBag
 
 		//ci::gl::Texture				previousTexture;
 		//ci::gl::Texture				currentTexture;
