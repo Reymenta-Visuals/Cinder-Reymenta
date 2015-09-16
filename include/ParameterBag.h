@@ -163,6 +163,7 @@ namespace Reymenta {
 		float						iParam1;
 		float						iParam2;
 		bool						iXorY;
+		float						iBadTv;
 		const int					maxBlendMode = 28;
 		const float					maxExposure = 3.0;
 

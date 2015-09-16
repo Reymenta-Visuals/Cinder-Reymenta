@@ -1028,6 +1028,7 @@ void Textures::draw()
 	aShader->uniform("iParam1", mParameterBag->iParam1);
 	aShader->uniform("iParam2", mParameterBag->iParam2);
 	aShader->uniform("iXorY", mParameterBag->iXorY);
+	aShader->uniform("iBadTv", mParameterBag->iBadTv);
 
 	sTextures[6].bind(0);
 	sTextures[7].bind(1);

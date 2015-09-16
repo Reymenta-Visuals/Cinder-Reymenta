@@ -352,7 +352,7 @@ void ParameterBag::resetSomeParams() {
 	maxEyePointZ = 0.0;
 	tEyePointZ = autoEyePointZ = false;
 	// unicorns
-	iTempoTime = 0.0;
+	iTempoTime = iBadTv = 0.0;
 	iTimeFactor = iParam1 = iParam2 = 1.0f;
 	iGlobalTime = iSpeedMultiplier = 1.0f;
 
