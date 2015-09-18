@@ -519,6 +519,9 @@ void Batchass::calculateTempo()
 	mParameterBag->iDeltaTime = averageTime;
 	mParameterBag->mTempo = 60 / averageTime;
 }
+void Batchass::stopLoading() {
+	mTextures->stopLoading();
+}
 void Batchass::setTimeFactor(const int &aTimeFactor)
 {
 	switch (aTimeFactor)

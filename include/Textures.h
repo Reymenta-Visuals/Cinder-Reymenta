@@ -46,6 +46,7 @@ namespace Reymenta
 		char						folder[32];
 		string						prefix;
 		string						ext;
+		int							numberOfDigits;
 		int							nextIndexFrameToTry;
 		int							currentLoadedFrame;
 		int							index;
@@ -103,6 +104,7 @@ namespace Reymenta
 		void						stopSequence(int textureIndex);
 		void						pauseSequence(int textureIndex);
 		void						toggleLoadingFromDisk(int textureIndex);
+		void						stopLoading();
 		int							getPlayheadPosition(int textureIndex);
 		void						setPlayheadPosition(int textureIndex, int position);
 

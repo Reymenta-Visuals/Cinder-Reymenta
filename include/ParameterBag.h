@@ -150,7 +150,7 @@ namespace Reymenta {
 		float						iSpeedMultiplier;        // speed multiplier
 		float						iChannelTime[4];
 		Vec3f						iResolution;        // viewport resolution (in pixels)
-		Vec3f						iChannelResolution[4];	// channel resolution (in pixels)
+		Vec3f						iChannelResolution[MAX];	// channel resolution (in pixels)
 		Vec4f						iMouse;             // mouse pixel coords. xy: current (if MLB down), zw: click
 		bool						iFade;
 		bool						iRepeat;

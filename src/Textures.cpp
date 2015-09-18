@@ -1135,7 +1135,9 @@ void Textures::createFromDir(string filePath, int index)
 	seq.nextIndexFrameToTry = 0;
 	seq.playing = false;
 	seq.speed = 1;
+	seq.numberOfDigits = 4;
 	sprintf_s(seq.folder, "");
+	// find the folder name for display in the ui
 	if (filePath.find_last_of("\\") != std::string::npos) {
 		int slashIndex = filePath.find_last_of("\\") + 1;
 		string folder = filePath.substr(slashIndex);
@@ -1155,28 +1157,39 @@ void Textures::createFromDir(string filePath, int index)
 				seq.ext = fileName.substr(dotIndex + 1);
 				// get the prefix for the image sequence
 				// the files are named from p0000.jpg to p2253.jpg for instance
-				int prefixIndex = fileName.find_last_of(".") - 4;
-				seq.prefix = fileName.substr(0, prefixIndex);
-				if (!firstIndexFound) {
-					firstIndexFound = true;
-					seq.nextIndexFrameToTry = std::stoi(fileName.substr(prefixIndex, dotIndex));
+				// sometimes only 3 digits : l000 this time
+				// find the first digit
+				int firstDigit = fileName.find_first_of("0123456789");
+				// if valid image sequence (contains a digit)
+				if (firstDigit > -1) {
+					seq.numberOfDigits = dotIndex - firstDigit;
+					int prefixIndex = fileName.find_last_of(".") - seq.numberOfDigits;//-4 or -3
+					seq.prefix = fileName.substr(0, prefixIndex);
+					if (!firstIndexFound) {
+						firstIndexFound = true;
+						seq.nextIndexFrameToTry = std::stoi(fileName.substr(prefixIndex, dotIndex));
+					}
+
 				}
 			}
-			if (seq.ext == "png" || seq.ext == "jpg")
-			{
-				if (noValidFile)
+			// only if proper image sequence
+			if (firstIndexFound) {
+				if (seq.ext == "png" || seq.ext == "jpg")
 				{
-					// we found a valid file
-					noValidFile = false;
-					seq.sequenceTextures.clear();
-					// reset playhead to the start
-					seq.playheadPosition = 0;
-					sequences.push_back(seq);
-					textas[seq.index].sequenceIndex = sequences.size() - 1;
-					sprintf_s(textas[seq.index].name, "%s", seq.folder);
-					textas[seq.index].isSequence = true;
-					loadNextImageFromDisk(sequences.size() - 1);
-					seq.playing = true;
+					if (noValidFile)
+					{
+						// we found a valid file
+						noValidFile = false;
+						seq.sequenceTextures.clear();
+						// reset playhead to the start
+						seq.playheadPosition = 0;
+						sequences.push_back(seq);
+						textas[seq.index].sequenceIndex = sequences.size() - 1;
+						sprintf_s(textas[seq.index].name, "%s", seq.folder);
+						textas[seq.index].isSequence = true;
+						loadNextImageFromDisk(sequences.size() - 1);
+						seq.playing = true;
+					}
 				}
 			}
 		}
@@ -1196,13 +1209,26 @@ ci::gl::Texture Textures::getCurrentSequenceTexture(int sequenceIndex) {
 	}
 	return sequences[sequenceIndex].sequenceTextures[sequences[sequenceIndex].playheadPosition];
 }
+void Textures::stopLoading() {
+	for (int i = 0; i < sequences.size(); i++)
+	{
+		sequences[i].loadingPaused = true;
+	}
+}
 void Textures::loadNextImageFromDisk(int currentSeq) {
 	if (!sequences[currentSeq].loadingPaused) {
 
 		if (!sequences[currentSeq].loadingFilesComplete) {
 			// thank you Omar!
 			char restOfFileName[32];
-			sprintf(restOfFileName, "%04d", sequences[currentSeq].nextIndexFrameToTry);
+			if (sequences[currentSeq].numberOfDigits == 4) {
+				sprintf(restOfFileName, "%04d", sequences[currentSeq].nextIndexFrameToTry);
+
+			}
+			else {
+				sprintf(restOfFileName, "%03d", sequences[currentSeq].nextIndexFrameToTry);
+
+			}
 
 			fs::path fileToLoad = sequences[currentSeq].filePath + sequences[currentSeq].prefix + restOfFileName + "." + sequences[currentSeq].ext;
 			if (fs::exists(fileToLoad)) {
@@ -1258,35 +1284,6 @@ void Textures::updateSequence(int sequenceIndex)
 			if (newPosition < 0) newPosition = sequences[sequenceIndex].sequenceTextures.size() - 1;
 			if (newPosition > sequences[sequenceIndex].sequenceTextures.size() - 1) newPosition = 0;
 			sequences[sequenceIndex].playheadPosition = max(0, min(newPosition, (int)sequences[sequenceIndex].sequenceTextures.size() - 1));
-
-			/*
-
-			{
-			if (looping)
-			{
-			complete = false;
-			sequences[sequenceIndex].playheadPosition = newPosition - sequences[sequenceIndex].sequenceTextures.size();
-			}
-			else {
-			complete = true;
-			}
-			}
-			else if (newPosition < 0) {
-			if (looping)
-			{
-			complete = false;
-			sequences[sequenceIndex].playheadPosition = sequences[sequenceIndex].sequenceTextures.size() - abs(newPosition);
-			}
-			else {
-			complete = true;
-			}
-			}
-			else {
-			complete = false;
-			sequences[sequenceIndex].playheadPosition = newPosition;
-			}*/
-
-
 
 		}
 		sTextures[sequences[sequenceIndex].index] = getCurrentSequenceTexture(sequenceIndex);

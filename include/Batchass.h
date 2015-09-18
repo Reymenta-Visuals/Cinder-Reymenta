@@ -111,6 +111,7 @@ namespace Reymenta
 		void						createWarp();
 		void						assignFboToWarp(int index, int fbo);
 		void						assignTextureToChannel(int selectedTexture_index, int selectedChannel);
+		void						stopLoading();
 		// MIDI
 		void						midiSetup();
 		int							midiInCount() { return mMessageRouter->getMidiInPortsCount(); };

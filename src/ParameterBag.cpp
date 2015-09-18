@@ -491,7 +491,7 @@ void ParameterBag::reset()
 	{
 		iChannelTime[i] = i;
 	}
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < MAX; i++)
 	{
 		iChannelResolution[i] = Vec3f(mRenderWidth, mRenderHeight, 1.0);
 	}	
