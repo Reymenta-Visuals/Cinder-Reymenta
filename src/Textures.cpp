@@ -376,6 +376,10 @@ void Textures::renderShadaThumbFbo()
 		aShader->uniform("iFps", mParameterBag->iFps);
 		aShader->uniform("iTempoTime", mParameterBag->iTempoTime);
 		aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
+		aShader->uniform("iBeat", mParameterBag->iBeat);
+		aShader->uniform("iSeed", mParameterBag->iSeed);
+		aShader->uniform("iFlipH", mFbos[mParameterBag->mMixFboIndex].isFlipH);
+		aShader->uniform("iFlipV", mFbos[mParameterBag->mMixFboIndex].isFlipV);
 
 		for (size_t m = 0; m < 2; m++)
 		{

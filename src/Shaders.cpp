@@ -124,8 +124,8 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 		mFragFile = localFile.string();
 		loadPixelFragmentShader(localFile.string());
 	}
-	// load 5.glsl to 7.glsl from assets folder
-	for (size_t m = 5; m < 8; m++)
+	// load 5.glsl to 15.glsl from assets folder
+	for (size_t m = 5; m < mParameterBag->MAX; m++)
 	{
 		fileName = toString(m) + ".glsl";
 		localFile = getAssetPath("") / mParameterBag->mAssetsPath / fileName;
@@ -358,8 +358,6 @@ int Shaders::loadPixelFragmentShaderAtIndex(string aFilePath, int index)
 				mParameterBag->mMsg = name + " loadPixelFragmentShaderAtIndex success";
 				mParameterBag->newMsg = true;
 			}
-			
-
 		}
 		else
 		{

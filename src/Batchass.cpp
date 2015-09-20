@@ -24,7 +24,7 @@ Batchass::Batchass(ParameterBagRef aParameterBag)
 	maxChromatic = 1.0;
 	tChromatic = autoChromatic = false;
 	// ratio
-	defaultRatio = 1.0;
+	defaultRatio = 20.0;
 	minRatio = 0.00000000001;
 	maxRatio = 20.0;
 	tRatio = autoRatio = false;

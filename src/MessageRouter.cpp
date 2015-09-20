@@ -20,7 +20,7 @@ MessageRouter::MessageRouter(ParameterBagRef aParameterBag, TexturesRef aTexture
 	clientConnected = false;
 	if (mParameterBag->mAreWebSocketsEnabledAtStartup) wsConnect();
 	mPingTime = getElapsedSeconds();
-
+	if (mParameterBag->mMIDIOpenAllInputPorts) midiSetup();
 }
 
 MessageRouterRef MessageRouter::create(ParameterBagRef aParameterBag, TexturesRef aTexturesRef, ShadersRef aShadersRef)
