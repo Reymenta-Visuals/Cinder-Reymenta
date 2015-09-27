@@ -24,7 +24,7 @@ WarpWrapper::WarpWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesRef
 		// otherwise create a warp from scratch
 		mWarps.push_back(WarpPerspectiveBilinear::create());
 	}
-	log->logTimedString("Warps size" + mWarps.size());
+	log->logTimedString("Warps size: " + toString(mWarps.size()));
 	// vector + dynamic resize
 	for (int a = 0; a < mWarps.size(); a++)
 	{

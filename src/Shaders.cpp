@@ -470,7 +470,38 @@ int Shaders::setGLSLString(string pixelFrag, string name)
 		if (mFragmentShaders.size() < mParameterBag->MAX)
 		{
 			Shada newShader;
-			newShader.shader = gl::GlslProg::create(NULL, currentFrag.c_str());
+			//begin
+			newShader.shader = gl::GlslProg::create(gl::GlslProg::Format()
+				.vertex(
+
+				R"(
+				#version 130
+
+				void main()
+				{
+					gl_FrontColor = gl_Color;
+					gl_TexCoord[0] = gl_MultiTexCoord0;
+					gl_Position = ftransform();
+				})"
+				)
+				.fragment(
+				R"(
+				#version 130
+
+				void main()
+				{
+					
+					gl_FragColor = vec4(1.0,0.,0.,1.0);
+				})"
+				)
+				.attribLocation("iPosition", 0)
+				.attribLocation("iUv", 1)
+				.attribLocation("iColor", 2)
+				);
+
+
+			//end 	currentFrag.c_str()
+			//newShader.shader = gl::GlslProg::create(NULL, currentFrag.c_str());
 			newShader.name = name;
 			newShader.active = true;
 			mFragmentShaders.push_back(newShader);
@@ -500,9 +531,11 @@ int Shaders::setGLSLString(string pixelFrag, string name)
 		mError = "";
 		validFrag = true;
 	}
-	catch (gl::GlslProgCompileExc &exc)
+	catch (gl::GlslProgCompileExc exc)
 	{
 		validFrag = false;
+		// TODO CI_LOG_E("Problem Compiling ImGui::Renderer shader " << exc.what());
+
 		mError = string(exc.what());
 		log->logTimedString("setGLSLString error: " + mError);
 		mParameterBag->mMsg = mError;
