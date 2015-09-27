@@ -35,11 +35,11 @@ ParameterBagRef ParameterBag::create()
 bool ParameterBag::save()
 {
 	fs::path directory = getAssetPath("");
-	if (!fs::exists(directory)) {
+	/*if (!fs::exists(directory)) {
 		if (!createDirectories(directory / settingsFileName)) {
 			return false;
 		}
-	}
+	}*/
 
 	fs::path path = directory / settingsFileName;
 
@@ -48,6 +48,22 @@ bool ParameterBag::save()
 	XmlTree AutoLayout("AutoLayout", "");
 	AutoLayout.setAttribute("value", toString(mAutoLayout));
 	settings.push_back(AutoLayout);
+
+	XmlTree CustomLayout("CustomLayout", "");
+	CustomLayout.setAttribute("value", toString(mCustomLayout));
+	settings.push_back(CustomLayout);
+
+	XmlTree Standalone("Standalone", "");
+	Standalone.setAttribute("value", toString(mStandalone));
+	settings.push_back(Standalone);
+
+	XmlTree MainWindowWidth("MainWindowWidth", "");
+	MainWindowWidth.setAttribute("value", toString(mMainWindowWidth));
+	settings.push_back(MainWindowWidth);
+
+	XmlTree MainWindowHeight("MainWindowHeight", "");
+	MainWindowHeight.setAttribute("value", toString(mMainWindowHeight));
+	settings.push_back(MainWindowHeight);
 
 	XmlTree RenderWidth("RenderWidth", "");
 	RenderWidth.setAttribute("value", toString(mRenderWidth));
@@ -65,6 +81,10 @@ bool ParameterBag::save()
 	RenderY.setAttribute("value", toString(mRenderY));
 	settings.push_back(RenderY);
 
+	XmlTree AspectRatio("AspectRatio", "");
+	AspectRatio.setAttribute("value", toString(mAspectRatio));
+	settings.push_back(AspectRatio);
+
 	XmlTree FboWidth("FboWidth", "");
 	FboWidth.setAttribute("value", toString(mFboWidth));
 	settings.push_back(FboWidth);
@@ -72,6 +92,14 @@ bool ParameterBag::save()
 	XmlTree FboHeight("FboHeight", "");
 	FboHeight.setAttribute("value", toString(mFboHeight));
 	settings.push_back(FboHeight);
+
+	XmlTree MIDIEnabled("MIDIEnabled", "");
+	MIDIEnabled.setAttribute("value", toString(mMIDIEnabled));
+	settings.push_back(MIDIEnabled);
+
+	XmlTree OSCEnabled("OSCEnabled", "");
+	OSCEnabled.setAttribute("value", toString(mOSCEnabled));
+	settings.push_back(OSCEnabled);
 
 	XmlTree OSCReceiverPort("OSCReceiverPort", "");
 	OSCReceiverPort.setAttribute("value", toString(mOSCReceiverPort));
@@ -84,6 +112,14 @@ bool ParameterBag::save()
 	XmlTree OSCDestinationHost("OSCDestinationHost", "");
 	OSCDestinationHost.setAttribute("value", toString(mOSCDestinationHost));
 	settings.push_back(OSCDestinationHost);
+
+	XmlTree OSCDestinationPort2("OSCDestinationPort2", "");
+	OSCDestinationPort2.setAttribute("value", toString(mOSCDestinationPort2));
+	settings.push_back(OSCDestinationPort2);
+
+	XmlTree OSCDestinationHost2("OSCDestinationHost2", "");
+	OSCDestinationHost2.setAttribute("value", toString(mOSCDestinationHost2));
+	settings.push_back(OSCDestinationHost2);
 
 	XmlTree MIDIOpenAllInputPorts("MIDIOpenAllInputPorts", "");
 	MIDIOpenAllInputPorts.setAttribute("value", toString(mMIDIOpenAllInputPorts));
@@ -100,6 +136,42 @@ bool ParameterBag::save()
 	XmlTree IsOSCSender("IsOSCSender", "");
 	IsOSCSender.setAttribute("value", toString(mIsOSCSender));
 	settings.push_back(IsOSCSender);
+
+	XmlTree AreWebSocketsEnabledAtStartup("AreWebSocketsEnabledAtStartup", "");
+	AreWebSocketsEnabledAtStartup.setAttribute("value", toString(mAreWebSocketsEnabledAtStartup));
+	settings.push_back(AreWebSocketsEnabledAtStartup);
+
+	XmlTree IsWebSocketsServer("IsWebSocketsServer", "");
+	IsWebSocketsServer.setAttribute("value", toString(mIsWebSocketsServer));
+	settings.push_back(IsWebSocketsServer);
+
+	XmlTree WebSocketsHost("WebSocketsHost", "");
+	WebSocketsHost.setAttribute("value", toString(mWebSocketsHost));
+	settings.push_back(WebSocketsHost);
+
+	XmlTree WebSocketsPort("WebSocketsPort", "");
+	WebSocketsPort.setAttribute("value", toString(mWebSocketsPort));
+	settings.push_back(WebSocketsPort);
+
+	XmlTree FftSize("FftSize", "");
+	FftSize.setAttribute("value", toString(mFftSize));
+	settings.push_back(FftSize);
+
+	XmlTree WindowSize("WindowSize", "");
+	WindowSize.setAttribute("value", toString(mWindowSize));
+	settings.push_back(WindowSize);
+
+	XmlTree Info("Info", "");
+	Info.setAttribute("value", toString(mInfo));
+	settings.push_back(Info);
+
+	XmlTree AssetsPath("AssetsPath", "");
+	AssetsPath.setAttribute("value", toString(mAssetsPath));
+	settings.push_back(AssetsPath);
+
+	XmlTree UseLineIn("UseLineIn", "");
+	UseLineIn.setAttribute("value", toString(mUseLineIn));
+	settings.push_back(UseLineIn);
 
 	// write XML file
 	settings.write(writeFile(path));
@@ -121,17 +193,37 @@ bool ParameterBag::restore()
 		else {
 			const XmlTree settings = xml.getChild("settings");
 
+			if (settings.hasChild("Standalone")) {
+				XmlTree Standalone = settings.getChild("Standalone");
+				mStandalone = Standalone.getAttributeValue<bool>("value");
+			}
 			if (settings.hasChild("AutoLayout")) {
 				XmlTree AutoLayout = settings.getChild("AutoLayout");
 				mAutoLayout = AutoLayout.getAttributeValue<bool>("value");
+			}
+			if (settings.hasChild("AspectRatio")) {
+				XmlTree AspectRatio = settings.getChild("AspectRatio");
+				mAspectRatio = AspectRatio.getAttributeValue<float>("value");
 			}
 			if (settings.hasChild("FboWidth")) {
 				XmlTree FboWidth = settings.getChild("FboWidth");
 				mFboWidth = FboWidth.getAttributeValue<int>("value");
 			}
+			if (settings.hasChild("OSCEnabled")) {
+				XmlTree OSCEnabled = settings.getChild("OSCEnabled");
+				mOSCEnabled = OSCEnabled.getAttributeValue<bool>("value");
+			}
 			if (settings.hasChild("FboHeight")) {
 				XmlTree FboHeight = settings.getChild("FboHeight");
 				mFboHeight = FboHeight.getAttributeValue<int>("value");
+			}
+			if (settings.hasChild("MIDIEnabled")) {
+				XmlTree MIDIEnabled = settings.getChild("MIDIEnabled");
+				mMIDIEnabled = MIDIEnabled.getAttributeValue<bool>("value");
+			}
+			if (settings.hasChild("OSCEnabled")) {
+				XmlTree OSCEnabled = settings.getChild("OSCEnabled");
+				mOSCEnabled = OSCEnabled.getAttributeValue<bool>("value");
 			}
 			if (settings.hasChild("OSCReceiverPort")) {
 				XmlTree OSCReceiverPort = settings.getChild("OSCReceiverPort");
@@ -149,6 +241,14 @@ bool ParameterBag::restore()
 				XmlTree OSCDestinationHost = settings.getChild("OSCDestinationHost");
 				mOSCDestinationHost = OSCDestinationHost.getAttributeValue<string>("value");
 			}
+			if (settings.hasChild("OSCDestinationPort2")) {
+				XmlTree OSCDestinationPort2 = settings.getChild("OSCDestinationPort2");
+				mOSCDestinationPort2 = OSCDestinationPort2.getAttributeValue<int>("value");
+			}
+			if (settings.hasChild("OSCDestinationHost2")) {
+				XmlTree OSCDestinationHost2 = settings.getChild("OSCDestinationHost2");
+				mOSCDestinationHost2 = OSCDestinationHost2.getAttributeValue<string>("value");
+			}
 			if (settings.hasChild("MIDIOpenAllInputPorts")) {
 				XmlTree MIDIOpenAllInputPorts = settings.getChild("MIDIOpenAllInputPorts");
 				mMIDIOpenAllInputPorts = MIDIOpenAllInputPorts.getAttributeValue<bool>("value");
@@ -161,9 +261,57 @@ bool ParameterBag::restore()
 				XmlTree CursorVisible = settings.getChild("CursorVisible");
 				mCursorVisible = CursorVisible.getAttributeValue<bool>("value");
 			}
+			if (settings.hasChild("AreWebSocketsEnabledAtStartup")) {
+				XmlTree AreWebSocketsEnabledAtStartup = settings.getChild("AreWebSocketsEnabledAtStartup");
+				mAreWebSocketsEnabledAtStartup = AreWebSocketsEnabledAtStartup.getAttributeValue<bool>("value");
+			}
+			if (settings.hasChild("IsWebSocketsServer")) {
+				XmlTree IsWebSocketsServer = settings.getChild("IsWebSocketsServer");
+				mIsWebSocketsServer = IsWebSocketsServer.getAttributeValue<bool>("value");
+			}
+			if (settings.hasChild("WebSocketsHost")) {
+				XmlTree WebSocketsHost = settings.getChild("WebSocketsHost");
+				mWebSocketsHost = WebSocketsHost.getAttributeValue<string>("value");
+			}
+			if (settings.hasChild("WebSocketsPort")) {
+				XmlTree WebSocketsPort = settings.getChild("WebSocketsPort");
+				mWebSocketsPort = WebSocketsPort.getAttributeValue<int>("value");
+			}
+			if (settings.hasChild("FftSize")) {
+				XmlTree FftSize = settings.getChild("FftSize");
+				mFftSize = FftSize.getAttributeValue<int>("value");
+			}
+			if (settings.hasChild("WindowSize")) {
+				XmlTree WindowSize = settings.getChild("WindowSize");
+				mWindowSize = WindowSize.getAttributeValue<int>("value");
+			}
+			if (settings.hasChild("CustomLayout")) {
+				XmlTree CustomLayout = settings.getChild("CustomLayout");
+				mCustomLayout = CustomLayout.getAttributeValue<bool>("value");
+			}
+			if (settings.hasChild("Info")) {
+				XmlTree Info = settings.getChild("Info");
+				mInfo = Info.getAttributeValue<string>("value");
+			}
+			if (settings.hasChild("AssetsPath")) {
+				XmlTree AssetsPath = settings.getChild("AssetsPath");
+				mAssetsPath = AssetsPath.getAttributeValue<string>("value");
+			}
+			if (settings.hasChild("UseLineIn")) {
+				XmlTree UseLineIn = settings.getChild("UseLineIn");
+				mUseLineIn = UseLineIn.getAttributeValue<bool>("value");
+			}
 			// if AutoLayout is false we have to read the custom screen layout
 			if (!mAutoLayout)
 			{
+				if (settings.hasChild("MainWindowWidth")) {
+					XmlTree MainWindowWidth = settings.getChild("MainWindowWidth");
+					mMainWindowWidth = MainWindowWidth.getAttributeValue<int>("value");
+				}
+				if (settings.hasChild("MainWindowHeight")) {
+					XmlTree MainWindowHeight = settings.getChild("MainWindowHeight");
+					mMainWindowHeight = MainWindowHeight.getAttributeValue<int>("value");
+				}
 				if (settings.hasChild("RenderWidth")) {
 					XmlTree RenderWidth = settings.getChild("RenderWidth");
 					mRenderWidth = RenderWidth.getAttributeValue<int>("value");
@@ -192,172 +340,30 @@ bool ParameterBag::restore()
 	}
 }
 
-void ParameterBag::reset()
-{
-	// parameters exposed in XML
-	mMIDIOpenAllInputPorts = true;
-	mAutoLayout = true;
-	mShowUI = true;
-	mCursorVisible = true;
-	mOutputVideoResolution = 1024;
-
-	// parameters not exposed in XML
-	mMainWindowX = 150;
-	mMainWindowY = 140;
-	mMainWindowWidth = 1280;
-	mMainWindowHeight = 720;
-	// render widths
-	mRenderWidth = 1024;
-	mRenderHeight = 768;
-	mRenderXY = mLeftRenderXY = mRightRenderXY = mPreviewRenderXY = vec2(0.0);
-	mRenderPosXY = vec2(0.0, 320.0);
-	mRenderResoXY = vec2(mRenderWidth, mRenderHeight);
-	mRenderResolution = ivec2(mRenderWidth, mRenderHeight);
-	mPreviewFragXY = vec2(0.0, 0.0);
-	mFboWidth = 640;
-	mFboHeight = 480;
-	mPreviewFboWidth = mFboWidth/4;
-	mPreviewFboHeight = mFboHeight / 4;
-	mPreviewWidth = 156;
-	mPreviewHeight = 88;
-	mRenderCodeEditorXY.x = 0;
-	mRenderCodeEditorXY.y = 0;
-	mCodeEditorWidth = 800;
-	mCodeEditorHeight = 600;
-
-	mWindowToCreate = NONE;
-
-	mMode = mPreviousMode = mNewMode = 1; // Mix mode by default
-	mCurrentFilePath = "currentMix.frag";
-	mMarginSmall = 2;
-
-	// OSC
-	mOSCDestinationHost = "127.0.0.1";
-	mOSCDestinationPort = 7001;
-	mOSCReceiverPort = 7000;
-	OSCMsg = "";
-	newOSCMsg = false;
-	mIsOSCSender = false;
-	InfoMsg = "";
-
-	mCamPosXY = vec2(0.0);
-	mCount = 1;
-	mZPosition = -0.7f;
+void ParameterBag::resetSomeParams() {
 	mLockFR = mLockFG = mLockFB = mLockFA = mLockBR = mLockBG = mLockBB = mLockBA = false;
 	tFR = tFG = tFB = tFA = tBR = tBG = tBB = tBA = false;
+	mCamPosXY = vec2(0.0f);
+	mCount = 1;
 
 	// EyePointZ
 	defaultEyePointZ = -400.f;
 	minEyePointZ = -800.0;
 	maxEyePointZ = 0.0;
 	tEyePointZ = autoEyePointZ = false;
+	// unicorns
+	iTempoTime = iBadTv = 0.0;
+	iTimeFactor = iParam1 = iParam2 = 1.0f;
+	iGlobalTime = iSpeedMultiplier = 1.0f;
 
-	mPreviewEnabled = true;
-	//audio
-	// audio in multiplication factor
-	mAudioMultFactor = 1.0;
-	mUseLineIn = true;
-	mIsPlaying = false;
-	mBeat = 0;
-	maxVolume = 0.0f;
-	mData = new float[1024];
-	for (int i = 0; i < 1024; i++)
-	{
-		mData[i] = 0;
-	}
-	for (int i = 0; i < 4; i++)
-	{
-		iFreqs[i] = i;
-	}
-
-	// tempo
-	mTempo = 166.0;
-	mUseTimeWithTempo = false;
-	iDeltaTime = 60 / mTempo;
-	iTempoTime = 0.0;
-	iTimeFactor = 1.0;
-	// shader uniforms
-	iGlobalTime = 1.0f;
-	iResolution = vec3(mRenderWidth, mRenderHeight, 1.0);
-	for (int i = 0; i < 4; i++)
-	{
-		iChannelTime[i] = i;
-	}
-	for (int i = 0; i < 4; i++)
-	{
-		iChannelResolution[i] = vec3(mRenderWidth, mRenderHeight, 1.0);
-	}	
-	iCrossfade = iPreviewCrossfade = 1.0;
-	iDebug = iFade = mSendToOutput = iLight = iLightAuto = iRepeat = false;
-	iFps = 60.0;
-	iShowFps = true;
-	iMouse = vec4(mRenderWidth / 2, mRenderHeight / 2, 1.0, 1.0);
 	iGreyScale = false;
+	iFade = mSendToOutput = iLight = iLightAuto = iRepeat = iXorY = false;
 
 	// transition
 	iTransition = 0;
 	iAnim = 0.0;
 	mTransitionDuration = 1.0f;
 
-	mOriginUpperLeft = false;
-	multFactor = 126.0;
-	currentSelectedIndex = 0;
-	iChannels[0] = 1;
-	for (int a = 1; a < 8; a++)
-	{
-		iChannels[a] = a;
-		iWarpFboChannels[a] = a;
-	}
-
-	FPSColor = ColorA(0.0f, 1.0f, 0.0f, 1.0f);
-	ColorGreen = ColorA(0.0f, 1.0f, 0.0f, 1.0f);
-	ColorRed = ColorA(1.0f, 0.0f, 0.0f, 1.0f);
-	ColorYellow = ColorA(1.0f, 1.0f, 0.0f, 1.0f);
-	ColorPurple = ColorA(0.5f, 0.0f, 1.0f, 1.0f);
-	isUIDirty = true;
-	//isShaderDirty = false;
-	mShaderToLoad = "";
-
-	mStateTransition = 1.0;
-
-	mOptimizeUI = false;
-	// spout
-	mOutputResolution = vec2(640, 480);
-	// meshes
-	mMeshIndex = 0;
-	// fbo indexes for warp
-	mFboResolution = 2048;
-	mCurrentPreviewFboIndex = 0;
-	mCurrentShadaFboIndex = 0;
-	mMixFboIndex = 1;
-	mAudioFboIndex = 2;
-	mWarpFboIndex = 3;
-	mSphereFboIndex = 4;
-	mMeshFboIndex = 5;
-	mLeftFboIndex = 6;
-	mRightFboIndex = 7;
-	mLiveFboIndex = 8;
-
-	mPreviewFragIndex = 0;
-	mPreviousFragIndex = 1;
-	mLeftFragIndex = 0;
-	mRightFragIndex = 1;
-
-	selectedWarp = 0;
-	mWarpCount = 3;
-	// initialize our camera
-	mCamEyePointXY = vec2(0.f, 0.f);
-	mCamEyePointZ = -400.f;
-	mCamera.setEyePoint(vec3(mCamEyePointXY.x, mCamEyePointXY.y, mCamEyePointZ));
-	mCamera.setCenterOfInterestPoint(vec3(0.f, 0.f, 0.f));
-
-	mUIRefresh = 1;
-
-	// midi and OSC
-	for (int c = 0; c < 128; c++)
-	{
-		controlValues[c] = 0.01f;
-	}
 	// red
 	controlValues[1] = 1.0f;
 	// green
@@ -374,22 +380,34 @@ void ParameterBag::reset()
 	controlValues[7] = 0.1f;
 	// background alpha
 	controlValues[8] = 0.2f;
+	// pointsphere zPosition
+	controlValues[9] = -0.7f;
+	// iChromatic
+	controlValues[10] = 0.0f;
 	// ratio
 	controlValues[11] = 20.0f;
 	// Speed 
 	controlValues[12] = 12.0f;
-	// zoom
-	controlValues[13] = iZoomLeft = iZoomRight = 1.0f;
+	// Audio multfactor 
+	controlValues[13] = 1.0f;
 	// exposure
 	controlValues[14] = 1.0f;
-	// Blendmode 
-	controlValues[15] = 0.0f;
-	// Steps
-	controlValues[16] = 16.0f;
 	// Pixelate
+	controlValues[15] = 1.0f;
+	// Trixels
+	controlValues[16] = 0.0f;
+	// GridSize
+	controlValues[17] = 0.0f;
+	// iCrossfade
 	controlValues[18] = 1.0f;
 	// RotationSpeed
-	controlValues[19] = 1.0f;
+	controlValues[19] = 0.0f;
+	// Steps
+	controlValues[20] = 16.0f;
+	// iPreviewCrossfade
+	controlValues[21] = 1.0f;
+	// zoom
+	controlValues[22] = iZoomLeft = iZoomRight = 1.0f;
 	// glitch
 	controlValues[45] = 0.0f;
 	// toggle
@@ -399,6 +417,187 @@ void ParameterBag::reset()
 	// invert
 	controlValues[48] = 0.0f;
 	autoInvert = false;
+}
+
+void ParameterBag::reset()
+{
+	// parameters exposed in XML
+	mMIDIOpenAllInputPorts = mRenderThumbs = mAutoLayout = mShowUI = mCursorVisible = true;
+	mStandalone = mCustomLayout = false;
+	mOutputVideoResolution = 1024;
+	mInfo = "";
+	mTrackName = "";
+	// parameters not exposed in XML
+	mMainWindowX = 0;
+	mMainWindowY = 0;
+	mMainWindowWidth = 1280;
+	mMainWindowHeight = 720;
+	// render widths
+	mRenderWidth = 1024;
+	mRenderHeight = 768;
+	mRenderXY = mLeftRenderXY = mRightRenderXY = mPreviewRenderXY = mWarp1RenderXY = mWarp2RenderXY = vec2(0.0f);
+	mRenderPosXY = vec2(0.0, 320.0);
+	mRenderResoXY = vec2(mRenderWidth, mRenderHeight);
+	mRenderResolution = ivec2(mRenderWidth, mRenderHeight);
+	mPreviewFragXY = vec2(0.0, 0.0);
+	mAspectRatio = 0.75; // ratio 4:3 (0.75) 16:9 (0.5625)
+	mFboWidth = 640;
+	mFboHeight = mFboWidth * mAspectRatio;
+	mPreviewFboWidth = 70;
+	mPreviewFboHeight = mPreviewFboWidth* mAspectRatio;
+	mPreviewWidth = 120;
+	mPreviewHeight = mPreviewWidth * mAspectRatio;
+	mRenderCodeEditorXY.x = 0;
+	mRenderCodeEditorXY.y = 0;
+	mCodeEditorWidth = 800;
+	mCodeEditorHeight = 600;
+
+	mWindowToCreate = NONE;
+
+	mMode = mPreviousMode = mNewMode = 0; // Mix mode by default
+	mCurrentFilePath = "currentMix.frag";
+	mAssetsPath = "";
+	mMarginSmall = 2;
+	mPreviewEnabled = true;
+	//audio
+	// audio in multiplication factor
+	//mAudioMultFactor = 1.0;
+	mUseLineIn = true;
+	mIsPlaying = false;
+	iBeat = 0;
+	iSeed = 0.1;
+	mFftSize = 512;
+	mWindowSize = 1024;
+
+	maxVolume = 0.0f;
+	liveMeter = 0.0f;
+	mData = new float[1024];
+	for (int i = 0; i < 1024; i++)
+	{
+		mData[i] = 0;
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		iFreqs[i] = i;
+	}
+
+	// tempo
+	mTempo = 166.0;
+	mUseTimeWithTempo = false;
+	iDeltaTime = 60 / mTempo;
+	// shader uniforms
+	iResolution = vec3(mRenderWidth, mRenderHeight, 1.0);
+	for (int i = 0; i < 4; i++)
+	{
+		iChannelTime[i] = i;
+	}
+	for (int i = 0; i < MAX; i++)
+	{
+		iChannelResolution[i] = vec3(mRenderWidth, mRenderHeight, 1.0);
+	}
+	controlValues[18] = controlValues[21] = 1.0;
+#ifdef _DEBUG
+	iDebug = true;
+#else
+	iDebug = false;
+#endif  // _DEBUG
+	iFps = 60.0;
+	sFps = "60";
+	iShowFps = true;
+	iMouse = vec4(mRenderWidth / 2, mRenderHeight / 2, 1.0, 1.0);
+
+	multFactor = 126.0;
+	currentSelectedIndex = 0;
+	selectedWarp = 0;
+	//iChannels[0] = 0;
+	for (int a = 0; a < MAX; a++)
+	{
+		iChannels[a] = a;
+	}
+	iChannels[4] = 10;//spout
+	selectedChannel = 0;
+	// fbo indexes for warp (should be constants)
+	mFboResolution = 2048;
+	mMixFboIndex = 0;
+	mLeftFboIndex = 1;
+	mRightFboIndex = 2;
+	mWarp1FboIndex = 3;
+	mWarp2FboIndex = 4;
+	mCurrentPreviewFboIndex = 5;
+	mABPFboIndex = 6;
+	mLiveFboIndex = 7;
+	mSphereFboIndex = 8;
+	mMeshFboIndex = 9;
+	mAudioFboIndex = 10;
+	mVertexSphereFboIndex = 11;
+
+	mPreviewFragIndex = 0;
+	mPreviousFragIndex = 1;
+	mLeftFragIndex = 0;
+	mRightFragIndex = 1;
+	mWarp1FragIndex = 2;
+	mWarp2FragIndex = 3;
+	mLiveFragIndex = 7;
+	mWarpCount = 3;
+	FPSColor = ColorA(0.0f, 1.0f, 0.0f, 1.0f);
+	ColorGreen = ColorA(0.0f, 1.0f, 0.0f, 1.0f);
+	ColorRed = ColorA(1.0f, 0.0f, 0.0f, 1.0f);
+	ColorYellow = ColorA(1.0f, 1.0f, 0.0f, 1.0f);
+	ColorPurple = ColorA(0.5f, 0.0f, 1.0f, 1.0f);
+	isUIDirty = true;
+	mLiveCode = false;
+	mShaderToLoad = "";
+
+	mStateTransition = 1.0;
+
+	mOptimizeUI = false;
+	// spout
+	mOutputResolution = vec2(640, 480);
+	// meshes
+	mMeshIndex = 0;
+	// vertex sphere
+	mVertexSphereTextureIndex = 1;
+
+	// initialize our camera
+	mCamEyePointXY = vec2(0.f, 0.f);
+	mCamEyePointZ = -400.f;
+	mCamera.setEyePoint(vec3(mCamEyePointXY.x, mCamEyePointXY.y, mCamEyePointZ));
+	//mCamera.setCenterOfInterestPoint(vec3(0.f, 0.f, 0.f));
+
+	mUIRefresh = 1;
+
+	// midi
+	mMIDIEnabled = true;
+	for (int c = 0; c < 128; c++)
+	{
+		controlValues[c] = 0.01f;
+	}
+	// OSC
+	mOSCEnabled = true;
+	mOSCDestinationHost = "127.0.0.1";
+	mOSCDestinationPort = 7001;
+	mOSCDestinationHost2 = "127.0.0.1";
+	mOSCDestinationPort2 = 7002;
+	mOSCReceiverPort = 7000;
+	mMsg = "";
+	newMsg = false;
+	InfoMsg = "";
+	mIsOSCSender = false;
+	// web sockets
+	mAreWebSocketsEnabledAtStartup = false;
+	mIsWebSocketsServer = false;
+	mWebSocketsHost = "localhost";
+	mWebSocketsPort = 9002;
+	// Blendmode 
+	iBlendMode = 0;
 	// abp
-	mBend = 0.0f;
+	mBend = 1.0f;
+	// mix shader color multipliers
+	iRedMultiplier = 1.0f;
+	iGreenMultiplier = 1.0f;
+	iBlueMultiplier = 1.0f;
+
+	resetSomeParams();
+
+
 }

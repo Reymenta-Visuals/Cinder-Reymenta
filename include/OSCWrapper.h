@@ -1,8 +1,6 @@
 #pragma once
 
 #include "cinder/app/App.h"
-#include "cinder/app/RendererGl.h"
-
 #include "OscListener.h"
 #include "OSCSender.h"
 #include "Resources.h"

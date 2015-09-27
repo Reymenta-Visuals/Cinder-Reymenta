@@ -11,9 +11,9 @@ WarpWrapper::WarpWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesRef
 	log = Logger::create("WarpWrapperLog.txt");
 	log->logTimedString("WarpWrapper constructor");
 
+	mUseBeginEnd = false;
 	// initialize warps
-	log->logTimedString("Loading MixnMapWarps.xml");
-	fs::path settings = getAssetPath("") / warpsFileName;
+	fs::path settings = getAssetPath("") / "warps.xml";
 	if (fs::exists(settings))
 	{
 		// load warp settings from file if one exists
@@ -24,33 +24,72 @@ WarpWrapper::WarpWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesRef
 		// otherwise create a warp from scratch
 		mWarps.push_back(WarpPerspectiveBilinear::create());
 	}
-	/*for (auto &warp : mWarps)
+	log->logTimedString("Warps size" + mWarps.size());
+	// vector + dynamic resize
+	for (int a = 0; a < mWarps.size(); a++)
 	{
-		mTextures->createWarpInput();
-	}*/
+		WarpFbo newWarpFbo;
+		if (a == 0)
+		{
+			newWarpFbo.textureIndex = 0; // spout
+			newWarpFbo.textureMode = mParameterBag->TEXTUREMODEINPUT;
+			newWarpFbo.active = true;
+			newWarpFbo.fbo = gl::Fbo::create(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
+		}
+		else
+		{
+			newWarpFbo.textureIndex = 0; // index of MixFbo for shadamixa
+			newWarpFbo.textureMode = mParameterBag->TEXTUREMODESHADER;
+			newWarpFbo.active = false;
+			newWarpFbo.fbo = gl::Fbo::create(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight);
+		}
+		mParameterBag->mWarpFbos.push_back(newWarpFbo);
+	}
+
+	mSrcArea = mTextures->getTexture(1)->getBounds();
+
 	// adjust the content size of the warps
-	Warp::setSize(mWarps, ivec2(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight));//mTextures->getTexture(0)->getSize());
-	log->logTimedString("Warps count " + toString(mWarps.size()));
+	Warp::setSize(mWarps, mTextures->getFboTexture(mParameterBag->mMixFboIndex)->getSize());
+
+	gl::enableDepthRead();
+	gl::enableDepthWrite();
+}
+void WarpWrapper::createWarp()
+{
+	// create a new warp
+	int odd = (mWarps.size() % 2 == 0);
+	WarpFbo newWarpFbo;
+	newWarpFbo.textureIndex = 3 + odd; // index of MixFbo for shadamixa
+	newWarpFbo.textureMode = mParameterBag->TEXTUREMODESHADER;
+	newWarpFbo.active = false;
+	newWarpFbo.fbo = gl::Fbo::create(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
+
+	mParameterBag->mWarpFbos.push_back(newWarpFbo);
+
+	mWarps.push_back(WarpPerspectiveBilinear::create());
 
 }
-void WarpWrapper::createWarps(int count)
+
+void WarpWrapper::load()
 {
-	if (count > mWarps.size())
+	fs::path settings = getAssetPath("") / "warps.xml";
+	Warp::writeSettings(mWarps, writeFile(settings));
+}
+void WarpWrapper::loadWarps(const std::string &filename)
+{
+	fs::path settings = filename;
+	if (fs::exists(settings))
 	{
-		for (int i = mWarps.size(); i < count; i++)
-		{
-			mWarps.push_back(WarpPerspectiveBilinear::create());
-			//mTextures->createWarpInput();
-		}
+		// load warp settings from file if one exists
+		mWarps = Warp::readSettings(loadFile(settings));
 	}
 }
-
-void WarpWrapper::save()
+void WarpWrapper::save(const std::string &filename)
 {
-	fs::path settings = getAssetPath("") / warpsFileName;
+	fs::path settings = getAssetPath("") / filename;
 	Warp::writeSettings(mWarps, writeFile(settings));
-
 }
+
 void WarpWrapper::resize()
 {
 	// tell the warps our window has been resized, so they properly scale up or down
@@ -97,56 +136,30 @@ void WarpWrapper::keyDown(KeyEvent event)
 		// warp editor did not handle the key, so handle it here
 		switch (event.getCode())
 		{
-		case KeyEvent::KEY_n:
-			// create a warp
-			mWarps.push_back(WarpPerspectiveBilinear::create());
-			break;
-		case KeyEvent::KEY_0:
-			// select warp
-			setSelectedWarp(0);
-			break;
-		case KeyEvent::KEY_1:
-			// select warp
-			setSelectedWarp(1);
-			break;
-		case KeyEvent::KEY_2:
-			// select warp
-			setSelectedWarp(2);
-			break;
-		case KeyEvent::KEY_3:
-			// select warp
-			setSelectedWarp(3);
-			break;
-		case KeyEvent::KEY_4:
-			// select warp
-			setSelectedWarp(4);
-			break;
-		case KeyEvent::KEY_5:
-			// select warp
-			setSelectedWarp(5);
-			break;
-		case KeyEvent::KEY_6:
-			// select warp
-			setSelectedWarp(6);
-			break;
-		case KeyEvent::KEY_7:
-			// select warp
-			setSelectedWarp(7);
-			break;
-		case KeyEvent::KEY_8:
-			// select warp
-			setSelectedWarp(8);
+		case KeyEvent::KEY_f:
+			// toggle full screen
+			setFullScreen(!isFullScreen());
 			break;
 		case KeyEvent::KEY_w:
 			// toggle warp edit mode
 			Warp::enableEditMode(!Warp::isEditModeEnabled());
 			break;
+		case KeyEvent::KEY_a:
+			// toggle drawing a random region of the image
+			if (mSrcArea.getWidth() != mTextures->getFboTexture(mParameterBag->mMixFboIndex)->getWidth() || mSrcArea.getHeight() != mTextures->getFboTexture(mParameterBag->mMixFboIndex)->getHeight())
+				mSrcArea = mTextures->getFboTexture(mParameterBag->mMixFboIndex)->getBounds();
+			else
+			{
+				int x1 = Rand::randInt(0, mTextures->getFboTexture(mParameterBag->mMixFboIndex)->getWidth() - 150);
+				int y1 = Rand::randInt(0, mTextures->getFboTexture(mParameterBag->mMixFboIndex)->getHeight() - 150);
+				int x2 = Rand::randInt(x1 + 150, mTextures->getFboTexture(mParameterBag->mMixFboIndex)->getWidth());
+				int y2 = Rand::randInt(y1 + 150, mTextures->getFboTexture(mParameterBag->mMixFboIndex)->getHeight());
+				mSrcArea = Area(x1, y1, x2, y2);
+			}
+			break;
 		case KeyEvent::KEY_SPACE:
-			// save warp settings
-			save();
-			// save params
-			mParameterBag->save();
-
+			// toggle drawing mode
+			mUseBeginEnd = !mUseBeginEnd;
 			break;
 		}
 	}
@@ -162,16 +175,50 @@ void WarpWrapper::keyUp(KeyEvent event)
 }
 void WarpWrapper::draw()
 {
-	// iterate over the warps and draw their content
+	// start drawing into the FBO
+	// all draw related commands after this will draw into the FBO
+	/*mFbo.bindFramebuffer();
+
+	// clear the FBO
+	gl::clear();
+	gl::color(Color::white());
+	mTextures->video1.draw(mParameterBag->mRenderPosXY.x, mParameterBag->mRenderPosXY.y);
+	// stop drawing into the FBO
+	mFbo.unbindFramebuffer();*/
+
+	/***********************************************
+	* fbo2 begin
+	// we can draw it into a second FBO, applying the shader...
+	// note that we have to set up the matrices for 2d drawing to the FBO not the screen
+	mFbo2.bindFramebuffer();
+	gl::setMatricesWindow(mFbo2.getSize());
+	gl::setViewport(mFbo2.getBounds());
+	gl::clear();
+	gl::draw(mTextures->getTexture(0), Rectf(0, 0, mParameterBag->mRenderWidth, mParameterBag->mRenderHeight));
+	mFbo2.unbindFramebuffer();
+	* fbo2 end
+	*/
+	// at this point the FBO contains our scene
+	// we can draw it to the screen unmodified...
+	// first we need to set the matrices and viewport for 2d drawing,
+	// because we're drawing a 2d texture (the contents of the FBO) to the screen
+	// the GL state is persistent across all framebuffers
+	gl::setMatricesWindow(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
+	mViewportArea = Area(0, 0, mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
+
+	//gl::setViewport(mViewportArea);
+	// clear the window and set the drawing color to white
+	gl::clear();
+	gl::color(Color::white());
+	gl::disableAlphaBlending();
+	gl::disable(GL_TEXTURE_2D);
+
 	int i = 0;
+	// iterate over the warps and draw their content
 	for (auto &warp : mWarps)
 	{
-		if (mTextures->getWarpFbo(mParameterBag->iWarpFboChannels[i]).active)
-		{
-			//warp->draw(mTextures->getMixTexture(mParameterBag->iWarpFboChannels[i]), mTextures->getMixTexture(mParameterBag->iWarpFboChannels[i])->getBounds());
-			warp->draw(mTextures->getWarpTexture(mParameterBag->iWarpFboChannels[i]), mTextures->getWarpTexture(mParameterBag->iWarpFboChannels[i])->getBounds());
-			i++;
-		}
+		warp->draw(mTextures->getFboTexture(mParameterBag->mWarpFbos[i].textureIndex), mViewportArea);
+		i++;
 	}
 }
 WarpWrapper::~WarpWrapper()

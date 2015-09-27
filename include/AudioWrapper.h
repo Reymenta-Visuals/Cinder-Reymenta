@@ -1,8 +1,6 @@
 #pragma once
 
 #include "cinder/app/App.h"
-#include "cinder/app/RendererGl.h"
-
 // Parameters
 #include "ParameterBag.h"
 // textures
@@ -21,9 +19,6 @@
 #include "cinder/audio/NodeEffects.h"
 #include "cinder/audio/MonitorNode.h"
 #include "cinder/gl/Vbo.h"
-// camera
-#include "cinder/CameraUi.h"
-
 
 using namespace ci;
 using namespace ci::app;
@@ -47,14 +42,15 @@ namespace Reymenta
 		void mouseDrag(MouseEvent event);
 		void mouseUp(MouseEvent event);
 
+		float*							getSmallSpectrum() { return arr; };
 	private:
 
 		// parameters
-		ParameterBagRef mParameterBag;
+		ParameterBagRef					mParameterBag;
 		// Textures
-		TexturesRef		mTextures;
+		TexturesRef						mTextures;
 		// Logger
-		LoggerRef					log;
+		LoggerRef						log;
 
 		// audio
 		audio::InputDeviceNodeRef		mLineIn;
@@ -67,28 +63,29 @@ namespace Reymenta
 		audio::SourceFileRef			mSourceFile;
 		// Paul Houx
 		// width and height of our mesh
-		static const int kWidth = 512;
-		static const int kHeight = 512;
+		static const int				kWidth = 512;
+		static const int				kHeight = 512;
 
 		// number of frequency bands of our spectrum
-		static const int kBands = 1024;
-		static const int kHistory = 128;
+		static const int				kBands = 1024;
+		static const int				kHistory = 128;
 
-		Channel32f			mChannelLeft;
-		Channel32f			mChannelRight;
-		CameraPersp			mCamera;
-		CameraUi			mCamUi;
-		vector<gl::GlslProg> mShaders;
-		int					currentShaderIndex;
+		Channel32f						mChannelLeft;
+		Channel32f						mChannelRight;
+		CameraPersp						mCamera;
+		//MayaCamUI			mMayaCam;
+		vector<gl::GlslProg>			mShaders;
+		int								currentShaderIndex;
 		/*gl::Texture			mTextureLeft;
 		gl::Texture			mTextureRight;
 		gl::Texture::Format	mTextureFormat;
 		gl::VboMesh			mMesh;*/
-		uint32_t			mOffset;
-		bool				mIsMouseDown;
-		bool				mIsAudioPlaying;
-		double				mMouseUpTime;
-		double				mMouseUpDelay;
+		uint32_t						mOffset;
+		bool							mIsMouseDown;
+		bool							mIsAudioPlaying;
+		double							mMouseUpTime;
+		double							mMouseUpDelay;
+		float							arr[7];
 
 	};
 }

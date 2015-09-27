@@ -55,7 +55,6 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 	mCamera.setPerspective(50.0f, 1.0f, 1.0f, 10000.0f);
 	mCamera.setEyePoint(vec3(-kWidth / 4, kHeight / 2, -kWidth / 8));
 	//mCamera.setCenterOfInterestPoint(vec3(kWidth / 4, -kHeight / 8, kWidth / 4));
-	mCamUi = CameraUi(&mCamera, getWindow());
 
 	// create channels from which we can construct our textures
 	mChannelLeft = Channel32f(kBands, kHistory);
@@ -216,7 +215,7 @@ void AudioWrapper::update()
 		for (size_t i = 0; i < mDataSize; i++) {
 			float f = mMagSpectrum[i];
 			db = audio::linearToDecibel(f);
-			f = db * mParameterBag->mAudioMultFactor;
+			f = db * mParameterBag->controlValues[13];
 			if (f > mParameterBag->maxVolume)
 			{
 				mParameterBag->maxVolume = f; mv = f;
@@ -231,15 +230,28 @@ void AudioWrapper::update()
 			{
 			case 11:
 				mParameterBag->iFreqs[0] = f;
+				arr[0] = f;
 				break;
 			case 13:
 				mParameterBag->iFreqs[1] = f;
+				arr[1] = f;
 				break;
 			case 15:
 				mParameterBag->iFreqs[2] = f;
+				arr[2] = f;
 				break;
 			case 18:
 				mParameterBag->iFreqs[3] = f;
+				arr[3] = f;
+				break;
+			case 25:
+				arr[4] = f;
+				break;
+			case 30:
+				arr[5] = f;
+				break;
+			case 35:
+				arr[6] = f;
 				break;
 			default:
 				break;
@@ -247,7 +259,7 @@ void AudioWrapper::update()
 
 		}
 		// store it as a 512x2 texture in UPDATE only!!
-		mTextures->setAudioTexture(0, signal);
+		mTextures->setAudioTexture(signal);
 	}
 
 	// Paul Houx
@@ -255,8 +267,8 @@ void AudioWrapper::update()
 	float* pDataLeft = mChannelLeft.getData() + kBands * mOffset;
 	float* pDataRight = mChannelRight.getData() + kBands * mOffset;
 	for (size_t i = 0; i < mDataSize; i++) {
-		pDataLeft[i] = mMagSpectrum[i] * mParameterBag->mAudioMultFactor;
-		pDataRight[i] = mMagSpectrum[i] * mParameterBag->mAudioMultFactor;
+		pDataLeft[i] = mMagSpectrum[i] * mParameterBag->controlValues[13];
+		pDataRight[i] = mMagSpectrum[i] * mParameterBag->controlValues[13];
 	}
 
 	// increment texture offset
@@ -348,16 +360,12 @@ void AudioWrapper::mouseDown(MouseEvent event)
 {
 	// handle mouse down
 	mIsMouseDown = true;
-
-	mCamUi = CameraUi(&mCamera, getWindow());
-	mCamUi.mouseDown(mParameterBag->mCamPosXY);
 }
 
 void AudioWrapper::mouseDrag(MouseEvent event)
 {
 	// handle mouse drag
-	mCamUi.mouseDrag(mParameterBag->mCamPosXY, event.isLeftDown(), event.isMiddleDown(), event.isRightDown());
-	mCamera = mCamUi.getCamera();
+
 }
 
 void AudioWrapper::mouseUp(MouseEvent event)

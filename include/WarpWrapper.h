@@ -2,17 +2,17 @@
 
 #include "cinder/Cinder.h"
 #include "cinder/app/App.h"
-#include "cinder/app/RendererGl.h"
 #include "cinder/ImageIo.h"
 #include "cinder/gl/Texture.h"
 #include "cinder/gl/Fbo.h"
 #include "cinder/gl/GlslProg.h"
 #include "cinder/Camera.h"
 #include "Logger.h"
+#if !defined( NOWARPING )
 // warp
-#include "WarpBilinear.h"
-#include "WarpPerspective.h"
-#include "WarpPerspectiveBilinear.h"
+#include "Warp.h"
+#endif
+
 // textures
 #include "Textures.h"
 // shaders
@@ -38,7 +38,6 @@ namespace Reymenta
 		{
 			return shared_ptr<WarpWrapper>(new WarpWrapper(aParameterBag, aTexturesRef, aShadersRef));
 		}
-		void						save();
 		void						resize();
 		void						mouseMove(MouseEvent event);
 		void						mouseDown(MouseEvent event);
@@ -47,22 +46,23 @@ namespace Reymenta
 		void						keyDown(KeyEvent event);
 		void						keyUp(KeyEvent event);
 		void						draw();
-		void						createWarps(int count);
-		void						setSelectedWarp(int index) { mParameterBag->selectedWarp = min(((int)mWarps.size())-1, index); };
-		void						setChannelForSelectedWarp(int index) { mParameterBag->iWarpFboChannels[mParameterBag->selectedWarp] = index; };
-		void						setCrossfadeForSelectedWarp(float value) { mTextures->setCrossfade(value); };
-		int							getSelectedWarp() { return mParameterBag->selectedWarp; };
+		void						load();
+		void						loadWarps(const std::string &filename);
+		void						save(const std::string &filename = "warps.xml");
+		int							getWarpsCount() { return mWarps.size(); };
+		void						createWarp();
+		bool						isEditModeEnabled() { return Warp::isEditModeEnabled(); };
 	private:
 		// Logger
 		LoggerRef					log;
+		WarpList					mWarps;
+		bool						mUseBeginEnd;
+		Area						mSrcArea, mViewportArea;
 		// Parameters
 		ParameterBagRef				mParameterBag;
 		// Shaders
 		ShadersRef					mShaders;
 		// Textures
 		TexturesRef					mTextures;
-
-		const string				warpsFileName = "MixnMapWarps.xml";
-		WarpList					mWarps;
 	};
 }
