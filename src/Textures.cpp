@@ -43,12 +43,6 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	// audio fbo at index 6
 	sprintf_s(mFbos[mParameterBag->mAudioFboIndex].name, "audio");// = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
 	mFbos[mParameterBag->mAudioFboIndex].isFlipV = true;//.getTexture(0).setFlipped(true);
-	// vertex sphere fbo at index 11
-	ci::gl::Fbo::Format mFormat;
-	mFormat.setMinFilter(GL_NEAREST);
-	mFormat.setMagFilter(GL_NEAREST);
-	mFormat.setWrap(GL_REPEAT, GL_REPEAT);
-	mFbos[mParameterBag->mVertexSphereFboIndex].fbo = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight, mFormat);
 
 	//const char* fboNames[] = { "mix", "", "", "", "", "", "", "", "", "", "audio", "", "1", "2", "3", "4" };
 	sprintf_s(mFbos[1].name, "left");
@@ -60,7 +54,7 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	sprintf_s(mFbos[7].name, "live");
 	sprintf_s(mFbos[8].name, "sphere");
 	sprintf_s(mFbos[9].name, "mesh");
-	sprintf_s(mFbos[11].name, "vtxsphere");
+
 
 	for (int i = 0; i < 1024; ++i) dTexture[i] = (unsigned char)(Rand::randUint() & 0xFF);
 	// store it as a 512x2 texture in the first texture

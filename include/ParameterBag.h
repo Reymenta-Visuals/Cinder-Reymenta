@@ -264,13 +264,12 @@ namespace Reymenta {
 		int							mUIRefresh;
 		int							mCurrentPreviewFboIndex;
 		int							mSphereFboIndex, mMeshFboIndex, mLiveFboIndex, mMixFboIndex, mAudioFboIndex;
-		int							mLeftFboIndex, mRightFboIndex, mVertexSphereFboIndex, mWarp1FboIndex, mWarp2FboIndex, mABPFboIndex;
+		int							mLeftFboIndex, mRightFboIndex, mWarp1FboIndex, mWarp2FboIndex, mABPFboIndex;
 		int							mLeftFragIndex, mRightFragIndex, mPreviewFragIndex, mPreviousFragIndex, mWarp1FragIndex, mWarp2FragIndex, mLiveFragIndex;
 		float						iZoomLeft, iZoomRight;
 		// meshes
 		int							mMeshIndex;
-		// VertexSphere
-		int							mVertexSphereTextureIndex;
+
 		// camera
 		CameraPersp					mCamera;
 		MayaCamUI					mMayaCam;
