@@ -44,7 +44,6 @@ namespace Reymenta
 
 		float*							getSmallSpectrum() { return arr; };
 	private:
-		float							arr[7];
 		// parameters
 		ParameterBagRef					mParameterBag;
 		// Textures
@@ -71,21 +70,22 @@ namespace Reymenta
 		static const int				kBands = 1024;
 		static const int				kHistory = 128;
 
-		Channel32f			mChannelLeft;
-		Channel32f			mChannelRight;
-		CameraPersp			mCamera;
-		MayaCamUI			mMayaCam;
-		vector<gl::GlslProg> mShaders;
-		int					currentShaderIndex;
-		gl::Texture			mTextureLeft;
-		gl::Texture			mTextureRight;
-		gl::Texture::Format	mTextureFormat;
-		gl::VboMesh			mMesh;
-		uint32_t			mOffset;
-		bool				mIsMouseDown;
-		bool				mIsAudioPlaying;
-		double				mMouseUpTime;
-		double				mMouseUpDelay;
+		Channel32f						mChannelLeft;
+		Channel32f						mChannelRight;
+		CameraPersp						mCamera;
+		MayaCamUI						mMayaCam;
+		vector<gl::GlslProg>			mShaders;
+		int								currentShaderIndex;
+		gl::Texture						mTextureLeft;
+		gl::Texture						mTextureRight;
+		gl::Texture::Format				mTextureFormat;
+		gl::VboMesh						mMesh;
+		uint32_t						mOffset;
+		bool							mIsMouseDown;
+		bool							mIsAudioPlaying;
+		double							mMouseUpTime;
+		double							mMouseUpDelay;
+		float							arr[7];
 
 	};
 }

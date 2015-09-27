@@ -198,7 +198,6 @@ namespace Reymenta {
 		static const int			MODE_MESH = 4;
 		static const int			MODE_LIVE = 5;
 		static const int			MODE_ABP = 6;
-		static const int			MODE_VERTEXSPHERE = 7;
 		static const int			MODE_KINECT = 8;
 		// windows to create, should be the same in App and UI
 		static const int			NONE = 0;

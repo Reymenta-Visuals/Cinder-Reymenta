@@ -65,7 +65,6 @@ namespace Reymenta
 		gl::GlslProgRef					getLiveShader() { return mLiveShader; };
 		void							setupLiveShader();
 		string							loadLiveShader(string frag);
-		gl::GlslProgRef					getVertexSphereShader() { return mVertexSphereShader; };
 		Shada							getShader(int aIndex) { return mFragmentShaders[aIndex]; };
 		int								getCount() { return mFragmentShaders.size(); };
 
@@ -141,8 +140,6 @@ namespace Reymenta
 		gl::GlslProgRef					mLiveShader;
 		//! warp shader
 		gl::GlslProgRef					mWarpShader;
-		// vertex Sphere shader
-		gl::GlslProgRef					mVertexSphereShader;
 		//! PassThru shader
 		gl::GlslProgRef					mPassThruShader;
 
