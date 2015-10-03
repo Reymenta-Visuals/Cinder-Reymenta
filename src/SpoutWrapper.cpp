@@ -14,7 +14,6 @@ SpoutWrapper::SpoutWrapper(ParameterBagRef aParameterBag, TexturesRef aTextures)
 	nReceivers = 0;
 
 	log->logTimedString("SpoutWrapper constructor end");
-
 }
 
 void SpoutWrapper::update()

@@ -17,10 +17,13 @@ OSC::OSC(ParameterBagRef aParameterBag, ShadersRef aShadersRef, TexturesRef aTex
 	{
 		tracks[a] = "default.glsl";
 	}
-	// OSC sender
-	mOSCSender.setup(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort);
-	// OSC receiver
-	mOSCReceiver.setup(mParameterBag->mOSCReceiverPort);
+	// done by messageRouter
+	//if (mParameterBag->mOSCEnabled) {
+	//	// OSC sender
+	//	mOSCSender.setup(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort);
+	//	// OSC receiver
+	//	mOSCReceiver.setup(mParameterBag->mOSCReceiverPort);
+	//}
 }
 
 OSCRef OSC::create(ParameterBagRef aParameterBag, ShadersRef aShadersRef, TexturesRef aTextures)
@@ -235,25 +238,25 @@ void OSC::update()
 		else if (oscAddress == "/texture")
 		{
 			//mTextures->setInput(iargs[0], iargs[1], iargs[2]);
-		/*
-					else if (oscAddress == "/createwarps")
-		{
-			mWarpings->createWarps(iargs[0]);
-		}
-		else if (oscAddress == "/select")
-		{
-			mWarpings->setSelectedWarp(iargs[0]);
-		}
-		else if (oscAddress == "/channel")
-		{
-			mWarpings->setChannelForSelectedWarp(iargs[0]);
-		}
-		else if (oscAddress == "/crossfade")
-		{
-			mWarpings->setCrossfadeForSelectedWarp(fargs[0]);
-		}
+			/*
+						else if (oscAddress == "/createwarps")
+						{
+						mWarpings->createWarps(iargs[0]);
+						}
+						else if (oscAddress == "/select")
+						{
+						mWarpings->setSelectedWarp(iargs[0]);
+						}
+						else if (oscAddress == "/channel")
+						{
+						mWarpings->setChannelForSelectedWarp(iargs[0]);
+						}
+						else if (oscAddress == "/crossfade")
+						{
+						mWarpings->setCrossfadeForSelectedWarp(fargs[0]);
+						}
 
-			*/
+						*/
 		}
 		else if (oscAddress == "/sumMovement")
 		{

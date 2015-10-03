@@ -142,7 +142,7 @@ namespace Reymenta
 		gl::GlslProgRef					mWarpShader;
 		//! PassThru shader
 		gl::GlslProgRef					mPassThruShader;
-
+		std::string						passthruvert;
 	};
 }
 /*

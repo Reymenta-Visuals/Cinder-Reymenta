@@ -213,7 +213,7 @@ void Batchass::update()
 {
 	mMessageRouter->update();
 	mTextures->update();
-	//mShaders->update();
+	mShaders->update();
 	if (mParameterBag->controlValues[12] == 0.0) mParameterBag->controlValues[12] = 0.01;
 
 #pragma region animation

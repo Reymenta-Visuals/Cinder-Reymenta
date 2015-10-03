@@ -15,7 +15,9 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 
 	mCurrentPreviewShader = 0;
 	mCurrentRenderShader = 0;
-
+	fs::path passthruVertFile;
+	passthruVertFile = getAssetPath("") / "passthru.vert";
+	passthruvert = loadString(loadFile(passthruVertFile));
 	//load mix shader
 	try
 	{
@@ -471,7 +473,7 @@ int Shaders::setGLSLString(string pixelFrag, string name)
 		{
 			Shada newShader;
 			//begin
-			newShader.shader = gl::GlslProg::create(gl::GlslProg::Format()
+			/*newShader.shader = gl::GlslProg::create(gl::GlslProg::Format()
 				.vertex(
 
 				R"(
@@ -511,10 +513,10 @@ void main(void)
 .attribLocation("iUv", 1)
 .attribLocation("iColor", 2)
 );
-
+			*/
 
 			//end 	currentFrag.c_str()
-			//newShader.shader = gl::GlslProg::create(NULL, currentFrag.c_str());
+			newShader.shader = gl::GlslProg::create(passthruvert.c_str(), currentFrag.c_str());
 			newShader.name = name;
 			newShader.active = true;
 			mFragmentShaders.push_back(newShader);

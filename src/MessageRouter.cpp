@@ -11,11 +11,13 @@ MessageRouter::MessageRouter(ParameterBagRef aParameterBag, TexturesRef aTexture
 	{
 		skeleton[i] = ivec4(0.0f);
 	}
-	// OSC sender with broadcast = true
-	mOSCSender.setup(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort, true);
-	mOSCSender2.setup(mParameterBag->mOSCDestinationHost2, mParameterBag->mOSCDestinationPort2, true);
-	// OSC receiver
-	mOSCReceiver.setup(mParameterBag->mOSCReceiverPort);
+	if (mParameterBag->mOSCEnabled) {
+		// OSC sender with broadcast = true
+		mOSCSender.setup(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort, true);
+		mOSCSender2.setup(mParameterBag->mOSCDestinationHost2, mParameterBag->mOSCDestinationPort2, true);
+		// OSC receiver
+		mOSCReceiver.setup(mParameterBag->mOSCReceiverPort);
+	}
 	// ws
 	clientConnected = false;
 	if (mParameterBag->mAreWebSocketsEnabledAtStartup) wsConnect();
