@@ -475,29 +475,42 @@ int Shaders::setGLSLString(string pixelFrag, string name)
 				.vertex(
 
 				R"(
-				#version 130
+				#version 150
 
-				void main()
-				{
-					gl_FrontColor = gl_Color;
-					gl_TexCoord[0] = gl_MultiTexCoord0;
-					gl_Position = ftransform();
-				})"
-				)
-				.fragment(
-				R"(
-				#version 130
+in vec4		ciPosition;
 
-				void main()
-				{
-					
-					gl_FragColor = vec4(1.0,0.,0.,1.0);
-				})"
-				)
-				.attribLocation("iPosition", 0)
-				.attribLocation("iUv", 1)
-				.attribLocation("iColor", 2)
-				);
+void main( void )
+{
+	gl_Position	= ciPosition;
+}
+)"
+)
+.fragment(
+R"(
+				#version 150 core
+
+// Shader Inputs
+uniform vec3      iResolution;           // viewport resolution (in pixels)
+uniform float     iGlobalTime;           // shader playback time (in seconds)
+uniform vec4      iMouse;                // mouse pixel coords. xy: current (if LMB down), zw: click
+uniform vec4      iDate;                 // (year, month, day, time in seconds)
+uniform sampler2D   iChannel0;              // input channel 0
+
+out vec4 oColor;
+
+void main(void)
+{
+    vec2 uv = gl_FragCoord.xy / iResolution.xy;
+    vec4 left = texture2D(iChannel0, uv);
+    
+    oColor = vec4( left.r, left.g, 0.5 + 0.5 * sin(iGlobalTime), 1.0 );
+}
+)"
+)
+.attribLocation("iPosition", 0)
+.attribLocation("iUv", 1)
+.attribLocation("iColor", 2)
+);
 
 
 			//end 	currentFrag.c_str()

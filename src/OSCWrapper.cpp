@@ -174,10 +174,10 @@ void OSC::update()
 		}
 		else if (oscAddress == "/fs")
 		{
-			mShaders->loadFragmentShaderString(sargs[1], sargs[2]);
+			/*mShaders->loadFragmentShaderString(sargs[1], sargs[2]);
 			mTextures->warpInputs[0].rightIndex = 0;
 			mTextures->warpInputs[0].rightMode = 1;
-			mTextures->warpInputs[0].iCrossfade = 1.0;
+			mTextures->warpInputs[0].iCrossfade = 1.0;*/
 		}
 		else if (oscAddress == "/fspath")
 		{
@@ -185,11 +185,11 @@ void OSC::update()
 		}
 		else if (oscAddress == "/live/beat")
 		{
-			mParameterBag->mBeat = iargs[0];
-			if (mParameterBag->mBeat == 476)
+			mParameterBag->iBeat = iargs[0];
+			if (mParameterBag->iBeat == 476)
 			{
 				// stop movie and remove it
-				mTextures->stopMovie(true);
+				//mTextures->stopMovie(true);
 			}
 		}
 		else if (oscAddress == "/live/tempo")
@@ -197,7 +197,7 @@ void OSC::update()
 			mParameterBag->mTempo = fargs[0];
 			if (mParameterBag->mTempo == 88.0)
 			{
-				mTextures->loadFileFromAssets(tracks[0]);
+				//mTextures->loadFileFromAssets(tracks[0]);
 			}
 
 		}
@@ -234,7 +234,7 @@ void OSC::update()
 		}
 		else if (oscAddress == "/texture")
 		{
-			mTextures->setInput(iargs[0], iargs[1], iargs[2]);
+			//mTextures->setInput(iargs[0], iargs[1], iargs[2]);
 		/*
 					else if (oscAddress == "/createwarps")
 		{
@@ -343,8 +343,8 @@ void OSC::update()
 			int name = atoi(oscAddress.substr(found + 1).c_str());
 			stringstream ss;
 			ss << message.getRemoteIp() << " adr:" << oscAddress << " 0: " << sargs[0] << " 1: " << sargs[1] << " 2: " << sargs[2] << " 3: " << sargs[3] << " 4: " << sargs[4] << " 5: " << sargs[5] << std::endl;
-			mParameterBag->OSCMsg = ss.str();
-			mParameterBag->newOSCMsg = true;
+			mParameterBag->mMsg = ss.str();
+			mParameterBag->newMsg = true;
 		}
 	}
 }

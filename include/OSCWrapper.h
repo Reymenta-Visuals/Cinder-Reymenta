@@ -13,6 +13,7 @@ using namespace std;
 #include "Shaders.h"
 // textures
 #include "Textures.h"
+		static const int			MAX = 16;
 
 namespace Reymenta 
 {
@@ -48,7 +49,6 @@ namespace Reymenta
 		osc::Listener 				mOSCReceiver;
 		osc::Sender					mOSCSender;
 
-		static const int			MAX = 16;
 		int							iargs[MAX];
 		float						fargs[MAX];
 		string						sargs[MAX];

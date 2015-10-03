@@ -79,20 +79,22 @@ void MessageRouter::midiSetup()
 }
 void MessageRouter::openMidiInPort(int i) {
 	stringstream ss;
-	if (i == 0)
-	{
-		mMidiIn0.OpenPort(i);
-		// TODO mMidiIn0.mMidiInCallback([&](midi::MidiMessage msg){});
-	}
-	if (i == 1)
-	{
-		mMidiIn1.OpenPort(i);
-		//mMidiIn1.mMidiInCallback = &MessageRouter::midiListener;
-	}
-	if (i == 2)
-	{
-		mMidiIn2.OpenPort(i);
-		//mMidiIn2.mMidiInCallback = &MessageRouter::midiListener;
+	if (i < mMidiIn0.mPortCount) {
+		if (i == 0)
+		{
+			mMidiIn0.OpenPort(i);
+			mMidiIn0.mMidiInCallback = std::bind(&MessageRouter::midiListener, this, std::placeholders::_1);
+		}
+		if (i == 1)
+		{
+			mMidiIn1.OpenPort(i);
+			mMidiIn1.mMidiInCallback = std::bind(&MessageRouter::midiListener, this, std::placeholders::_1);
+		}
+		if (i == 2)
+		{
+			mMidiIn2.OpenPort(i);
+			mMidiIn2.mMidiInCallback = std::bind(&MessageRouter::midiListener, this, std::placeholders::_1);
+		}
 	}
 	mMidiInputs[i].isConnected = true;
 	ss << "Opening MIDI port " << i << " " << mMidiInputs[i].portName << std::endl;

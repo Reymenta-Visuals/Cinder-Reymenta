@@ -125,6 +125,8 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	seq.nextIndexFrameToTry = 0;
 	seq.playheadPosition = 0;
 	sequences.push_back(seq);
+	//gl::enableDepthRead();
+	//gl::enableDepthWrite();
 }
 char* Textures::getTextureName(int index) {
 	return textas[index].name;
@@ -323,11 +325,84 @@ void Textures::renderShadaThumbFbo()
 {
 	// start profiling
 	auto start = Clock::now();
-	mThumbFbos[currentShadaThumbIndex].fbo->bindFramebuffer();
-	//gl::setViewport(mThumbFbos[currentShadaThumbIndex].fbo.getBounds());
+	// OLDmThumbFbos[currentShadaThumbIndex].fbo->bindFramebuffer();
+	// BEGIN
+	// this will restore the old framebuffer binding when we leave this function
+	// on non-OpenGL ES platforms, you can just call mFbo->unbindFramebuffer() at the end of the function
+	// but this will restore the "screen" FBO on OpenGL ES, and does the right thing on both platforms
+	gl::ScopedFramebuffer fbScp(mThumbFbos[currentShadaThumbIndex].fbo);
+	// clear out the FBO with blue
+	gl::clear(Color(0.25, 0.5f, 1.0f));
 
+	// setup the viewport to match the dimensions of the FBO
+	gl::ScopedViewport scpVp(ivec2(0), mThumbFbos[currentShadaThumbIndex].fbo->getSize());
+
+	// setup our camera to render the torus scene
+	CameraPersp cam(mThumbFbos[currentShadaThumbIndex].fbo->getWidth(), mThumbFbos[currentShadaThumbIndex].fbo->getHeight(), 60.0f);
+	cam.setPerspective(60, mThumbFbos[currentShadaThumbIndex].fbo->getAspectRatio(), 1, 1000);
+	cam.lookAt(vec3(2.8f, 1.8f, -2.8f), vec3(0));
+	gl::setMatrices(cam);
+
+	if (currentShadaThumbIndex > 3) {
+		aShader = mShaders->getShader(currentShadaThumbIndex).shader;
+		gl::ScopedGlslProg currentShader(aShader);
+		aShader->uniform("iGlobalTime", mParameterBag->iGlobalTime);
+		aShader->uniform("iResolution", vec3(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight, 1.0));
+		aShader->uniform("iChannelResolution", mParameterBag->iChannelResolution, 4);
+		aShader->uniform("iMouse", vec4(mParameterBag->mRenderPosXY.x, mParameterBag->mRenderPosXY.y, mParameterBag->iMouse.z, mParameterBag->iMouse.z));//iMouse =  Vec3i( event.getX(), mRenderHeight - event.getY(), 1 );
+		aShader->uniform("iZoom", mParameterBag->iZoomLeft);
+		aShader->uniform("iChannel0", mParameterBag->iChannels[0]);
+		aShader->uniform("iChannel1", mParameterBag->iChannels[1]);
+		aShader->uniform("iAudio0", 0);
+		aShader->uniform("iFreq0", mParameterBag->iFreqs[0]);
+		aShader->uniform("iFreq1", mParameterBag->iFreqs[1]);
+		aShader->uniform("iFreq2", mParameterBag->iFreqs[2]);
+		aShader->uniform("iFreq3", mParameterBag->iFreqs[3]);
+		aShader->uniform("iChannelTime", mParameterBag->iChannelTime, 4);
+		aShader->uniform("iColor", vec3(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3]));
+		aShader->uniform("iBackgroundColor", vec3(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
+		aShader->uniform("iSteps", (int)mParameterBag->controlValues[20]);
+		aShader->uniform("iRatio", mParameterBag->controlValues[11]);
+		aShader->uniform("width", 1);
+		aShader->uniform("height", 1);
+		aShader->uniform("iRenderXY", mParameterBag->mRenderXY);
+		aShader->uniform("iAlpha", mParameterBag->controlValues[4]);
+		aShader->uniform("iBlendmode", mParameterBag->iBlendMode);
+		aShader->uniform("iRotationSpeed", mParameterBag->controlValues[19]);
+		aShader->uniform("iCrossfade", mParameterBag->controlValues[21]);
+		aShader->uniform("iPixelate", mParameterBag->controlValues[15]);
+		aShader->uniform("iExposure", mParameterBag->controlValues[14]);
+		aShader->uniform("iDeltaTime", mParameterBag->iDeltaTime);
+		aShader->uniform("iFade", (int)mParameterBag->iFade);
+		aShader->uniform("iToggle", (int)mParameterBag->controlValues[46]);
+		aShader->uniform("iLight", (int)mParameterBag->iLight);
+		aShader->uniform("iLightAuto", (int)mParameterBag->iLightAuto);
+		aShader->uniform("iGreyScale", (int)mParameterBag->iGreyScale);
+		aShader->uniform("iTransition", mParameterBag->iTransition);
+		aShader->uniform("iAnim", mParameterBag->iAnim.value());
+		aShader->uniform("iRepeat", (int)mParameterBag->iRepeat);
+		aShader->uniform("iVignette", (int)mParameterBag->controlValues[47]);
+		aShader->uniform("iInvert", (int)mParameterBag->controlValues[48]);
+		aShader->uniform("iDebug", (int)mParameterBag->iDebug);
+		aShader->uniform("iShowFps", (int)mParameterBag->iShowFps);
+		aShader->uniform("iFps", mParameterBag->iFps);
+		aShader->uniform("iTempoTime", mParameterBag->iTempoTime);
+		aShader->uniform("iGlitch", (int)mParameterBag->controlValues[45]);
+		aShader->uniform("iBeat", mParameterBag->iBeat);
+		aShader->uniform("iSeed", mParameterBag->iSeed);
+		aShader->uniform("iFlipH", mFbos[mParameterBag->mMixFboIndex].isFlipH);
+		aShader->uniform("iFlipV", mFbos[mParameterBag->mMixFboIndex].isFlipV);
+		for (size_t m = 0; m < 2; m++)
+		{
+			getTexture(m)->bind(m);
+		}
+	}
+	gl::color(Color(1.0f, 0.5f, 0.25f));
+	gl::drawColorCube(vec3(0), vec3(2.2f));
+	gl::color(Color::white());
+	// END
 	// clear the FBO
-	gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
+	/*gl::clear(Color(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7]));
 	gl::setMatricesWindow(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight);
 
 	aShader = mShaders->getShader(currentShadaThumbIndex).shader;
@@ -395,7 +470,7 @@ void Textures::renderShadaThumbFbo()
 		}
 
 		//aShader->unbind();
-	}
+	}*/
 	auto end = Clock::now();
 	//auto msdur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 	//int milli = msdur.count();
