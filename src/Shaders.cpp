@@ -380,12 +380,11 @@ int Shaders::loadPixelFragmentShader(string aFilePath)
 			rtn = setGLSLString(fs, name);
 			if (rtn > -1)
 			{
+				log->logTimedString(mFragFile + " loaded and compiled");
+				mParameterBag->mMsg = name + " loadPixelFragmentShader success";
+				mParameterBag->newMsg = true;
 				//mFragmentShadersNames[rtn] = name;
 			}
-			log->logTimedString(mFragFile + " loaded and compiled");
-			mParameterBag->mMsg = name + " loadPixelFragmentShader success";
-			mParameterBag->newMsg = true;
-
 		}
 		else
 		{
@@ -468,73 +467,28 @@ int Shaders::setGLSLString(string pixelFrag, string name)
 	currentFrag = pixelFrag;
 	try
 	{
+		Shada newShader;
+		newShader.shader = gl::GlslProg::create(passthruvert.c_str(), currentFrag.c_str());
+		newShader.name = name;
+		newShader.active = true;
 		// searching first index of not running shader
 		if (mFragmentShaders.size() < mParameterBag->MAX)
 		{
-			Shada newShader;
-			//begin
-			/*newShader.shader = gl::GlslProg::create(gl::GlslProg::Format()
-				.vertex(
-
-				R"(
-				#version 150
-
-in vec4		ciPosition;
-
-void main( void )
-{
-	gl_Position	= ciPosition;
-}
-)"
-)
-.fragment(
-R"(
-				#version 150 core
-
-// Shader Inputs
-uniform vec3      iResolution;           // viewport resolution (in pixels)
-uniform float     iGlobalTime;           // shader playback time (in seconds)
-uniform vec4      iMouse;                // mouse pixel coords. xy: current (if LMB down), zw: click
-uniform vec4      iDate;                 // (year, month, day, time in seconds)
-uniform sampler2D   iChannel0;              // input channel 0
-
-out vec4 oColor;
-
-void main(void)
-{
-    vec2 uv = gl_FragCoord.xy / iResolution.xy;
-    vec4 left = texture2D(iChannel0, uv);
-    
-    oColor = vec4( left.r, left.g, 0.5 + 0.5 * sin(iGlobalTime), 1.0 );
-}
-)"
-)
-.attribLocation("iPosition", 0)
-.attribLocation("iUv", 1)
-.attribLocation("iColor", 2)
-);
-			*/
-
-			//end 	currentFrag.c_str()
-			newShader.shader = gl::GlslProg::create(passthruvert.c_str(), currentFrag.c_str());
-			newShader.name = name;
-			newShader.active = true;
 			mFragmentShaders.push_back(newShader);
 			foundIndex = mFragmentShaders.size() - 1;
 		}
 		else
 		{
 			bool indexFound = false;
-			/*if (mParameterBag->mDirectRender){foundIndex = mParameterBag->mRightFragIndex;}else{*/
 			while (!indexFound)
 			{
 				foundIndex++;
 				if (foundIndex != mParameterBag->mLeftFragIndex && foundIndex != mParameterBag->mRightFragIndex && foundIndex != mParameterBag->mPreviewFragIndex) indexFound = true;
 				if (foundIndex > mFragmentShaders.size() - 1) indexFound = true;
 			}
-			//}
+
 			// load the new shader
-			mFragmentShaders[foundIndex].shader = gl::GlslProg::create(NULL, currentFrag.c_str());
+			mFragmentShaders[foundIndex].shader = newShader.shader;
 			mFragmentShaders[foundIndex].name = name;
 			mFragmentShaders[foundIndex].active = true;
 		}
@@ -550,11 +504,11 @@ void main(void)
 	{
 		validFrag = false;
 		// TODO CI_LOG_E("Problem Compiling ImGui::Renderer shader " << exc.what());
-
+		foundIndex = -1;
 		mError = string(exc.what());
-		log->logTimedString("setGLSLString error: " + mError);
-		mParameterBag->mMsg = mError;
+		mParameterBag->mMsg = "setGLSLString file: " + name + " error:" + mError;
 		mParameterBag->newMsg = true;
+		log->logTimedString(mParameterBag->mMsg);
 	}
 	return foundIndex;
 }
@@ -570,7 +524,7 @@ int Shaders::setGLSLStringAtIndex(string pixelFrag, string name, int index)
 	try
 	{
 		// load the new shader
-		mFragmentShaders[index].shader = gl::GlslProg::create(NULL, currentFrag.c_str());
+		mFragmentShaders[index].shader = gl::GlslProg::create(passthruvert.c_str(), currentFrag.c_str());
 		mFragmentShaders[index].name = name;
 		mFragmentShaders[index].active = true;
 
@@ -605,7 +559,7 @@ bool Shaders::setFragString(string pixelFrag)
 		}
 		else
 		{
-			mFragmentShaders[mCurrentPreviewShader].shader = gl::GlslProg::create(NULL, currentFrag.c_str());
+			mFragmentShaders[mCurrentPreviewShader].shader = gl::GlslProg::create(passthruvert.c_str(), currentFrag.c_str());
 			mFragmentShaders[mCurrentPreviewShader].name = "some.frag";
 			mFragmentShaders[mCurrentPreviewShader].active = true;
 
@@ -701,7 +655,7 @@ void Shaders::createThumbsFromDir(string filePath)
 						std::string fs = inc + loadString(loadFile(it->path()));
 
 						Shada newShader;
-						newShader.shader = gl::GlslProg::create(NULL, fs.c_str());
+						newShader.shader = gl::GlslProg::create(passthruvert.c_str(), fs.c_str());
 						newShader.name = fileName;
 						newShader.active = true;
 						mFragmentShaders.push_back(newShader);
