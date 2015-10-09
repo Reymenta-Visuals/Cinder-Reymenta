@@ -323,22 +323,24 @@ int Shaders::loadPixelFragmentShaderAtIndex(string aFilePath, int index)
 		fs::path fr = aFilePath;
 		string name = "unknown";
 		string mFile = fr.string();
-		if (mFile.find_last_of("\\") != std::string::npos) name = mFile.substr(mFile.find_last_of("\\") + 1);
-		mFragFileName = name;
-		if (fs::exists(fr))
-		{
-			validFrag = false;
-			std::string fs = inc + loadString(loadFile(aFilePath));
-			rtn = setGLSLStringAtIndex(fs, name, index);
-			if (rtn > -1)
+		if (mFile.find_last_of("\\") != std::string::npos) {
+			name = mFile.substr(mFile.find_last_of("\\") + 1);
+			mFragFileName = name;
+			if (fs::exists(fr))
 			{
-				mParameterBag->mMsg = name + " loadPixelFragmentShaderAtIndex success";
-				mParameterBag->newMsg = true;
+				validFrag = false;
+				std::string fs = inc + loadString(loadFile(aFilePath));
+				rtn = setGLSLStringAtIndex(fs, name, index);
+				if (rtn > -1)
+				{
+					mParameterBag->mMsg = name + " loadPixelFragmentShaderAtIndex success";
+					mParameterBag->newMsg = true;
+				}
 			}
-		}
-		else
-		{
-			log->logTimedString(mFragFile + " does not exist:" + aFilePath);
+			else
+			{
+				log->logTimedString(mFragFile + " does not exist:" + aFilePath);
+			}
 		}
 	}
 	catch (gl::GlslProgCompileExc &exc)
@@ -351,7 +353,7 @@ int Shaders::loadPixelFragmentShaderAtIndex(string aFilePath, int index)
 	catch (const std::exception &e)
 	{
 		mError = string(e.what());
-		log->logTimedString(aFilePath + " unable to load shader:" + mError );
+		log->logTimedString(aFilePath + " unable to load shader:" + mError);
 		mParameterBag->mMsg = mError;
 		mParameterBag->newMsg = true;
 	}
@@ -393,14 +395,14 @@ int Shaders::loadPixelFragmentShader(string aFilePath)
 	catch (gl::GlslProgCompileExc &exc)
 	{
 		mError = string(exc.what());
-		log->logTimedString(aFilePath + " unable to load/compile shader err:" + mError );
+		log->logTimedString(aFilePath + " unable to load/compile shader err:" + mError);
 		mParameterBag->mMsg = mError;
 		mParameterBag->newMsg = true;
 	}
 	catch (const std::exception &e)
 	{
 		mError = string(e.what());
-		log->logTimedString(aFilePath + " unable to load shader err:" + mError );
+		log->logTimedString(aFilePath + " unable to load shader err:" + mError);
 		mParameterBag->mMsg = mError;
 		mParameterBag->newMsg = true;
 	}
@@ -515,12 +517,17 @@ void Shaders::setShaderMicroSeconds(int index, int micro)
 {
 	mFragmentShaders[index].microseconds = micro;
 }
-int Shaders::setGLSLStringAtIndex(string pixelFrag, string name, int index)
+int Shaders::setGLSLStringAtIndex(string pixelFrag, string name, int index, bool fromNetwork)
 {
 	int foundIndex = -1;
-	currentFrag = pixelFrag;
 	try
 	{
+		if (fromNetwork) {
+			currentFrag = inc + pixelFrag;
+		}
+		else {
+			currentFrag = pixelFrag;
+		}
 		// load the new shader
 		mFragmentShaders[index].shader = gl::GlslProg::create(NULL, currentFrag.c_str());
 		mFragmentShaders[index].name = name;
@@ -534,6 +541,31 @@ int Shaders::setGLSLStringAtIndex(string pixelFrag, string name, int index)
 		mParameterBag->mMsg = name + " setGLSLStringAtIndex success";
 		mParameterBag->newMsg = true;
 		validFrag = true;
+		if (fromNetwork) {
+			fs::path directory = getAssetPath("");// / "default"
+			if (!fs::exists(directory)) {
+				if (createDirectories(directory)) {
+
+				}
+			}
+			if (fs::exists(directory)) {
+
+				fs::path path = directory / name;
+				std::ofstream oStream(path.string());
+				oStream << pixelFrag;
+				oStream.close();
+			}
+			/*
+				fs::path directory = getAssetPath("");
+	if (!fs::exists(directory)) {
+		if (!createDirectories(directory / settingsFileName)) {
+			return false;
+		}
+	}
+
+	fs::path path = directory / settingsFileName;
+			*/
+		}
 	}
 	catch (gl::GlslProgCompileExc &exc)
 	{

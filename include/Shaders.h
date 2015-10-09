@@ -51,7 +51,7 @@ namespace Reymenta
 		void							doTransition();
 		bool							setFragString(string pixelFrag);
 		int								setGLSLString(string pixelFrag, string name);
-		int								setGLSLStringAtIndex(string pixelFrag, string name, int index);
+		int								setGLSLStringAtIndex(string pixelFrag, string name, int index, bool fromNetwork = false);
 		bool							loadTextFile(string aFilePath);
 		void							loadCurrentFrag();
 

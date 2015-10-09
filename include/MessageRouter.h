@@ -8,7 +8,7 @@
 // shaders
 #include "Shaders.h"
 
-#include "cinder/Json.h"
+//#include "cinder/Json.h"
 // MIDI
 #include "MidiIn.h"
 #include "MidiMessage.h"

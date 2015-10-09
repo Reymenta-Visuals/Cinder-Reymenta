@@ -679,6 +679,7 @@ void MessageRouter::onWsRead(string msg)
 {
 	int left;
 	int index;
+	int rtn = -1;
 	mParameterBag->mMsg = "WS onRead";
 	mParameterBag->newMsg = true;
 	if (!msg.empty())
@@ -692,34 +693,50 @@ void MessageRouter::onWsRead(string msg)
 			try
 			{
 				json = JsonTree(msg);
-				JsonTree jsonParams = json.getChild("params");
-				for (JsonTree::ConstIter jsonElement = jsonParams.begin(); jsonElement != jsonParams.end(); ++jsonElement)
-				{
-					int name = jsonElement->getChild("name").getValue<int>();
-					float value = jsonElement->getChild("value").getValue<float>();
-					if (name > mParameterBag->controlValues.size()) {
-						switch (name)
-						{
-						case 300:
-							//selectShader
-							left = jsonElement->getChild("left").getValue<int>();
-							index = jsonElement->getChild("index").getValue<int>();
-							selectShader(left, index);
-							break;
-						default:
-							break;
-						}
+				if (json.hasChild("params")) {
+					JsonTree jsonParams = json.getChild("params");
+					for (JsonTree::ConstIter jsonElement = jsonParams.begin(); jsonElement != jsonParams.end(); ++jsonElement)
+					{
+						int name = jsonElement->getChild("name").getValue<int>();
+						float value = jsonElement->getChild("value").getValue<float>();
+						if (name > mParameterBag->controlValues.size()) {
+							switch (name)
+							{
+							case 300:
+								// selectShader
+								left = jsonElement->getChild("left").getValue<int>();
+								index = jsonElement->getChild("index").getValue<int>();
+								selectShader(left, index);
+								break;
+							default:
+								break;
+							}
 
+						}
+						else {
+							// basic name value 
+							mParameterBag->controlValues[name] = value;
+						}
 					}
-					else {
-						// basic name value 
-						mParameterBag->controlValues[name] = value;
+				} // params
+
+				// glsl
+				if (json.hasChild("glsl")) {
+					JsonTree jsonSelectShader = json.getChild("glsl");
+					for (JsonTree::ConstIter jsonElement = jsonSelectShader.begin(); jsonElement != jsonSelectShader.end(); ++jsonElement)
+					{
+						//string filename = jsonElement->getChild("file").getValue<string>();
+						int index = jsonElement->getChild("index").getValue<int>();
+						//rtn = mShaders->loadPixelFragmentShaderAtIndex(filename, index);
+						//if (rtn == -1) { 
+							string name = jsonElement->getChild("name").getValue<string>();
+							string frag = jsonElement->getChild("frag").getValue<string>();
+							rtn = mShaders->setGLSLStringAtIndex(frag, name, index, true);
+
+						//}
 					}
-				}
-				JsonTree jsonSelectShader = json.getChild("selectShader");
-				for (JsonTree::ConstIter jsonElement = jsonSelectShader.begin(); jsonElement != jsonSelectShader.end(); ++jsonElement)
-				{
-				}
+				} 
+
 			}
 			catch (cinder::JsonTree::Exception exception)
 			{
