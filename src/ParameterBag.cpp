@@ -141,6 +141,10 @@ bool ParameterBag::save()
 	AreWebSocketsEnabledAtStartup.setAttribute("value", toString(mAreWebSocketsEnabledAtStartup));
 	settings.push_back(AreWebSocketsEnabledAtStartup);
 
+	XmlTree IsRouter("IsRouter", "");
+	IsRouter.setAttribute("value", toString(mIsRouter));
+	settings.push_back(IsRouter);
+ 
 	XmlTree IsWebSocketsServer("IsWebSocketsServer", "");
 	IsWebSocketsServer.setAttribute("value", toString(mIsWebSocketsServer));
 	settings.push_back(IsWebSocketsServer);
@@ -264,6 +268,10 @@ bool ParameterBag::restore()
 			if (settings.hasChild("AreWebSocketsEnabledAtStartup")) {
 				XmlTree AreWebSocketsEnabledAtStartup = settings.getChild("AreWebSocketsEnabledAtStartup");
 				mAreWebSocketsEnabledAtStartup = AreWebSocketsEnabledAtStartup.getAttributeValue<bool>("value");
+			}
+			if (settings.hasChild("IsRouter")) {
+				XmlTree IsRouter = settings.getChild("IsRouter");
+				mIsRouter = IsRouter.getAttributeValue<bool>("value");
 			}
 			if (settings.hasChild("IsWebSocketsServer")) {
 				XmlTree IsWebSocketsServer = settings.getChild("IsWebSocketsServer");
@@ -584,6 +592,7 @@ void ParameterBag::reset()
 	InfoMsg = "";
 	mIsOSCSender = false;
 	// web sockets
+	mIsRouter = false;
 	mAreWebSocketsEnabledAtStartup = false;
 	mIsWebSocketsServer = false;
 	mWebSocketsHost = "localhost";

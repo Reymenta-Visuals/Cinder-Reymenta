@@ -339,6 +339,12 @@ void Textures::renderShadaThumbFbo()
 	aShader->uniform("iZoom", mParameterBag->iZoomLeft);
 	aShader->uniform("iChannel0", mParameterBag->iChannels[0]);
 	aShader->uniform("iChannel1", mParameterBag->iChannels[1]);
+	aShader->uniform("iChannel2", mParameterBag->iChannels[2]);
+	aShader->uniform("iChannel3", mParameterBag->iChannels[3]);
+	aShader->uniform("iChannel4", mParameterBag->iChannels[4]);
+	aShader->uniform("iChannel5", mParameterBag->iChannels[5]);
+	aShader->uniform("iChannel6", mParameterBag->iChannels[6]);
+	aShader->uniform("iChannel7", mParameterBag->iChannels[7]);
 	aShader->uniform("iAudio0", 0);
 	aShader->uniform("iFreq0", mParameterBag->iFreqs[0]);
 	aShader->uniform("iFreq1", mParameterBag->iFreqs[1]);
@@ -378,7 +384,7 @@ void Textures::renderShadaThumbFbo()
 	aShader->uniform("iSeed", mParameterBag->iSeed);
 	aShader->uniform("iFlipH", mFbos[mParameterBag->mMixFboIndex].isFlipH);
 	aShader->uniform("iFlipV", mFbos[mParameterBag->mMixFboIndex].isFlipV);
-	for (size_t m = 0; m < 2; m++)
+	for (size_t m = 0; m < mParameterBag->MAX; m++)
 	{
 		getTexture(m)->bind(m);
 	}
@@ -431,7 +437,6 @@ void Textures::draw()
 	aShader = mShaders->getShader(mParameterBag->mLeftFragIndex).shader;
 	aShader->bind();
 	aShader->uniform("iGlobalTime", mParameterBag->iGlobalTime);
-	//aShader->uniform("iResolution", vec3(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
 	aShader->uniform("iResolution", vec3(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 1.0));
 	aShader->uniform("iChannelResolution", mParameterBag->iChannelResolution, 4);
 	aShader->uniform("iMouse", vec4(mParameterBag->mRenderPosXY.x, mParameterBag->mRenderPosXY.y, mParameterBag->iMouse.z, mParameterBag->iMouse.z));//iMouse =  Vec3i( event.getX(), mRenderHeight - event.getY(), 1 );
