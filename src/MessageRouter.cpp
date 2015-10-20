@@ -13,6 +13,9 @@ MessageRouter::MessageRouter(ParameterBagRef aParameterBag, TexturesRef aTexture
 	FrameReceived = 0;
 	IsKeyFrame = false;
 	PrevPacketSize = 0;
+	mouseX = 0;
+	mouseY = 0;
+
 	// kinect
 	for (int i = 0; i < 20; i++)
 	{
@@ -351,8 +354,8 @@ void MessageRouter::update()
 				mClient.poll();
 				/*double e = getElapsedSeconds();
 				if (e - mPingTime > 20.0) {
-					mClient.ping();
-					mPingTime = e;
+				mClient.ping();
+				mPingTime = e;
 				}*/
 
 			}
@@ -813,28 +816,45 @@ void MessageRouter::wsConnect()
 					if (msg == "ImInit") {
 						// send ImInit OK
 						if (!ClientActive)
-						{		
-								ClientActive = true;
-								ForceKeyFrame = true;
-								// Send confirmation
-								mServer.write("ImInit");
-								// Send font texture
-								/*unsigned char* pixels;
-								int width, height;
-								ImGui::GetIO().Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
-								PreparePacketTexFont(pixels, width, height);
-								SendPacket();*/
+						{
+							ClientActive = true;
+							ForceKeyFrame = true;
+							// Send confirmation
+							mServer.write("ImInit");
+							// Send font texture
+							/*unsigned char* pixels;
+							int width, height;
+							ImGui::GetIO().Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
+							PreparePacketTexFont(pixels, width, height);
+							SendPacket();*/
 						}
 					}
 					else if (msg.substr(0, 11) == "ImMouseMove") {
 						string trail = msg.substr(12);
 						unsigned commaPosition = trail.find(",");
 						if (commaPosition > 0) {
-							int mouseX = atoi(trail.substr(0, commaPosition).c_str());
-							int mouseY = atoi(trail.substr(commaPosition).c_str());
+							mouseX = atoi(trail.substr(0, commaPosition).c_str());
+							mouseY = atoi(trail.substr(commaPosition + 1).c_str());
+							ImGuiIO& io = ImGui::GetIO();
+							io.MousePos = toPixels(vec2(mouseX, mouseY));
 
 						}
 
+					}
+					else if (msg.substr(0, 12) == "ImMousePress") {
+						ImGuiIO& io = ImGui::GetIO(); // 1,0 left click 1,1 right click
+						io.MouseDown[0] = false;
+						io.MouseDown[1] = false;
+						int rightClick = atoi(msg.substr(15).c_str());
+						if (rightClick == 1) {
+
+							io.MouseDown[0] = false;
+							io.MouseDown[1] = true;
+						}
+						else {
+							io.MouseDown[0] = true;
+							io.MouseDown[1] = false;
+						}
 					}
 				}
 			}
@@ -973,90 +993,90 @@ void MessageRouter::wsClientDisconnect()
 
 void MessageRouter::onWsError(string err)
 {
-	mParameterBag->mMsg = "WS Error";
-	mParameterBag->newMsg = true;
-	if (!err.empty()) {
-		mParameterBag->mMsg += ": " + err;
-	}
+mParameterBag->mMsg = "WS Error";
+mParameterBag->newMsg = true;
+if (!err.empty()) {
+mParameterBag->mMsg += ": " + err;
+}
 
 }
 
 void MessageRouter::onWsInterrupt()
 {
-	mParameterBag->mMsg = "WS Interrupted";
-	mParameterBag->newMsg = true;
+mParameterBag->mMsg = "WS Interrupted";
+mParameterBag->newMsg = true;
 }
 
 void MessageRouter::onWsPing(string msg)
 {
-	mParameterBag->mMsg = "WS Ponged";
-	mParameterBag->newMsg = true;
-	if (!msg.empty())
-	{
-		mParameterBag->mMsg += ": " + msg;
-	}
+mParameterBag->mMsg = "WS Ponged";
+mParameterBag->newMsg = true;
+if (!msg.empty())
+{
+mParameterBag->mMsg += ": " + msg;
+}
 }
 
 void MessageRouter::onWsRead(string msg)
 {
-	int left;
-	int index;
-	mParameterBag->mMsg = "WS onRead";
-	mParameterBag->newMsg = true;
-	if (!msg.empty())
-	{
-		mParameterBag->mMsg += ": " + msg;
-		string first = msg.substr(0, 1);
-		if (first == "{")
-		{
-			// json
-			JsonTree json;
-			try
-			{
-				json = JsonTree(msg);
-				JsonTree jsonParams = json.getChild("params");
-				for (JsonTree::ConstIter jsonElement = jsonParams.begin(); jsonElement != jsonParams.end(); ++jsonElement)
-				{
-					int name = jsonElement->getChild("name").getValue<int>();
-					float value = jsonElement->getChild("value").getValue<float>();
-					if (name > mParameterBag->controlValues.size()) {
-						switch (name)
-						{
-						case 300:
-							//selectShader
-							left = jsonElement->getChild("left").getValue<int>();
-							index = jsonElement->getChild("index").getValue<int>();
-							selectShader(left, index);
-							break;
-						default:
-							break;
-						}
+int left;
+int index;
+mParameterBag->mMsg = "WS onRead";
+mParameterBag->newMsg = true;
+if (!msg.empty())
+{
+mParameterBag->mMsg += ": " + msg;
+string first = msg.substr(0, 1);
+if (first == "{")
+{
+// json
+JsonTree json;
+try
+{
+json = JsonTree(msg);
+JsonTree jsonParams = json.getChild("params");
+for (JsonTree::ConstIter jsonElement = jsonParams.begin(); jsonElement != jsonParams.end(); ++jsonElement)
+{
+int name = jsonElement->getChild("name").getValue<int>();
+float value = jsonElement->getChild("value").getValue<float>();
+if (name > mParameterBag->controlValues.size()) {
+switch (name)
+{
+case 300:
+//selectShader
+left = jsonElement->getChild("left").getValue<int>();
+index = jsonElement->getChild("index").getValue<int>();
+selectShader(left, index);
+break;
+default:
+break;
+}
 
-					}
-					else {
-						// basic name value 
-						mParameterBag->controlValues[name] = value;
-					}
-				}
-				JsonTree jsonSelectShader = json.getChild("selectShader");
-				for (JsonTree::ConstIter jsonElement = jsonSelectShader.begin(); jsonElement != jsonSelectShader.end(); ++jsonElement)
-				{
-				}
-			}
-			catch (cinder::JsonTree::Exception exception)
-			{
-				mParameterBag->mMsg += " error jsonparser exception: ";
-				mParameterBag->mMsg += exception.what();
-				mParameterBag->mMsg += "  ";
-			}
-		}
-		else if (first == "#")
-		{
-			// fragment shader from live coding
-			//mBatchass->getShadersRef()->loadLiveShader(msg);
+}
+else {
+// basic name value
+mParameterBag->controlValues[name] = value;
+}
+}
+JsonTree jsonSelectShader = json.getChild("selectShader");
+for (JsonTree::ConstIter jsonElement = jsonSelectShader.begin(); jsonElement != jsonSelectShader.end(); ++jsonElement)
+{
+}
+}
+catch (cinder::JsonTree::Exception exception)
+{
+mParameterBag->mMsg += " error jsonparser exception: ";
+mParameterBag->mMsg += exception.what();
+mParameterBag->mMsg += "  ";
+}
+}
+else if (first == "#")
+{
+// fragment shader from live coding
+//mBatchass->getShadersRef()->loadLiveShader(msg);
 
-		}
-	}
+}
+}
 }
 */
 void MessageRouter::wsWrite(string msg)

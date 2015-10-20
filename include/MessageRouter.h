@@ -198,6 +198,8 @@ namespace Reymenta
 
 		void						PreparePacket(unsigned char data_type, unsigned int data_size);
 		void						PreparePacketTexFont(const void *data, unsigned int w, unsigned int h);
+		int							mouseX;
+		int							mouseY;
 
 		// packet types
 		enum { TEX_FONT = 255, FRAME_KEY = 254, FRAME_DIFF = 253 };
