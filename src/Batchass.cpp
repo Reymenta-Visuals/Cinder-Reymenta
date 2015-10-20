@@ -145,6 +145,29 @@ void Batchass::sendJSON(string params) {
 	mMessageRouter->sendJSON(params);
 
 }
+void Batchass::Write(Cmd const &cmd)
+{
+	mMessageRouter->Write(cmd);
+}
+void Batchass::Write(Vtx const &vtx)
+{
+	mMessageRouter->Write(vtx);
+}
+void Batchass::SendPacket()
+{
+	mMessageRouter->SendPacket();
+}
+void Batchass::wsWriteBinary(const void *data, int size) {
+
+	mMessageRouter->wsWriteBinary(data, size);
+
+}
+void Batchass::preparePacketFrame(unsigned int cmd_count, unsigned int vtx_count) {
+
+	mMessageRouter->PreparePacketFrame(cmd_count, vtx_count);
+
+}
+
 void Batchass::colorWrite() {
 	mMessageRouter->colorWrite();
 }

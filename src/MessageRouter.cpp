@@ -7,10 +7,18 @@ MessageRouter::MessageRouter(ParameterBagRef aParameterBag, TexturesRef aTexture
 	mParameterBag = aParameterBag;
 	mTextures = aTexturesRef;
 	mShaders = aShadersRef;
+	// remoteImGui
+	ClientActive = false;
+	Frame = 0;
+	FrameReceived = 0;
+	IsKeyFrame = false;
+	PrevPacketSize = 0;
+	// kinect
 	for (int i = 0; i < 20; i++)
 	{
 		skeleton[i] = ivec4(0.0f);
 	}
+	// OSC
 	if (mParameterBag->mOSCEnabled) {
 		// OSC sender with broadcast = true
 		mOSCSender.setup(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort, true);
@@ -165,6 +173,106 @@ void MessageRouter::sendJSON(string params) {
 	}
 }
 
+void MessageRouter::Write(unsigned char c) { Packet.push_back(c); }
+void MessageRouter::Write(unsigned int i)
+{
+	if (IsKeyFrame)
+		Write(&i, sizeof(unsigned int));
+	else
+		WriteDiff(&i, sizeof(unsigned int));
+}
+void MessageRouter::Write(Cmd const &cmd)
+{
+	if (IsKeyFrame)
+		Write((void *)&cmd, sizeof(Cmd));
+	else
+		WriteDiff((void *)&cmd, sizeof(Cmd));
+}
+void MessageRouter::Write(Vtx const &vtx)
+{
+	if (IsKeyFrame)
+		Write((void *)&vtx, sizeof(Vtx));
+	else
+		WriteDiff((void *)&vtx, sizeof(Vtx));
+}
+void MessageRouter::Write(const void *data, int size)
+{
+	unsigned char *src = (unsigned char *)data;
+	for (int i = 0; i < size; i++)
+	{
+		int pos = Packet.size();
+		Write(src[i]);
+		PrevPacket[pos] = src[i];
+	}
+}
+void MessageRouter::WriteDiff(const void *data, int size)
+{
+	unsigned char *src = (unsigned char *)data;
+	for (int i = 0; i < size; i++)
+	{
+		int pos = Packet.size();
+		Write((unsigned char)(src[i] - (pos < PrevPacketSize ? PrevPacket[pos] : 0)));
+		PrevPacket[pos] = src[i];
+	}
+}
+
+void MessageRouter::SendPacket()
+{
+	static int buffer[65536];
+	int size = Packet.size();
+	int csize = LZ4_compress_limitedOutput((char *)&Packet[0], (char *)(buffer + 3), size, 65536 * sizeof(int) - 12);
+	buffer[0] = 0xBAADFEED; // Our LZ4 header magic number (used in custom lz4.js to decompress)
+	buffer[1] = size;
+	buffer[2] = csize;
+	//printf("ImWebSocket SendPacket: %s %d / %d (%.2f%%)\n", IsKeyFrame ? "(KEY)" : "", size, csize, (float)csize * 100.f / size);
+	wsWriteBinary(buffer, csize + 12);
+	PrevPacketSize = size;
+}
+void MessageRouter::wsWriteBinary(const void *data, int size)
+{
+	if (mParameterBag->mAreWebSocketsEnabledAtStartup)
+	{
+		if (mParameterBag->mIsWebSocketsServer)
+		{
+			mServer.writeBinary(data, size);
+		}
+		else
+		{
+			if (clientConnected) mClient.writeBinary(data, size);
+		}
+	}
+}
+
+void MessageRouter::PreparePacket(unsigned char data_type, unsigned int data_size)
+{
+	unsigned int size = sizeof(unsigned char) + data_size;
+	Packet.clear();
+	Packet.reserve(size);
+	PrevPacket.reserve(size);
+	while (size > PrevPacket.size())
+		PrevPacket.push_back(0);
+	Write(data_type);
+}
+
+void MessageRouter::PreparePacketTexFont(const void *data, unsigned int w, unsigned int h)
+{
+	IsKeyFrame = true;
+	PreparePacket(TEX_FONT, sizeof(unsigned int) * 2 + w*h);
+	Write(w);
+	Write(h);
+	Write(data, w*h);
+	ForceKeyFrame = true;
+}
+
+void MessageRouter::PreparePacketFrame(unsigned int cmd_count, unsigned int vtx_count)
+{
+	IsKeyFrame = (Frame%IMGUI_REMOTE_KEY_FRAME) == 0 || ForceKeyFrame;
+	PreparePacket(IsKeyFrame ? FRAME_KEY : FRAME_DIFF, 2 * sizeof(unsigned int) + cmd_count*sizeof(Cmd) + vtx_count*sizeof(Vtx));
+	Write(cmd_count);
+	Write(vtx_count);
+	//printf("ImWebSocket PreparePacket: cmd_count = %i, vtx_count = %i ( %lu bytes )\n", cmd_count, vtx_count, sizeof(unsigned int) + sizeof(unsigned int) + cmd_count * sizeof(Cmd) + vtx_count * sizeof(Vtx));
+	ForceKeyFrame = false;
+}
 void MessageRouter::updateParams(int iarg0, float farg1)
 {
 	if (farg1 > 0.1)
@@ -605,12 +713,6 @@ void MessageRouter::wsConnect()
 	// either a client or a server
 	if (mParameterBag->mIsWebSocketsServer)
 	{
-		/*mServer.addConnectCallback(&MessageRouter::onWsConnect, this);
-		mServer.addDisconnectCallback(&MessageRouter::onWsDisconnect, this);
-		mServer.addErrorCallback(&MessageRouter::onWsError, this);
-		mServer.addInterruptCallback(&MessageRouter::onWsInterrupt, this);
-		mServer.addPingCallback(&MessageRouter::onWsPing, this);
-		mServer.addReadCallback(&MessageRouter::onWsRead, this);*/
 		mServer.connectOpenEventHandler([&]()
 		{
 			clientConnected = true;
@@ -705,18 +807,42 @@ void MessageRouter::wsConnect()
 					//mBatchass->getShadersRef()->loadLiveShader(msg);
 
 				}
+				else if (first == "I")
+				{
+
+					if (msg == "ImInit") {
+						// send ImInit OK
+						if (!ClientActive)
+						{		
+								ClientActive = true;
+								ForceKeyFrame = true;
+								// Send confirmation
+								mServer.write("ImInit");
+								// Send font texture
+								/*unsigned char* pixels;
+								int width, height;
+								ImGui::GetIO().Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
+								PreparePacketTexFont(pixels, width, height);
+								SendPacket();*/
+						}
+					}
+					else if (msg.substr(0, 11) == "ImMouseMove") {
+						string trail = msg.substr(12);
+						unsigned commaPosition = trail.find(",");
+						if (commaPosition > 0) {
+							int mouseX = atoi(trail.substr(0, commaPosition).c_str());
+							int mouseY = atoi(trail.substr(commaPosition).c_str());
+
+						}
+
+					}
+				}
 			}
 		});
 		mServer.listen(mParameterBag->mWebSocketsPort);
 	}
 	else
 	{
-		/*mClient.addConnectCallback(&MessageRouter::onWsConnect, this);
-		mClient.addDisconnectCallback(&MessageRouter::onWsDisconnect, this);
-		mClient.addErrorCallback(&MessageRouter::onWsError, this);
-		mClient.addInterruptCallback(&MessageRouter::onWsInterrupt, this);
-		mClient.addPingCallback(&MessageRouter::onWsPing, this);
-		mClient.addReadCallback(&MessageRouter::onWsRead, this);*/
 		mClient.connectOpenEventHandler([&]()
 		{
 			clientConnected = true;

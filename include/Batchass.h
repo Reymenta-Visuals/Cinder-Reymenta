@@ -121,6 +121,11 @@ namespace Reymenta
 		void						midiInClosePort(int i) { mMessageRouter->closeMidiInPort(i); };
 		// messages
 		void						sendJSON(string params);
+		void						preparePacketFrame(unsigned int cmd_count, unsigned int vtx_count);
+		void						Write(Cmd const &cmd);
+		void						Write(Vtx const &vtx);
+		void						SendPacket();
+		void						wsWriteBinary(const void *data, int size);
 		void						colorWrite();
 		void						sendOSCIntMessage(string controlType, int iarg0 = 0, int iarg1 = 0, int iarg2 = 0, int iarg3 = 0, int iarg4 = 0, int iarg5 = 0);
 		void						selectShader(bool left, int index);
