@@ -126,6 +126,7 @@ namespace Reymenta
 		void						Write(Vtx const &vtx);
 		void						SendPacket();
 		void						wsWriteBinary(const void *data, int size);
+		void						wsWriteText(const std::string& msg);
 		void						colorWrite();
 		void						sendOSCIntMessage(string controlType, int iarg0 = 0, int iarg1 = 0, int iarg2 = 0, int iarg3 = 0, int iarg4 = 0, int iarg5 = 0);
 		void						selectShader(bool left, int index);

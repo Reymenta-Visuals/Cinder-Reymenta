@@ -162,6 +162,11 @@ void Batchass::wsWriteBinary(const void *data, int size) {
 	mMessageRouter->wsWriteBinary(data, size);
 
 }
+void Batchass::wsWriteText(const std::string& msg) {
+
+	mMessageRouter->wsWrite(msg);
+
+}
 void Batchass::preparePacketFrame(unsigned int cmd_count, unsigned int vtx_count) {
 
 	mMessageRouter->PreparePacketFrame(cmd_count, vtx_count);

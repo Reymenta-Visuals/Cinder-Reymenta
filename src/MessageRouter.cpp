@@ -340,6 +340,8 @@ void MessageRouter::setupOSCSender()
 }
 void MessageRouter::update()
 {
+	// imgui
+	Frame++;
 	// websockets
 	if (mParameterBag->mAreWebSocketsEnabledAtStartup)
 	{
@@ -822,11 +824,12 @@ void MessageRouter::wsConnect()
 							// Send confirmation
 							mServer.write("ImInit");
 							// Send font texture
-							/*unsigned char* pixels;
+							unsigned char* pixels;
 							int width, height;
 							ImGui::GetIO().Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
+
 							PreparePacketTexFont(pixels, width, height);
-							SendPacket();*/
+							SendPacket();
 						}
 					}
 					else if (msg.substr(0, 11) == "ImMouseMove") {
