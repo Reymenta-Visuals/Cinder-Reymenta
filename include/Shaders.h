@@ -8,7 +8,7 @@
 
 #include "Resources.h"
 // log
-#include "Logger.h"
+#include "Logan.h"
 
 // parameters
 #include "ParameterBag.h"
@@ -83,7 +83,7 @@ namespace Reymenta
 
 	private:
 		// Logger
-		LoggerRef						log;
+		LoganRef						log;
 
 		string							mFragFile;
 		string							mFragFileName;

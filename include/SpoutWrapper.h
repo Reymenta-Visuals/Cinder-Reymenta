@@ -5,7 +5,7 @@
 
 #include "cinder/Cinder.h"
 #include "cinder/app/App.h"
-#include "Logger.h"
+#include "Logan.h"
 
 // parameters
 #include "ParameterBag.h"
@@ -36,7 +36,7 @@ namespace Reymenta
 		int							getSenderCount() { return nReceivers; };
 	private:
 		// Logger
-		LoggerRef					log;
+		LoganRef					log;
 		// parameters
 		ParameterBagRef				mParameterBag;
 		// textures

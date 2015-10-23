@@ -806,10 +806,10 @@ void MessageRouter::wsConnect()
 						mParameterBag->mMsg += "  ";
 					}
 				}
-				else if (first == "#")
+				else if (msg.substr(0, 7) == "uniform")
 				{
 					// fragment shader from live coding
-					//mBatchass->getShadersRef()->loadLiveShader(msg);
+					mShaders->loadLiveShader(msg);
 
 				}
 				else if (first == "I")

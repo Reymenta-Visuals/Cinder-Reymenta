@@ -28,8 +28,7 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 	mParameterBag = aParameterBag;
 	mTextures = aTexturesRef;
 	// instanciate the logger class
-	log = Logger::create("AudioLog.txt");
-	log->logTimedString("Audio constructor");
+	CI_LOG_V("Audio constructor");
 
 	// linein
 	auto ctx = audio::Context::master();
@@ -73,13 +72,13 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 		mShaders.push_back(gl::GlslProg(loadAsset("shaders/spectrum.vert"), loadAsset("shaders/spectrum.frag")));
 	}
 	catch (const std::exception& e) {
-		log->logTimedString("Could not compile shaders/spectrum.frag-vert");
+		CI_LOG_V("Could not compile shaders/spectrum.frag-vert");
 	}
 	try {
 		mShaders.push_back(gl::GlslProg(loadAsset("shaders/spectrum2.vert"), loadAsset("shaders/spectrum2.frag")));
 	}
 	catch (const std::exception& e) {
-		log->logTimedString("Could not compile shaders/spectrum2.frag-vert");
+		CI_LOG_V("Could not compile shaders/spectrum2.frag-vert");
 
 	}*/
 	currentShaderIndex = 0;
@@ -155,12 +154,12 @@ void AudioWrapper::loadWaveFile(string aFilePath)
 	{
 		if (!fs::exists(aFilePath))
 		{
-			log->logTimedString("file not found: " + aFilePath);
+			CI_LOG_V("file not found: " + aFilePath);
 
 		}
 		else
 		{
-			log->logTimedString("found file: " + aFilePath);
+			CI_LOG_V("found file: " + aFilePath);
 			auto ctx = audio::master();
 			mSourceFile = audio::load(loadFile(aFilePath), audio::master()->getSampleRate());
 			mSamplePlayerNode = ctx->makeNode(new audio::FilePlayerNode(mSourceFile, false));
@@ -186,7 +185,7 @@ void AudioWrapper::loadWaveFile(string aFilePath)
 	}
 	catch (...)
 	{
-		log->logTimedString("loadWaveFile error: " + aFilePath);
+		CI_LOG_V("loadWaveFile error: " + aFilePath);
 
 	}
 }

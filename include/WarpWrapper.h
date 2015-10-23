@@ -7,7 +7,7 @@
 #include "cinder/gl/Fbo.h"
 #include "cinder/gl/GlslProg.h"
 #include "cinder/Camera.h"
-#include "Logger.h"
+#include "Logan.h"
 #if !defined( NOWARPING )
 // warp
 #include "Warp.h"
@@ -54,7 +54,7 @@ namespace Reymenta
 		bool						isEditModeEnabled() { return Warp::isEditModeEnabled(); };
 	private:
 		// Logger
-		LoggerRef					log;
+		LoganRef					log;
 		WarpList					mWarps;
 		bool						mUseBeginEnd;
 		Area						mSrcArea, mViewportArea;

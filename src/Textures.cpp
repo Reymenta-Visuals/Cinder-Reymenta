@@ -6,9 +6,8 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 {
 	mParameterBag = aParameterBag;
 	mShaders = aShadersRef;
-	// instanciate the logger class
-	log = Logger::create("TexturesLog.txt");
-	log->logTimedString("Textures constructor");
+
+	CI_LOG_V("Textures constructor");
 
 	//createPreviewFbo();//mFboWidth/4 or 16
 	// mix fbo at index 0
@@ -168,11 +167,11 @@ void Textures::setTexture(int index, string fileName)
 
 			if (!fs::exists(pathToAssetFile))
 			{
-				log->logTimedString("asset file not found: " + fileName);
+				CI_LOG_V("asset file not found: " + fileName);
 			}
 			else
 			{
-				log->logTimedString("asset found file: " + fileName);
+				CI_LOG_V("asset found file: " + fileName);
 				if (index < sTextures.size())
 				{
 					sTextures[index] = gl::Texture::create(loadImage(loadAsset(fileName)));
@@ -181,12 +180,12 @@ void Textures::setTexture(int index, string fileName)
 				{
 					sTextures.push_back(gl::Texture::create(loadImage(loadAsset(fileName))));
 				}
-				log->logTimedString("asset loaded: " + fileName);
+				CI_LOG_V("asset loaded: " + fileName);
 			}
 		}
 		catch (...)
 		{
-			log->logTimedString("Load asset error: " + fileName);
+			CI_LOG_V("Load asset error: " + fileName);
 		}
 	}
 }
@@ -264,7 +263,7 @@ void Textures::loadImageFile(int index, string aFile)
 	}
 	catch (...)
 	{
-		log->logTimedString("Error loading image: " + aFile);
+		CI_LOG_V("Error loading image: " + aFile);
 	}
 }
 
@@ -280,7 +279,7 @@ void Textures::loadMovieFile(int index, string aFile)
 	//}
 	//catch (...)
 	//{
-	//	log->logTimedString("Error loading video: " + aFile);
+	//	CI_LOG_V("Error loading video: " + aFile);
 	//	mMovie->reset();
 
 	//}
@@ -1054,7 +1053,7 @@ void Textures::draw()
 
 Textures::~Textures()
 {
-	log->logTimedString("Textures destructor");
+	CI_LOG_V("Textures destructor");
 	sTextures.clear();
 	//sequenceTextures.clear();
 }
@@ -1294,7 +1293,7 @@ void Textures::setSenderTextureSize(int index, int width, int height)
 int Textures::createSpoutTexture(char name[256], unsigned int width, unsigned int height)
 {
 	// replace spout image at index 10
-	log->logTimedString("createSpoutTexture, replace: " + toString(name));
+	CI_LOG_V("createSpoutTexture, replace: " + toString(name));
 
 	memcpy(&spoutSenderName[0], name, strlen(name) + 1);
 	sTextures[10] = gl::Texture::create(width, height);

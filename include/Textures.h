@@ -8,7 +8,7 @@
 #include "cinder/ImageIo.h"
 #include "cinder/gl/Texture.h"
 #include "cinder/Rand.h"
-#include "Logger.h"
+#include "Logan.h"
 #include "cinder/Utilities.h"
 #include "cinder/Filesystem.h"
 #include "cinder/Capture.h"
@@ -124,7 +124,7 @@ namespace Reymenta
 		char*						getPreviewTime() { return previewTime; };
 	private:
 		// Logger
-		LoggerRef					log;
+		LoganRef					log;
 		char						buf[32];
 
 		//static const int			mTexturesCount = 12; //match MAX from mParameterBag

@@ -3,7 +3,7 @@
 #include "cinder/Cinder.h"
 #include "cinder/app/App.h"
 #include "cinder/Json.h"
-#include "Logger.h"
+#include "Logan.h"
 // textures
 #include "Textures.h"
 // shaders
@@ -35,7 +35,7 @@ namespace Reymenta
 
 	private:
 		// Logger
-		LoggerRef					log;	
+		LoganRef					log;
 		// Textures
 		TexturesRef					mTextures;	
 		// shaders

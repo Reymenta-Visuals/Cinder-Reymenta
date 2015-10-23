@@ -6,8 +6,8 @@ Batchass::Batchass(ParameterBagRef aParameterBag)
 {
 	mParameterBag = aParameterBag;
 	// instanciate the logger class
-	mLog = Logger::create("BatchassLog.txt");
-	mLog->logTimedString("Batchass constructor");
+	mLog = Logan::create();
+	CI_LOG_V("Batchass constructor");
 	// zoom
 	defaultZoom = 1.0f;
 	minZoom = 0.1;
@@ -439,20 +439,16 @@ int Batchass::getWindowsResolution()
 		}
 	}
 	mParameterBag->mRenderY = 0;
-	mLog->logTimedString("Window " + toString(mParameterBag->mDisplayCount) + ": " + toString(mParameterBag->mRenderWidth) + "x" + toString(mParameterBag->mRenderHeight));
+	CI_LOG_V("Window " + toString(mParameterBag->mDisplayCount) + ": " + toString(mParameterBag->mRenderWidth) + "x" + toString(mParameterBag->mRenderHeight));
 
-	mLog->logTimedString(" mMainDisplayWidth" + toString(mParameterBag->mMainDisplayWidth) + " mMainDisplayHeight" + toString(mParameterBag->mMainDisplayHeight));
-	mLog->logTimedString(" mRenderX" + toString(mParameterBag->mRenderX) + " mRenderY" + toString(mParameterBag->mRenderY));
+	CI_LOG_V(" mMainDisplayWidth" + toString(mParameterBag->mMainDisplayWidth) + " mMainDisplayHeight" + toString(mParameterBag->mMainDisplayHeight));
+	CI_LOG_V(" mRenderX" + toString(mParameterBag->mRenderX) + " mRenderY" + toString(mParameterBag->mRenderY));
 	mParameterBag->mRenderResoXY = vec2(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
 	// in case only one screen , render from x = 0
 	if (mParameterBag->mDisplayCount == 1) mParameterBag->mRenderX = 0;
 	return w;
 }
 
-void Batchass::log(string msg)
-{
-	mLog->logTimedString(msg);
-}
 void Batchass::tempoZoom()
 {
 	tZoom = !tZoom;

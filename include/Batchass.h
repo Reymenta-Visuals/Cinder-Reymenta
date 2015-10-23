@@ -2,7 +2,7 @@
 #include "cinder/Cinder.h"
 #include "cinder/app/App.h"
 #include "cinder/ImageIo.h"
-#include "Logger.h"
+#include "Logan.h"
 #include "cinder/Utilities.h"
 
 // parameters
@@ -16,7 +16,7 @@
 #include "WarpWrapper.h"
 #endif
 // logger
-#include "Logger.h"
+#include "Logan.h"
 // MessageRouter
 #include "MessageRouter.h"
 
@@ -44,7 +44,6 @@ namespace Reymenta
 		int							getWindowsResolution();
 		float						formatFloat(float f);
 		void						shutdownLoader();
-		void						log(string msg);
 		ShadersRef					getShadersRef() { return mShaders; };
 		TexturesRef					getTexturesRef() { return mTextures; };
 		WarpWrapperRef				getWarpsRef() { return mWarpings; };
@@ -143,7 +142,7 @@ namespace Reymenta
 		// warps
 		WarpWrapperRef				mWarpings;
 		// Logger
-		LoggerRef					mLog;
+		LoganRef					mLog;
 		// MessageRouter
 		MessageRouterRef			mMessageRouter;
 		// tempo

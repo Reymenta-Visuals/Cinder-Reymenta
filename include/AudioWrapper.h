@@ -6,7 +6,7 @@
 // textures
 #include "Textures.h"
 // log
-#include "Logger.h"
+#include "Logan.h"
 // audio
 #include "cinder/audio/Context.h"
 #include "cinder/audio/MonitorNode.h"
@@ -49,8 +49,6 @@ namespace Reymenta
 		ParameterBagRef					mParameterBag;
 		// Textures
 		TexturesRef						mTextures;
-		// Logger
-		LoggerRef						log;
 
 		// audio
 		audio::InputDeviceNodeRef		mLineIn;

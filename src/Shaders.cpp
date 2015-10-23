@@ -5,9 +5,8 @@ using namespace Reymenta;
 Shaders::Shaders(ParameterBagRef aParameterBag)
 {
 	mParameterBag = aParameterBag;
-	// instanciate the logger class
-	log = Logger::create("ShadersLog.txt");
-	log->logTimedString("Shaders constructor");
+
+	CI_LOG_V("Shaders constructor");
 	liveError = true;
 	isLiveShaderSetup = false;
 	previousFileName = "0";
@@ -28,19 +27,19 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 		}
 		else
 		{
-			log->logTimedString("mix.frag does not exist, should quit");
+			CI_LOG_V("mix.frag does not exist, should quit");
 
 		}
 	}
 	catch (gl::GlslProgCompileExc &exc)
 	{
 		mError = string(exc.what());
-		log->logTimedString("unable to load/compile shader:" + string(exc.what()));
+		CI_LOG_V("unable to load/compile shader:" + string(exc.what()));
 	}
 	catch (const std::exception &e)
 	{
 		mError = string(e.what());
-		log->logTimedString("unable to load shader:" + string(e.what()));
+		CI_LOG_V("unable to load shader:" + string(e.what()));
 	}
 	//load warp shader
 	try
@@ -53,19 +52,19 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 		}
 		else
 		{
-			log->logTimedString("passthru.frag does not exist, should quit");
+			CI_LOG_V("passthru.frag does not exist, should quit");
 
 		}
 	}
 	catch (gl::GlslProgCompileExc &exc)
 	{
 		mError = string(exc.what());
-		log->logTimedString("unable to load/compile shader:" + string(exc.what()));
+		CI_LOG_V("unable to load/compile shader:" + string(exc.what()));
 	}
 	catch (const std::exception &e)
 	{
 		mError = string(e.what());
-		log->logTimedString("unable to load shader:" + string(e.what()));
+		CI_LOG_V("unable to load shader:" + string(e.what()));
 	}
 
 	// shadertoy include
@@ -90,7 +89,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	}
 	else
 	{
-		log->logTimedString("live.frag does not exist");
+		CI_LOG_V("live.frag does not exist");
 	}
 	//fileName = "default.frag";
 	fs::path localFile; //= getAssetPath("") / "shaders" / fileName;
@@ -156,13 +155,13 @@ void Shaders::setupLiveShader()
 		catch (gl::GlslProgCompileExc &exc)
 		{
 			mError = string(exc.what());
-			log->logTimedString("unable to load/compile shader:" + string(exc.what()));
+			CI_LOG_V("unable to load/compile shader:" + string(exc.what()));
 		}
 		catch (const std::exception &e)
 		{
 
 			mError = string(e.what());
-			log->logTimedString("unable to load shader:" + string(e.what()));
+			CI_LOG_V("unable to load shader:" + string(e.what()));
 		}
 		if (liveError)
 		{
@@ -257,7 +256,7 @@ string Shaders::getFragStringFromFile(string fileName)
 	catch (const std::exception &e)
 	{
 		mError = string(e.what());
-		log->logTimedString(fileName + " unable to load string from file:" + mError);
+		CI_LOG_V(fileName + " unable to load string from file:" + mError);
 		mParameterBag->mMsg = mError;
 		mParameterBag->newMsg = true;
 	}
@@ -270,7 +269,7 @@ string Shaders::getFragError()
 
 Shaders::~Shaders()
 {
-	log->logTimedString("Shaders destructor");
+	CI_LOG_V("Shaders destructor");
 }
 
 string Shaders::getFileName(string aFilePath)
@@ -340,20 +339,20 @@ int Shaders::loadPixelFragmentShaderAtIndex(string aFilePath, int index)
 		}
 		else
 		{
-			log->logTimedString(mFragFile + " does not exist:" + aFilePath);
+			CI_LOG_V(mFragFile + " does not exist:" + aFilePath);
 		}
 	}
 	catch (gl::GlslProgCompileExc &exc)
 	{
 		mError = string(exc.what());
-		log->logTimedString(aFilePath + " unable to load/compile shader:" + mError);
+		CI_LOG_V(aFilePath + " unable to load/compile shader:" + mError);
 		mParameterBag->mMsg = mError;
 		mParameterBag->newMsg = true;
 	}
 	catch (const std::exception &e)
 	{
 		mError = string(e.what());
-		log->logTimedString(aFilePath + " unable to load shader:" + mError);
+		CI_LOG_V(aFilePath + " unable to load shader:" + mError);
 		mParameterBag->mMsg = mError;
 		mParameterBag->newMsg = true;
 	}
@@ -380,7 +379,7 @@ int Shaders::loadPixelFragmentShader(string aFilePath)
 			rtn = setGLSLString(fs, name);
 			if (rtn > -1)
 			{
-				log->logTimedString(mFragFile + " loaded and compiled");
+				CI_LOG_V(mFragFile + " loaded and compiled");
 				mParameterBag->mMsg = name + " loadPixelFragmentShader success";
 				mParameterBag->newMsg = true;
 				//mFragmentShadersNames[rtn] = name;
@@ -388,20 +387,20 @@ int Shaders::loadPixelFragmentShader(string aFilePath)
 		}
 		else
 		{
-			log->logTimedString(mFragFile + " does not exist");
+			CI_LOG_V(mFragFile + " does not exist");
 		}
 	}
 	catch (gl::GlslProgCompileExc &exc)
 	{
 		mError = string(exc.what());
-		log->logTimedString(aFilePath + " unable to load/compile shader err:" + mError);
+		CI_LOG_V(aFilePath + " unable to load/compile shader err:" + mError);
 		mParameterBag->mMsg = mError;
 		mParameterBag->newMsg = true;
 	}
 	catch (const std::exception &e)
 	{
 		mError = string(e.what());
-		log->logTimedString(aFilePath + " unable to load shader err:" + mError);
+		CI_LOG_V(aFilePath + " unable to load shader err:" + mError);
 		mParameterBag->mMsg = mError;
 		mParameterBag->newMsg = true;
 	}
@@ -419,7 +418,7 @@ void Shaders::loadCurrentFrag()
 		mFragmentShaders[mCurrentRenderShader].name = "some.frag";
 		mFragmentShaders[mCurrentRenderShader].active = true;
 
-		log->logTimedString("loadCurrentFrag success");
+		CI_LOG_V("loadCurrentFrag success");
 		mError = "";
 		validFrag = true;
 	}
@@ -427,7 +426,7 @@ void Shaders::loadCurrentFrag()
 	{
 		validFrag = false;
 		mError = string(exc.what());
-		log->logTimedString("loadCurrentFrag error: " + mError);
+		CI_LOG_V("loadCurrentFrag error: " + mError);
 	}
 	// reset to no transition
 	mParameterBag->iTransition = 0;
@@ -494,7 +493,7 @@ int Shaders::setGLSLString(string pixelFrag, string name)
 		}
 		//preview the new loaded shader
 		mParameterBag->mPreviewFragIndex = foundIndex;
-		log->logTimedString("setGLSLString success");
+		CI_LOG_V("setGLSLString success");
 		mParameterBag->mMsg = name + " setGLSLString success";
 		mParameterBag->newMsg = true;
 		mError = "";
@@ -508,7 +507,7 @@ int Shaders::setGLSLString(string pixelFrag, string name)
 		mError = string(exc.what());
 		mParameterBag->mMsg = "setGLSLString file: " + name + " error:" + mError;
 		mParameterBag->newMsg = true;
-		log->logTimedString(mParameterBag->mMsg);
+		CI_LOG_V(mParameterBag->mMsg);
 	}
 	return foundIndex;
 }
@@ -531,7 +530,7 @@ int Shaders::setGLSLStringAtIndex(string pixelFrag, string name, int index)
 		foundIndex = index;
 		//preview the new loaded shader
 		mParameterBag->mPreviewFragIndex = index;
-		log->logTimedString("setGLSLStringAtIndex success");
+		CI_LOG_V("setGLSLStringAtIndex success");
 		mError = "";
 		mParameterBag->mMsg = name + " setGLSLStringAtIndex success";
 		mParameterBag->newMsg = true;
@@ -541,7 +540,7 @@ int Shaders::setGLSLStringAtIndex(string pixelFrag, string name, int index)
 	{
 		validFrag = false;
 		mError = string(exc.what());
-		log->logTimedString("setGLSLStringAtIndex error: " + mError);
+		CI_LOG_V("setGLSLStringAtIndex error: " + mError);
 		mParameterBag->mMsg = mError;
 		mParameterBag->newMsg = true;
 	}
@@ -564,7 +563,7 @@ bool Shaders::setFragString(string pixelFrag)
 			mFragmentShaders[mCurrentPreviewShader].active = true;
 
 			//if (mParameterBag->mDirectRender) renderPreviewShader();// mFragmentShaders[mCurrentRenderShader] = gl::GlslProg(NULL, currentFrag.c_str());
-			log->logTimedString("setFragString success");
+			CI_LOG_V("setFragString success");
 			mError = "";
 			validFrag = true;
 		}
@@ -576,14 +575,14 @@ bool Shaders::setFragString(string pixelFrag)
 			ofstream mCurrentFrag(currentFile.string(), std::ofstream::binary);
 			mCurrentFrag << pixelFrag;
 			mCurrentFrag.close();
-			log->logTimedString("current live editor mix saved:" + currentFile.string());
+			CI_LOG_V("current live editor mix saved:" + currentFile.string());
 
 			mixFileName = previousFileName + "-" + currentFileName + ".frag";
 			fs::path defaultFile = getAssetPath("") / "shaders" / "default" / mixFileName;
 			ofstream mDefaultFrag(defaultFile.string(), std::ofstream::binary);
 			mDefaultFrag << pixelFrag;
 			mDefaultFrag.close();
-			log->logTimedString("default mix saved:" + defaultFile.string());
+			CI_LOG_V("default mix saved:" + defaultFile.string());
 		}
 		// if codeeditor mCodeEditor->setValue( pixelFrag );// CHECK 
 
@@ -592,7 +591,7 @@ bool Shaders::setFragString(string pixelFrag)
 	{
 		validFrag = false;
 		mError = string(exc.what());
-		log->logTimedString("setFragString error: " + mError);
+		CI_LOG_V("setFragString error: " + mError);
 		mParameterBag->mMsg = mError;
 		mParameterBag->newMsg = true;
 	}
@@ -612,13 +611,13 @@ bool Shaders::loadTextFile(string aFilePath)
 		{
 			DataSourceRef dsr = loadFile(txtFile);
 			rtn = loadString(loadFile(txtFile));
-			log->logTimedString(aFilePath + " content:" + rtn);
+			CI_LOG_V(aFilePath + " content:" + rtn);
 		}
 		success = true;
 	}
 	catch (const std::exception &e)
 	{
-		log->logTimedString(fileName + " unable to load string from text file:" + string(e.what()));
+		CI_LOG_V(fileName + " unable to load string from text file:" + string(e.what()));
 	}
 	return success;
 	/* TODO
@@ -659,7 +658,7 @@ void Shaders::createThumbsFromDir(string filePath)
 						newShader.name = fileName;
 						newShader.active = true;
 						mFragmentShaders.push_back(newShader);
-						log->logTimedString("createThumbsFromDir loaded and compiled " + fileName);
+						CI_LOG_V("createThumbsFromDir loaded and compiled " + fileName);
 
 						/*mParameterBag->mPreviewFragIndex = mFragmentShaders.size() - 1;*/
 					}
@@ -667,7 +666,7 @@ void Shaders::createThumbsFromDir(string filePath)
 					{
 						validFrag = false;
 						mError = string(exc.what());
-						log->logTimedString("createThumbsFromDir error: " + mError + " on " + fileName);
+						CI_LOG_V("createThumbsFromDir error: " + mError + " on " + fileName);
 					}
 					//sequenceTextures.push_back(ci::gl::Texture(loadImage(filePath + fileName)));
 				}
