@@ -19,9 +19,6 @@ namespace Reymenta
 	class Logan {
 	public:		
 		Logan();
-		virtual				~Logan();
-
-		void				logString(std::string msg);
 
 		static LoganRef	create()
 		{
