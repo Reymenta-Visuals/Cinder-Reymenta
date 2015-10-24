@@ -812,6 +812,12 @@ void MessageRouter::wsConnect()
 					mShaders->loadLiveShader(msg);
 
 				}
+				else if (msg.substr(0, 7) == "#version")
+				{
+					// fragment shader from live coding
+					mShaders->loadLiveShader(msg);
+
+				}
 				else if (first == "I")
 				{
 
