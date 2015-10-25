@@ -810,12 +810,19 @@ void MessageRouter::wsConnect()
 				{
 					// fragment shader from live coding
 					mShaders->loadLiveShader(msg);
-
+					// route it to websockets clients
+					if (mParameterBag->mIsRouter) {
+						wsWrite(msg);
+					}
 				}
 				else if (msg.substr(0, 7) == "#version")
 				{
 					// fragment shader from live coding
 					mShaders->loadLiveShader(msg);
+					// route it to websockets clients
+					if (mParameterBag->mIsRouter) {
+						wsWrite(msg);
+					}
 
 				}
 				else if (first == "I")

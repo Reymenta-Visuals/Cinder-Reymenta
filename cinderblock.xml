@@ -22,6 +22,7 @@
 	<includePath>src</includePath>
 	<headerPattern>include/*.h</headerPattern>
 	<sourcePattern>src/*.cpp</sourcePattern>
+	<sourcePattern>src/*.c</sourcePattern>
 </block>
 <template>templates/Reymenta/template.xml</template>
 </cinder>
