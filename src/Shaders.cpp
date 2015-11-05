@@ -80,6 +80,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 		// Load our shader and test if it is correctly compiled
 		try
 		{
+			mParameterBag->mShaderToLoad = loadString(loadAsset("live.frag"));
 			mLiveShader = gl::GlslProg::create(loadAsset("live.vert"), loadFile(liveFragFile));
 			liveError = false;
 		}

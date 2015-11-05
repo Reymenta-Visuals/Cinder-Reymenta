@@ -129,6 +129,7 @@ namespace Reymenta
 		void						Write(Cmd const &cmd);
 		void						Write(Vtx const &vtx);
 		void						SendPacket();
+		bool						isRemoteClientActive() { return remoteClientActive; };
 		// utils
 		void						selectShader(bool left, int index);
 	private:
@@ -182,7 +183,7 @@ namespace Reymenta
 		string						tracks[MAX];
 
 		// remoteImGui
-		bool						ClientActive;
+		bool						remoteClientActive;
 		int							Frame;
 		int 						FrameReceived;
 		int 						PrevPacketSize;

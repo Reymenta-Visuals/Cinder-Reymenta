@@ -131,6 +131,7 @@ namespace Reymenta
 		void						selectShader(bool left, int index);
 		void						wsConnect();
 		void						wsPing();
+		bool						isRemoteClientActive() { return mMessageRouter->isRemoteClientActive(); };
 
 	private:
 		// parameters

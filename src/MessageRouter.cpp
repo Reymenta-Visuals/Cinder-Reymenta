@@ -8,7 +8,7 @@ MessageRouter::MessageRouter(ParameterBagRef aParameterBag, TexturesRef aTexture
 	mTextures = aTexturesRef;
 	mShaders = aShadersRef;
 	// remoteImGui
-	ClientActive = false;
+	remoteClientActive = false;
 	Frame = 0;
 	FrameReceived = 0;
 	IsKeyFrame = false;
@@ -810,6 +810,7 @@ void MessageRouter::wsConnect()
 				{
 					// fragment shader from live coding
 					mShaders->loadLiveShader(msg);
+					mParameterBag->mShaderToLoad = msg;
 					// route it to websockets clients
 					if (mParameterBag->mIsRouter) {
 						wsWrite(msg);
@@ -830,9 +831,9 @@ void MessageRouter::wsConnect()
 
 					if (msg == "ImInit") {
 						// send ImInit OK
-						if (!ClientActive)
+						if (!remoteClientActive)
 						{
-							ClientActive = true;
+							remoteClientActive = true;
 							ForceKeyFrame = true;
 							// Send confirmation
 							mServer.write("ImInit");
