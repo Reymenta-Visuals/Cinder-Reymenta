@@ -806,6 +806,43 @@ void MessageRouter::wsConnect()
 						mParameterBag->mMsg += "  ";
 					}
 				}
+				else if (msg.substr(0, 2) == "/*")
+				{
+					// shader with json info				
+					unsigned closingCommentPosition = msg.find("*/");
+					if (closingCommentPosition > 0) {
+						JsonTree json;
+						try
+						{
+							string jsonHeader = msg.substr(2, closingCommentPosition-2);
+							ci::JsonTree::ParseOptions parseOptions;
+							parseOptions.ignoreErrors(false);
+							json = JsonTree(jsonHeader, parseOptions);
+							string title = json.getChild("title").getValue<string>();
+							string fileName = title + ".glsl";
+							string shader = msg.substr(closingCommentPosition+2);
+							mShaders->loadLiveShader(shader);
+							mParameterBag->mShaderToLoad = shader;
+							// route it to websockets clients
+							if (mParameterBag->mIsRouter) {
+								wsWrite(msg);
+							}
+							fs::path currentFile = getAssetPath("") / "glsl" / fileName;
+							ofstream mFrag(currentFile.string(), std::ofstream::binary);
+							mFrag << msg;
+							mFrag.close();
+							CI_LOG_V("current live editor mix saved:" + currentFile.string());
+						}
+						catch (cinder::JsonTree::Exception exception)
+						{
+							mParameterBag->mMsg += " error jsonparser exception: ";
+							mParameterBag->mMsg += exception.what();
+							mParameterBag->mMsg += "  ";
+						}
+
+
+					}
+				}
 				else if (msg.substr(0, 7) == "uniform")
 				{
 					// fragment shader from live coding
