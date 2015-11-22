@@ -50,8 +50,8 @@ WarpWrapper::WarpWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesRef
 	// adjust the content size of the warps
 	Warp::setSize(mWarps, mTextures->getFboTexture(mParameterBag->mMixFboIndex)->getSize());
 
-	gl::enableDepthRead();
-	gl::enableDepthWrite();
+	//gl::enableDepthRead();
+	//gl::enableDepthWrite();
 }
 void WarpWrapper::createWarp()
 {

@@ -339,6 +339,14 @@ string Shaders::getFragError()
 
 Shaders::~Shaders()
 {
+	// Properly shut down the loading thread.
+	shutdownLoader();
+
+	// Properly destroy the buffers.
+	if (mResponses) delete mResponses;
+	mResponses = nullptr;
+	if (mRequests) delete mRequests;
+	mRequests = nullptr;
 	CI_LOG_V("Shaders destructor");
 }
 
