@@ -69,7 +69,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 
 	// shadertoy include
 	vs = loadString(loadAsset("live.vert"));
-	inc = loadString(loadAsset("shadertoy.inc"));
+	shaderInclude = loadString(loadAsset("shadertoy.inc"));
 
 	validFrag = false;
 	validVert = true;
@@ -124,18 +124,39 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	mCurrentPreviewShader = 0;
 	mCurrentRenderShader = 0;
 	// Create our thread communication buffers.
-	//mRequests = new ConcurrentCircularBuffer<LoaderData>(10);
-	//mResponses = new ConcurrentCircularBuffer<LoaderData>(10);
+	mRequests = new ConcurrentCircularBuffer<LoaderData>(100);
+	mResponses = new ConcurrentCircularBuffer<LoaderData>(100);
 
-	// error on program termination, shutdownLoader() must be called
 	// Start the loading thread.
-	//setupLoader();
+	if (!setupLoader()) {
+		CI_LOG_E("Failed to create the loader thread and context.");
+		
+	}
+	// Load our textures and transition shader in the main thread.
+	try {
+
+		mShaderTransition = gl::GlslProg::create(loadAsset("common/shadertoy.vert"), loadAsset("common/shadertoy.frag"));
+	}
+	catch (const std::exception& e) {
+		// Quit if anything went wrong.
+		CI_LOG_EXCEPTION("Failed to load common shaders:", e);
+		
+	}
+
+	// Tell our loading thread to load the first shader. The path is converted to LoaderData implicitly.
+	mRequests->pushFront(getAssetPath("metrics.glsl"));
 }
-void Shaders::setupLoader()
+bool Shaders::setupLoader()
 {
+	auto ctx = gl::env()->createSharedContext(gl::context());
+	if (!ctx)
+		return false;
+
 	// If succeeded, start the loading thread.
-	//mThreadAbort = false;
-	//mThread = std::make_shared<std::thread>(&Shaders::loader, this);
+	mThreadAbort = false;
+	mThread = std::make_shared<std::thread>(&Shaders::loader, this, ctx);
+
+	return true;
 }
 void Shaders::setupLiveShader()
 {
@@ -194,42 +215,49 @@ string Shaders::loadLiveShader(string frag)
 void Shaders::shutdownLoader()
 {
 	// Tell the loading thread to abort, then wait for it to stop.
-	//mThreadAbort = true;
-	//mThread->join();
+	mThreadAbort = true;
+	if (mThread)
+		mThread->join();
+	// Properly destroy the buffers.
+	if (mResponses) delete mResponses;
+	mResponses = nullptr;
+	if (mRequests) delete mRequests;
+	mRequests = nullptr;
 }
-void Shaders::loader()
+void Shaders::loader(gl::ContextRef ctx)
 {
+	// This only works if we can make the render context current.
+	ctx->makeCurrent();
+
 	// Loading loop.
-	/*while (!mThreadAbort)
-	{
-	// Wait for a request.
-	if (mRequests->isNotEmpty())
-	{
-	// Take the request from the buffer.
-	LoaderData data;
-	mRequests->popBack(&data);
+	while (!mThreadAbort) {
+		// Wait for a request.
+		if (mRequests->isNotEmpty()) {
+			// Take the request from the buffer.
+			LoaderData data;
+			mRequests->popBack(&data);
 
-	// Try to load, parse and compile the shader.
-	try {
-	//std::string vs = loadString(loadAsset("shaders/templates/passThrough2.vert"));
-	std::string fs = inc + loadString(loadFile(data.path));
-	//data.shader = gl::GlslProg::create(vs.c_str(), fs.c_str());
-	data.shadertext = fs.c_str();
+			// Try to load, parse and compile the shader.
+			try {
+				std::string vs = loadString(loadAsset("common/shadertoy.vert"));
+				std::string fs = loadString(loadAsset("shadertoy.inc")) + loadString(loadFile(data.path));
 
-	// If the shader compiled successfully, pass it to the main thread.
-	mResponses->pushFront(data);
+				data.shader = gl::GlslProg::create(gl::GlslProg::Format().vertex(vs).fragment(fs));
+
+				// If the shader compiled successfully, pass it to the main thread.
+				mResponses->pushFront(data);
+			}
+			catch (const std::exception& e) {
+				// Uhoh, something went wrong, but it's not fatal.
+ 				CI_LOG_EXCEPTION("Failed to compile the shader: ", e);
+			}
+		}
+		else {
+			// Allow the CPU to do other things for a while.
+			std::chrono::milliseconds duration(100);
+			std::this_thread::sleep_for(duration);
+		}
 	}
-	catch (const std::exception& e) {
-	// Uhoh, something went wrong.
-	console() << e.what() << endl;
-	}
-	}
-	else {
-	// Allow the CPU to do other things for a while.
-	std::chrono::milliseconds duration(100);
-	std::this_thread::sleep_for(duration);
-	}
-	}*/
 }
 void Shaders::loadFragmentShader(boost::filesystem::path aFilePath)
 {
@@ -237,16 +265,57 @@ void Shaders::loadFragmentShader(boost::filesystem::path aFilePath)
 }
 void Shaders::update()
 {
-	/*LoaderData data;
+	LoaderData data;
 
 	// If we are ready for the next shader, take it from the buffer.
-	if (mResponses->isNotEmpty()) {
-	mResponses->popBack(&data);
+	if (!mShaderNext && mResponses->isNotEmpty()) {
+		mResponses->popBack(&data);
 
+		mPathNext = data.path;
+		mShaderNext = data.shader;
+
+
+
+	}
+	/*
 	setFragString(data.shadertext);
 	}*/
 }
+void Shaders::addRequest(boost::filesystem::path aFilePath) {
+	if (mRequests->isNotFull()) {
+		mRequests->pushFront(aFilePath);
+	}
+}
+void Shaders::swapShaders() {
+	mShaderCurrent = mShaderNext;
+	mShaderNext.reset();
 
+	mPathCurrent = mPathNext;
+	mPathNext.clear();
+}
+void Shaders::random()
+{
+	const fs::path assets = getAssetPath("");
+
+	// Find all *.frag files.
+	std::vector<fs::path> shaders;
+	for (fs::recursive_directory_iterator it(assets), end; it != end; ++it) {
+		if (fs::is_regular_file(it->path()))
+			if (it->path().extension() == ".glsl")
+				shaders.push_back(it->path());
+	}
+
+	if (shaders.empty())
+		return;
+
+	// Load random *.frag file, but make sure it is different from the current shader.
+	size_t idx = getElapsedFrames() % shaders.size();
+	if (shaders.at(idx) == mPathCurrent)
+		idx = (idx + 1) % shaders.size();
+
+	if (mRequests->isNotFull())
+		mRequests->pushFront(shaders.at(idx));
+}
 string Shaders::getFragStringFromFile(string fileName)
 {
 	string rtn = "";
@@ -330,7 +399,7 @@ int Shaders::loadPixelFragmentShaderAtIndex(string aFilePath, int index)
 		if (fs::exists(fr))
 		{
 			validFrag = false;
-			std::string fs = inc + loadString(loadFile(aFilePath));
+			std::string fs = shaderInclude + loadString(loadFile(aFilePath));
 			rtn = setGLSLStringAtIndex(fs, name, index);
 			if (rtn > -1)
 			{
@@ -376,7 +445,7 @@ int Shaders::loadPixelFragmentShader(string aFilePath)
 		if (fs::exists(fr))
 		{
 			validFrag = false;
-			std::string fs = inc + loadString(loadFile(aFilePath));
+			std::string fs = shaderInclude + loadString(loadFile(aFilePath));
 			rtn = setGLSLString(fs, name);
 			if (rtn > -1)
 			{
@@ -652,7 +721,7 @@ void Shaders::createThumbsFromDir(string filePath)
 				{
 					try
 					{
-						std::string fs = inc + loadString(loadFile(it->path()));
+						std::string fs = shaderInclude + loadString(loadFile(it->path()));
 
 						Shada newShader;
 						newShader.shader = gl::GlslProg::create(passthruvert.c_str(), fs.c_str());

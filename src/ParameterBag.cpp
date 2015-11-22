@@ -15,8 +15,8 @@ ParameterBag::ParameterBag()
 	// reset no matter what, so we don't miss anything
 	reset();
 
-	// check to see if ReymentaSettings.xml file exists and restore if it does
-	fs::path params = getAssetPath("") / settingsFileName;
+	// check to see if Settings.xml file exists and restore if it does
+	fs::path params = getAppPath() / settingsFileName;
 	if (fs::exists(params))
 	{
 		restore();
@@ -34,7 +34,7 @@ ParameterBagRef ParameterBag::create()
 
 bool ParameterBag::save()
 {
-	fs::path directory = getAssetPath("");
+	fs::path directory = getAppPath();
 	/*if (!fs::exists(directory)) {
 		if (!createDirectories(directory / settingsFileName)) {
 			return false;
@@ -186,7 +186,7 @@ bool ParameterBag::save()
 bool ParameterBag::restore()
 {
 	// check to see if Settings.xml file exists
-	fs::path params = getAssetPath("") / settingsFileName;
+	fs::path params = getAppPath() / settingsFileName;
 	if (fs::exists(params)) {
 		// if it does, restore
 		const XmlTree xml(loadFile(params));
@@ -370,7 +370,7 @@ void ParameterBag::resetSomeParams() {
 	// transition
 	iTransition = 0;
 	iAnim = 0.0;
-	mTransitionDuration = 1.0f;
+	mTransitionDuration = 2.0f;
 
 	// red
 	controlValues[1] = 1.0f;

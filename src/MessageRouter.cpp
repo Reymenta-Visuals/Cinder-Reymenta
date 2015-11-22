@@ -819,19 +819,44 @@ void MessageRouter::wsConnect()
 							parseOptions.ignoreErrors(false);
 							json = JsonTree(jsonHeader, parseOptions);
 							string title = json.getChild("title").getValue<string>();
-							string fileName = title + ".glsl";
-							string shader = msg.substr(closingCommentPosition+2);
-							mShaders->loadLiveShader(shader);
-							mParameterBag->mShaderToLoad = shader;
+							string fragFileName = title + ".frag"; // with uniforms
+							string glslFileName = title + ".glsl"; // without uniforms, need to include shadertoy.inc
+							string shader = msg.substr(closingCommentPosition + 2);
+
+							string processedContent = jsonHeader;
+							// check uniforms presence
+							unsigned uniformPosition = msg.find("uniform");
+							if (uniformPosition < 1) {
+								// uniforms not found, add include
+								processedContent += "#include shadertoy.inc";
+							}
+							processedContent += shader;
+
+
+							mShaders->loadLiveShader(processedContent); // need uniforms declared
+							mParameterBag->mShaderToLoad = shader; // CHECK if useless?
 							// route it to websockets clients
 							if (mParameterBag->mIsRouter) {
 								wsWrite(msg);
 							}
-							fs::path currentFile = getAssetPath("") / "glsl" / fileName;
+							// save it as is
+							fs::path currentFile = getAssetPath("") / "glsl" / "received" / fragFileName;
 							ofstream mFrag(currentFile.string(), std::ofstream::binary);
 							mFrag << msg;
 							mFrag.close();
-							CI_LOG_V("current live editor mix saved:" + currentFile.string());
+							CI_LOG_V("received file saved:" + currentFile.string());
+
+							
+
+							// check vertex.uv presence
+
+							// save processed file
+							//processedContent = msg;
+							fs::path processedFile = getAssetPath("") / "glsl" / "processed" / fragFileName;
+							ofstream mFragProcessed(processedFile.string(), std::ofstream::binary);
+							mFragProcessed << processedContent;
+							mFragProcessed.close();
+							CI_LOG_V("processed file saved:" + processedFile.string());
 						}
 						catch (cinder::JsonTree::Exception exception)
 						{

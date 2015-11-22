@@ -84,7 +84,7 @@ mParameterBag->mWarpFbos[a] = newWarpFbo;
 void Batchass::createWarpFbos()
 {
 	// vector + dynamic resize
-	for (int a = 0; a < 30; a++)
+	for (int a = 0; a < 12; a++)
 	{
 		WarpFbo newWarpFbo;
 		if (a == 0)

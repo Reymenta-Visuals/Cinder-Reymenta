@@ -176,7 +176,7 @@ namespace Reymenta {
 		// transition
 		int							iTransition;
 		Anim<float>					iAnim;
-		float						mTransitionDuration;
+		double						mTransitionDuration;
 		int							multFactor;
 		// windows and params
 		int							mMainDisplayWidth;
