@@ -177,6 +177,9 @@ namespace Reymenta {
 		int							iTransition;
 		Anim<float>					iAnim;
 		double						mTransitionDuration;
+		//! Time in seconds at which the transition to the next shader starts.
+		double						mTransitionTime;
+
 		int							multFactor;
 		// windows and params
 		int							mMainDisplayWidth;
@@ -273,7 +276,7 @@ namespace Reymenta {
 		int							mVertexSphereTextureIndex;
 		// camera
 		CameraPersp					mCamera;
-		//Cam						mCam;
+		// Cam						mCam;
 		vec2						mCamEyePointXY;
 		float						mCamEyePointZ;
 		// web sockets

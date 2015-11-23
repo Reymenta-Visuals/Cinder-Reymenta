@@ -132,6 +132,7 @@ namespace Reymenta
 		void						wsConnect();
 		void						wsPing();
 		bool						isRemoteClientActive() { return mMessageRouter->isRemoteClientActive(); };
+		string						getTrack(int i) { return mMessageRouter->getTrack(i); };
 
 	private:
 		// parameters

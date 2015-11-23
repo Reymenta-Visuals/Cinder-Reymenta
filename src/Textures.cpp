@@ -124,7 +124,7 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	seq.nextIndexFrameToTry = 0;
 	seq.playheadPosition = 0;
 	sequences.push_back(seq);
-	//gl::enableDepthRead();
+	
 	//gl::enableDepthWrite();
 }
 char* Textures::getTextureName(int index) {

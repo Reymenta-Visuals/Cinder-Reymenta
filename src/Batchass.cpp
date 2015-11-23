@@ -243,7 +243,11 @@ void Batchass::update()
 	mTextures->update();
 	mShaders->update();
 	if (mParameterBag->controlValues[12] == 0.0) mParameterBag->controlValues[12] = 0.01;
-
+	if (mParameterBag->iGreyScale)
+	{
+		mParameterBag->controlValues[1] = mParameterBag->controlValues[2] = mParameterBag->controlValues[3];
+		mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7];
+	}
 #pragma region animation
 	// check this line position: can't remember
 	currentTime = timer.getSeconds();
@@ -405,8 +409,8 @@ void Batchass::update()
 		}
 
 	}
-}
 #pragma endregion animation
+}
 
 void Batchass::shutdownLoader()
 {

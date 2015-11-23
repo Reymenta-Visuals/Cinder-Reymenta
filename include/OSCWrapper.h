@@ -13,7 +13,8 @@ using namespace std;
 #include "Shaders.h"
 // textures
 #include "Textures.h"
-		static const int			MAX = 16;
+		
+static const int			MAX = 16;
 
 namespace Reymenta 
 {
@@ -35,8 +36,7 @@ namespace Reymenta
 		void	sendOSCStringMessage(string controlType, int iarg0 = 0, string sarg1 = "", string sarg2 = "", string sarg3 = "", string sarg4 = "", string sarg5 = "");
 
 		ivec4	skeleton[20];
-		// ableton liveOSC
-		string						tracks[MAX];
+		string						getTracks() { return tracks[0]; };//TODO
 	private:
 
 		// parameters
@@ -52,6 +52,8 @@ namespace Reymenta
 		int							iargs[MAX];
 		float						fargs[MAX];
 		string						sargs[MAX];
+		// ableton liveOSC
+		string						tracks[MAX];
 
 	};
 }

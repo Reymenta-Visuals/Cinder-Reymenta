@@ -144,7 +144,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	}
 
 	// Tell our loading thread to load the first shader. The path is converted to LoaderData implicitly.
-	mRequests->pushFront(getAssetPath("metrics.glsl"));
+	mRequests->pushFront(getAssetPath("0.glsl"));
 }
 bool Shaders::setupLoader()
 {
@@ -274,6 +274,8 @@ void Shaders::update()
 		mPathNext = data.path;
 		mShaderNext = data.shader;
 
+		mParameterBag->mTransitionTime = getElapsedSeconds();
+		mParameterBag->mTransitionDuration = 2.0;
 
 
 	}

@@ -116,7 +116,7 @@ namespace Reymenta
 		void						updateAndSendOSCFloatMessage(string controlType, int iarg0 = 0, float farg1 = 0.0, float farg2 = 0.0, float farg3 = 0.0, float farg4 = 0.0, float farg5 = 0.0);
 		void						sendOSCStringMessage(string controlType, int iarg0 = 0, string sarg1 = "", string sarg2 = "", string sarg3 = "", string sarg4 = "", string sarg5 = "");
 		ivec4						skeleton[20];
-
+		string						getTrack(int i) { return tracks[min(i, MAX)]; };//TODO
 		// WebSockets
 		void						wsWrite(std::string msg);
 		void						wsWriteBinary(const void *data, int size);
