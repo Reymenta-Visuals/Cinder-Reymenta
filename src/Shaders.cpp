@@ -413,7 +413,7 @@ int Shaders::loadPixelFragmentShaderAtIndex(string aFilePath, int index)
 			rtn = setGLSLStringAtIndex(fs, name, index);
 			if (rtn > -1)
 			{
-				mParameterBag->mMsg = name + " loadPixelFragmentShaderAtIndex success";
+				mParameterBag->mMsg = name + " success loadPixelFragmentShaderAtIndex:" + toString(index);
 				mParameterBag->newMsg = true;
 			}
 		}

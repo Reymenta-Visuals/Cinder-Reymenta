@@ -42,7 +42,7 @@ namespace Reymenta
 		void mouseDrag(MouseEvent event);
 		void mouseUp(MouseEvent event);
 
-		float*							getSmallSpectrum() { return arr; };
+		float*							getSmallSpectrum() { return volumes; };
 	private:
 
 		// parameters
@@ -83,7 +83,8 @@ namespace Reymenta
 		bool							mIsAudioPlaying;
 		double							mMouseUpTime;
 		double							mMouseUpDelay;
-		float							arr[7];
+		float							volumes[7];
 
 	};
 }
+
