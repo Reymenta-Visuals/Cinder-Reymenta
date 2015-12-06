@@ -166,10 +166,47 @@ void MessageRouter::updateParams(int iarg0, float farg1)
 	if (farg1 > 0.1)
 	{
 		//avoid to send twice
+		if (iarg0 == 51) {
+			sendOSCIntMessage("/live/prev/cue", 0);		// previous cue	
+			// left assign
+			mParameterBag->mLeftFragIndex = mParameterBag->iTrack;
+		}
+		if (iarg0 == 52) { 
+			sendOSCIntMessage("/live/next/cue", 0);		// next cue 
+			// right assign
+			mParameterBag->mRightFragIndex = mParameterBag->iTrack;
+		}
+		if (iarg0 == 53) {
+			sendOSCIntMessage("/live/stop", 0);			// stop
+			// preview assign
+			mParameterBag->mPreviewFragIndex = mParameterBag->iTrack;
+		}
 		if (iarg0 == 54) sendOSCIntMessage("/live/play", 0);			// play
-		if (iarg0 == 53) sendOSCIntMessage("/live/stop", 0);			// stop
-		if (iarg0 == 52) sendOSCIntMessage("/live/next/cue", 0);		// next cue
-		if (iarg0 == 51) sendOSCIntMessage("/live/prev/cue", 0);		// previous cue
+			
+		if (iarg0 == 58)
+		{
+			// track left		
+			mParameterBag->iTrack--;
+			if (mParameterBag->iTrack < 0) mParameterBag->iTrack = mShaders->getCount() - 1;
+		}
+		if (iarg0 == 59)
+		{
+			// track right
+			mParameterBag->iTrack++;
+			if (mParameterBag->iTrack > mShaders->getCount() - 1) mParameterBag->iTrack = 0;
+		}
+		if (iarg0 == 61 && farg1 > 0.1)
+		{
+			// right arrow
+			mParameterBag->iBlendMode--;
+			if (mParameterBag->iBlendMode < 0) mParameterBag->iBlendMode = mParameterBag->maxBlendMode;
+		}
+		if (iarg0 == 62 && farg1 > 0.1)
+		{
+			// left arrow
+			mParameterBag->iBlendMode++;
+			if (mParameterBag->iBlendMode > mParameterBag->maxBlendMode) mParameterBag->iBlendMode = 0;
+		}
 	}
 	if (iarg0 > 0 && iarg0 < 9)
 	{
@@ -203,18 +240,7 @@ void MessageRouter::updateParams(int iarg0, float farg1)
 		// low row 
 		mParameterBag->controlValues[iarg0] = farg1;
 	}
-	if (iarg0 == 61 && farg1 > 0.1)
-	{
-		// right arrow
-		mParameterBag->iBlendMode--;
-		if (mParameterBag->iBlendMode < 0) mParameterBag->iBlendMode = mParameterBag->maxBlendMode;
-	}
-	if (iarg0 == 62 && farg1 > 0.1)
-	{
-		// left arrow
-		mParameterBag->iBlendMode++;
-		if (mParameterBag->iBlendMode > mParameterBag->maxBlendMode) mParameterBag->iBlendMode = 0;
-	}
+
 
 }
 void MessageRouter::setupOSCSender()

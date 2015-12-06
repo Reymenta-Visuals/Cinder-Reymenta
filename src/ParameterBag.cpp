@@ -422,11 +422,12 @@ void ParameterBag::resetSomeParams() {
 void ParameterBag::reset()
 {
 	// parameters exposed in XML
-	mMIDIOpenAllInputPorts = mRenderThumbs = mAutoLayout =mShowUI = mCursorVisible = true;
-	mStandalone = mCustomLayout = false;
+	mMIDIOpenAllInputPorts = mAutoLayout =mShowUI = mCursorVisible = true;
+	mStandalone = mCustomLayout = mRenderThumbs = false;
 	mOutputVideoResolution = 1024;
 	mInfo = "";
 	mTrackName = "";
+	iTrack = 0;
 	// parameters not exposed in XML
 	mMainWindowX = 0;
 	mMainWindowY = 0;

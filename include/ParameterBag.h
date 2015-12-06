@@ -267,6 +267,7 @@ namespace Reymenta {
 		int							mLeftFboIndex, mRightFboIndex, mWarp1FboIndex, mWarp2FboIndex, mABPFboIndex;
 		int							mLeftFragIndex, mRightFragIndex, mPreviewFragIndex, mPreviousFragIndex, mWarp1FragIndex, mWarp2FragIndex, mLiveFragIndex;
 		float						iZoomLeft, iZoomRight;
+		int							iTrack;
 		// meshes
 		int							mMeshIndex;
 
