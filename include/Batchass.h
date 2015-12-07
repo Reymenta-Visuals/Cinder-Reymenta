@@ -1,22 +1,22 @@
 #pragma once
 #include "cinder/Cinder.h"
-#include "cinder/app/AppNative.h"
+#include "cinder/app/App.h"
 #include "cinder/ImageIo.h"
-#include "Logger.h"
+#include "Logan.h"
 #include "cinder/Utilities.h"
 
 // parameters
 #include "ParameterBag.h"
-// shaders
-#include "Shaders.h"
 // textures
 #include "Textures.h"
+// shaders
+#include "Shaders.h"
 #if !defined( NOWARPING )
 // warps
 #include "WarpWrapper.h"
 #endif
 // logger
-#include "Logger.h"
+#include "Logan.h"
 // MessageRouter
 #include "MessageRouter.h"
 
@@ -44,7 +44,6 @@ namespace Reymenta
 		int							getWindowsResolution();
 		float						formatFloat(float f);
 		void						shutdownLoader();
-		void						log(string msg);
 		ShadersRef					getShadersRef() { return mShaders; };
 		TexturesRef					getTexturesRef() { return mTextures; };
 		WarpWrapperRef				getWarpsRef() { return mWarpings; };
@@ -121,11 +120,19 @@ namespace Reymenta
 		void						midiInClosePort(int i) { mMessageRouter->closeMidiInPort(i); };
 		// messages
 		void						sendJSON(string params);
+		void						preparePacketFrame(unsigned int cmd_count, unsigned int vtx_count);
+		void						Write(Cmd const &cmd);
+		void						Write(Vtx const &vtx);
+		void						SendPacket();
+		void						wsWriteBinary(const void *data, int size);
+		void						wsWriteText(const std::string& msg);
 		void						colorWrite();
 		void						sendOSCIntMessage(string controlType, int iarg0 = 0, int iarg1 = 0, int iarg2 = 0, int iarg3 = 0, int iarg4 = 0, int iarg5 = 0);
 		void						selectShader(bool left, int index);
 		void						wsConnect();
 		void						wsPing();
+		bool						isRemoteClientActive() { return mMessageRouter->isRemoteClientActive(); };
+		string						getTrack(int i) { return mMessageRouter->getTrack(i); };
 
 	private:
 		// parameters
@@ -137,7 +144,7 @@ namespace Reymenta
 		// warps
 		WarpWrapperRef				mWarpings;
 		// Logger
-		LoggerRef					mLog;
+		LoganRef					mLog;
 		// MessageRouter
 		MessageRouterRef			mMessageRouter;
 		// tempo
@@ -150,6 +157,10 @@ namespace Reymenta
 		double						startTime;
 		float						previousTime;
 		int							beatIndex; //0 to 3
+		//! fboFormat
+		//gl::Fbo::Format				fboFormat;
+		//void						createWarpFbos();
 
 	};
 }
+

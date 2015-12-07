@@ -1,12 +1,12 @@
 #pragma once
 
-#include "cinder/app/AppNative.h"
+#include "cinder/app/App.h"
 // Parameters
 #include "ParameterBag.h"
 // textures
 #include "Textures.h"
 // log
-#include "Logger.h"
+#include "Logan.h"
 // audio
 #include "cinder/audio/Context.h"
 #include "cinder/audio/MonitorNode.h"
@@ -34,22 +34,21 @@ namespace Reymenta
 
 	public:
 		AudioWrapper( ParameterBagRef aParameterBag, TexturesRef aTexturesRef );
-		static AudioWrapperRef			create( ParameterBagRef aParameterBag, TexturesRef aTexturesRef );
-		void							draw();
-		void							update();
-		void							loadWaveFile(string aFilePath);
-		void							mouseDown(MouseEvent event);
-		void							mouseDrag(MouseEvent event);
-		void							mouseUp(MouseEvent event);
+		static AudioWrapperRef create( ParameterBagRef aParameterBag, TexturesRef aTexturesRef );
+		void draw();
+		void update();
+		void loadWaveFile(string aFilePath);
+		void mouseDown(MouseEvent event);
+		void mouseDrag(MouseEvent event);
+		void mouseUp(MouseEvent event);
 
-		float*							getSmallSpectrum() { return arr; };
+		float*							getSmallSpectrum() { return volumes; };
 	private:
+
 		// parameters
 		ParameterBagRef					mParameterBag;
 		// Textures
 		TexturesRef						mTextures;
-		// Logger
-		LoggerRef						log;
 
 		// audio
 		audio::InputDeviceNodeRef		mLineIn;
@@ -60,7 +59,6 @@ namespace Reymenta
 
 		audio::SamplePlayerNodeRef		mSamplePlayerNode;
 		audio::SourceFileRef			mSourceFile;
-		audio::MonitorSpectralNodeRef	mScopeLineInFmt;
 		// Paul Houx
 		// width and height of our mesh
 		static const int				kWidth = 512;
@@ -73,19 +71,20 @@ namespace Reymenta
 		Channel32f						mChannelLeft;
 		Channel32f						mChannelRight;
 		CameraPersp						mCamera;
-		MayaCamUI						mMayaCam;
+		//MayaCamUI			mMayaCam;
 		vector<gl::GlslProg>			mShaders;
 		int								currentShaderIndex;
-		gl::Texture						mTextureLeft;
-		gl::Texture						mTextureRight;
-		gl::Texture::Format				mTextureFormat;
-		gl::VboMesh						mMesh;
+		/*gl::Texture			mTextureLeft;
+		gl::Texture			mTextureRight;
+		gl::Texture::Format	mTextureFormat;
+		gl::VboMesh			mMesh;*/
 		uint32_t						mOffset;
 		bool							mIsMouseDown;
 		bool							mIsAudioPlaying;
 		double							mMouseUpTime;
 		double							mMouseUpDelay;
-		float							arr[7];
+		float							volumes[7];
 
 	};
 }
+

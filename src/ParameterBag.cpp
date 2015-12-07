@@ -15,8 +15,8 @@ ParameterBag::ParameterBag()
 	// reset no matter what, so we don't miss anything
 	reset();
 
-	// check to see if ReymentaSettings.xml file exists and restore if it does
-	fs::path params = getAssetPath("") / settingsFileName;
+	// check to see if Settings.xml file exists and restore if it does
+	fs::path params = getAppPath() / settingsFileName;
 	if (fs::exists(params))
 	{
 		restore();
@@ -34,12 +34,12 @@ ParameterBagRef ParameterBag::create()
 
 bool ParameterBag::save()
 {
-	fs::path directory = getAssetPath("");
-	if (!fs::exists(directory)) {
+	fs::path directory = getAppPath();
+	/*if (!fs::exists(directory)) {
 		if (!createDirectories(directory / settingsFileName)) {
 			return false;
 		}
-	}
+	}*/
 
 	fs::path path = directory / settingsFileName;
 
@@ -141,6 +141,10 @@ bool ParameterBag::save()
 	AreWebSocketsEnabledAtStartup.setAttribute("value", toString(mAreWebSocketsEnabledAtStartup));
 	settings.push_back(AreWebSocketsEnabledAtStartup);
 
+	XmlTree IsRouter("IsRouter", "");
+	IsRouter.setAttribute("value", toString(mIsRouter));
+	settings.push_back(IsRouter);
+ 
 	XmlTree IsWebSocketsServer("IsWebSocketsServer", "");
 	IsWebSocketsServer.setAttribute("value", toString(mIsWebSocketsServer));
 	settings.push_back(IsWebSocketsServer);
@@ -182,7 +186,7 @@ bool ParameterBag::save()
 bool ParameterBag::restore()
 {
 	// check to see if Settings.xml file exists
-	fs::path params = getAssetPath("") / settingsFileName;
+	fs::path params = getAppPath() / settingsFileName;
 	if (fs::exists(params)) {
 		// if it does, restore
 		const XmlTree xml(loadFile(params));
@@ -265,6 +269,10 @@ bool ParameterBag::restore()
 				XmlTree AreWebSocketsEnabledAtStartup = settings.getChild("AreWebSocketsEnabledAtStartup");
 				mAreWebSocketsEnabledAtStartup = AreWebSocketsEnabledAtStartup.getAttributeValue<bool>("value");
 			}
+			if (settings.hasChild("IsRouter")) {
+				XmlTree IsRouter = settings.getChild("IsRouter");
+				mIsRouter = IsRouter.getAttributeValue<bool>("value");
+			}
 			if (settings.hasChild("IsWebSocketsServer")) {
 				XmlTree IsWebSocketsServer = settings.getChild("IsWebSocketsServer");
 				mIsWebSocketsServer = IsWebSocketsServer.getAttributeValue<bool>("value");
@@ -328,7 +336,7 @@ bool ParameterBag::restore()
 					XmlTree RenderY = settings.getChild("RenderY");
 					mRenderY = RenderY.getAttributeValue<int>("value");
 				}
-				iResolution = Vec3f(mRenderWidth, mRenderHeight, 1.0);
+				iResolution = vec3(mRenderWidth, mRenderHeight, 1.0);
 
 			}
 			return true;
@@ -343,7 +351,7 @@ bool ParameterBag::restore()
 void ParameterBag::resetSomeParams() {
 	mLockFR = mLockFG = mLockFB = mLockFA = mLockBR = mLockBG = mLockBB = mLockBA = false;
 	tFR = tFG = tFB = tFA = tBR = tBG = tBB = tBA = false;
-	mCamPosXY = Vec2f::zero();
+	mCamPosXY = vec2(0.0f);
 	mCount = 1;
 
 	// EyePointZ
@@ -362,7 +370,7 @@ void ParameterBag::resetSomeParams() {
 	// transition
 	iTransition = 0;
 	iAnim = 0.0;
-	mTransitionDuration = 1.0f;
+	mTransitionDuration = 2.0f;
 
 	// red
 	controlValues[1] = 1.0f;
@@ -422,8 +430,8 @@ void ParameterBag::resetSomeParams() {
 void ParameterBag::reset()
 {
 	// parameters exposed in XML
-	mMIDIOpenAllInputPorts = mAutoLayout =mShowUI = mCursorVisible = true;
-	mStandalone = mCustomLayout = mRenderThumbs = false;
+	mMIDIOpenAllInputPorts = mRenderThumbs = mAutoLayout = mShowUI = mCursorVisible = true;
+	mStandalone = mCustomLayout = false;
 	mOutputVideoResolution = 1024;
 	mInfo = "";
 	mTrackName = "";
@@ -436,11 +444,11 @@ void ParameterBag::reset()
 	// render widths
 	mRenderWidth = 1024;
 	mRenderHeight = 768;
-	mRenderXY = mLeftRenderXY = mRightRenderXY = mPreviewRenderXY = mWarp1RenderXY = mWarp2RenderXY = Vec2f::zero();
-	mRenderPosXY = Vec2f(0.0, 320.0);
-	mRenderResoXY = Vec2f(mRenderWidth, mRenderHeight);
-	mRenderResolution = Vec2i(mRenderWidth, mRenderHeight);
-	mPreviewFragXY = Vec2f(0.0, 0.0);
+	mRenderXY = mLeftRenderXY = mRightRenderXY = mPreviewRenderXY = mWarp1RenderXY = mWarp2RenderXY = vec2(0.0f);
+	mRenderPosXY = vec2(0.0, 320.0);
+	mRenderResoXY = vec2(mRenderWidth, mRenderHeight);
+	mRenderResolution = ivec2(mRenderWidth, mRenderHeight);
+	mPreviewFragXY = vec2(0.0, 0.0);
 	mAspectRatio = 0.75; // ratio 4:3 (0.75) 16:9 (0.5625)
 	mFboWidth = 640;
 	mFboHeight = mFboWidth * mAspectRatio;
@@ -487,15 +495,15 @@ void ParameterBag::reset()
 	mUseTimeWithTempo = false;
 	iDeltaTime = 60 / mTempo;
 	// shader uniforms
-	iResolution = Vec3f(mRenderWidth, mRenderHeight, 1.0);
+	iResolution = vec3(mRenderWidth, mRenderHeight, 1.0);
 	for (int i = 0; i < 4; i++)
 	{
 		iChannelTime[i] = i;
 	}
 	for (int i = 0; i < MAX; i++)
 	{
-		iChannelResolution[i] = Vec3f(mRenderWidth, mRenderHeight, 1.0);
-	}	
+		iChannelResolution[i] = vec3(mRenderWidth, mRenderHeight, 1.0);
+	}
 	controlValues[18] = controlValues[21] = 1.0;
 #ifdef _DEBUG
 	iDebug = true;
@@ -505,7 +513,7 @@ void ParameterBag::reset()
 	iFps = 60.0;
 	sFps = "60";
 	iShowFps = true;
-	iMouse = Vec4f(mRenderWidth / 2, mRenderHeight / 2, 1.0, 1.0);
+	iMouse = vec4(mRenderWidth / 2, mRenderHeight / 2, 1.0, 1.0);
 
 	multFactor = 126.0;
 	currentSelectedIndex = 0;
@@ -530,6 +538,7 @@ void ParameterBag::reset()
 	mSphereFboIndex = 8;
 	mMeshFboIndex = 9;
 	mAudioFboIndex = 10;
+	mVertexSphereFboIndex = 11;
 
 	mPreviewFragIndex = 0;
 	mPreviousFragIndex = 1;
@@ -552,15 +561,17 @@ void ParameterBag::reset()
 
 	mOptimizeUI = false;
 	// spout
-	mOutputResolution = Vec2f(640, 480);
+	mOutputResolution = vec2(640, 480);
 	// meshes
 	mMeshIndex = 0;
+	// vertex sphere
+	mVertexSphereTextureIndex = 1;
 
 	// initialize our camera
-	mCamEyePointXY = Vec2f(0.f, 0.f);
+	mCamEyePointXY = vec2(0.f, 0.f);
 	mCamEyePointZ = -400.f;
-	mCamera.setEyePoint(Vec3f(mCamEyePointXY.x, mCamEyePointXY.y, mCamEyePointZ));
-	mCamera.setCenterOfInterestPoint(Vec3f(0.f, 0.f, 0.f));
+	mCamera.setEyePoint(vec3(mCamEyePointXY.x, mCamEyePointXY.y, mCamEyePointZ));
+	//mCamera.setCenterOfInterestPoint(vec3(0.f, 0.f, 0.f));
 
 	mUIRefresh = 1;
 
@@ -582,6 +593,7 @@ void ParameterBag::reset()
 	InfoMsg = "";
 	mIsOSCSender = false;
 	// web sockets
+	mIsRouter = false;
 	mAreWebSocketsEnabledAtStartup = false;
 	mIsWebSocketsServer = false;
 	mWebSocketsHost = "localhost";

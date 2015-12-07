@@ -6,8 +6,8 @@ Batchass::Batchass(ParameterBagRef aParameterBag)
 {
 	mParameterBag = aParameterBag;
 	// instanciate the logger class
-	mLog = Logger::create("BatchassLog.txt");
-	mLog->logTimedString("Batchass constructor");
+	mLog = Logan::create();
+	CI_LOG_V("Batchass constructor");
 	// zoom
 	defaultZoom = 1.0f;
 	minZoom = 0.1;
@@ -56,7 +56,6 @@ float Batchass::formatFloat(float f)
 void Batchass::shutdown() {
 	mMessageRouter->shutdown();
 }
-
 void Batchass::setup()
 {
 	// instanciate the Shaders class, must not be in prepareSettings
@@ -68,8 +67,42 @@ void Batchass::setup()
 	mWarpings = WarpWrapper::create(mParameterBag, mTextures, mShaders);
 	// MessageRouter
 	mMessageRouter = MessageRouter::create(mParameterBag, mTextures, mShaders);
-
-	//createWarpFbos();
+	createWarpFbos();
+}
+/*void Batchass::createWarpFbos()
+{
+for (int a = 0; a < mParameterBag->MAX; a++)
+{
+WarpFbo newWarpFbo;
+newWarpFbo.textureIndex = 0;
+newWarpFbo.textureMode = 1;
+newWarpFbo.fbo = gl::Fbo::create(mParameterBag->mFboWidth, mParameterBag->mFboHeight, fboFormat.depthTexture());
+if (a == 0 ) newWarpFbo.active = true; else newWarpFbo.active = false;
+mParameterBag->mWarpFbos[a] = newWarpFbo;
+}
+}*/
+void Batchass::createWarpFbos()
+{
+	// vector + dynamic resize
+	for (int a = 0; a < 12; a++)
+	{
+		WarpFbo newWarpFbo;
+		if (a == 0)
+		{
+			newWarpFbo.textureIndex = 0; // spout
+			newWarpFbo.textureMode = mParameterBag->TEXTUREMODEINPUT;
+			newWarpFbo.active = true;
+			newWarpFbo.fbo = gl::Fbo::create(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
+		}
+		else
+		{
+			newWarpFbo.textureIndex = 0; // index of MixFbo for shadamixa
+			newWarpFbo.textureMode = mParameterBag->TEXTUREMODESHADER;
+			newWarpFbo.active = false;
+			newWarpFbo.fbo = gl::Fbo::create(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight);
+		}
+		mParameterBag->mWarpFbos.push_back(newWarpFbo);
+	}
 }
 void Batchass::midiSetup() {
 
@@ -86,9 +119,8 @@ void Batchass::wsPing() {
 	mMessageRouter->wsPing();
 
 }
-
 void Batchass::selectShader(bool left, int index) {
-	mMessageRouter->selectShader( left,  index);
+	mMessageRouter->selectShader(left, index);
 
 	if (mParameterBag->mOSCEnabled) {
 		sendOSCIntMessage("/selectShader", left, index);
@@ -102,9 +134,8 @@ void Batchass::selectShader(bool left, int index) {
 		mMessageRouter->wsWrite(msg);
 	}
 
-	
-}
 
+}
 void Batchass::sendOSCIntMessage(string controlType, int iarg0, int iarg1, int iarg2, int iarg3, int iarg4, int iarg5)
 {
 	mMessageRouter->sendOSCIntMessage(controlType, iarg0);
@@ -114,32 +145,38 @@ void Batchass::sendJSON(string params) {
 	mMessageRouter->sendJSON(params);
 
 }
+void Batchass::Write(Cmd const &cmd)
+{
+	mMessageRouter->Write(cmd);
+}
+void Batchass::Write(Vtx const &vtx)
+{
+	mMessageRouter->Write(vtx);
+}
+void Batchass::SendPacket()
+{
+	mMessageRouter->SendPacket();
+}
+void Batchass::wsWriteBinary(const void *data, int size) {
+
+	mMessageRouter->wsWriteBinary(data, size);
+
+}
+void Batchass::wsWriteText(const std::string& msg) {
+
+	mMessageRouter->wsWrite(msg);
+
+}
+void Batchass::preparePacketFrame(unsigned int cmd_count, unsigned int vtx_count) {
+
+	mMessageRouter->PreparePacketFrame(cmd_count, vtx_count);
+
+}
+
 void Batchass::colorWrite() {
 	mMessageRouter->colorWrite();
 }
-void Batchass::createWarpFbos()
-{
-	// vector + dynamic resize
-	/*for (int a = 0; a < 30; a++)
-	{
-	WarpFbo newWarpFbo;
-	if (a == 0)
-	{
-	newWarpFbo.textureIndex = 0; // spout
-	newWarpFbo.textureMode = mParameterBag->TEXTUREMODEINPUT;
-	newWarpFbo.active = true;
-	newWarpFbo.fbo = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
-	}
-	else
-	{
-	newWarpFbo.textureIndex = 0; // index of MixFbo for shadamixa
-	newWarpFbo.textureMode = mParameterBag->TEXTUREMODESHADER;
-	newWarpFbo.active = false;
-	newWarpFbo.fbo = gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight);
-	}
-	mParameterBag->mWarpFbos.push_back( newWarpFbo );
-	}*/
-}
+
 void Batchass::createWarp()
 {
 	mWarpings->createWarp();
@@ -181,13 +218,13 @@ void Batchass::changeMode(int newMode)
 		{
 
 		case 3: // sphere
-			mParameterBag->mCamPosXY = Vec2f(-155.6, -87.3);
+			mParameterBag->mCamPosXY = vec2(-155.6, -87.3);
 			mParameterBag->mCamEyePointZ = -436.f;
 			mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7] = 0;
 			break;
 		case 4: // mesh
 			mParameterBag->controlValues[19] = 1.0; //reset rotation
-			mParameterBag->mRenderPosXY = Vec2f(0.0, 0.0);
+			mParameterBag->mRenderPosXY = vec2(0.0, 0.0);
 			mParameterBag->mCamEyePointZ = -10.f;
 			mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7] = 0;
 			mParameterBag->currentSelectedIndex = 5;
@@ -204,9 +241,13 @@ void Batchass::update()
 {
 	mMessageRouter->update();
 	mTextures->update();
-	//mShaders->update();
+	mShaders->update();
 	if (mParameterBag->controlValues[12] == 0.0) mParameterBag->controlValues[12] = 0.01;
-
+	if (mParameterBag->iGreyScale)
+	{
+		mParameterBag->controlValues[1] = mParameterBag->controlValues[2] = mParameterBag->controlValues[3];
+		mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7];
+	}
 #pragma region animation
 	// check this line position: can't remember
 	currentTime = timer.getSeconds();
@@ -368,8 +409,8 @@ void Batchass::update()
 		}
 
 	}
-}
 #pragma endregion animation
+}
 
 void Batchass::shutdownLoader()
 {
@@ -402,19 +443,16 @@ int Batchass::getWindowsResolution()
 		}
 	}
 	mParameterBag->mRenderY = 0;
-	mLog->logTimedString("Window " + toString(mParameterBag->mDisplayCount) + ": " + toString(mParameterBag->mRenderWidth) + "x" + toString(mParameterBag->mRenderHeight));
+	CI_LOG_V("Window " + toString(mParameterBag->mDisplayCount) + ": " + toString(mParameterBag->mRenderWidth) + "x" + toString(mParameterBag->mRenderHeight));
 
-	mLog->logTimedString(" mMainDisplayWidth" + toString(mParameterBag->mMainDisplayWidth) + " mMainDisplayHeight" + toString(mParameterBag->mMainDisplayHeight));
-	mLog->logTimedString(" mRenderX" + toString(mParameterBag->mRenderX) + " mRenderY" + toString(mParameterBag->mRenderY));
-	mParameterBag->mRenderResoXY = Vec2f(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
+	CI_LOG_V(" mMainDisplayWidth" + toString(mParameterBag->mMainDisplayWidth) + " mMainDisplayHeight" + toString(mParameterBag->mMainDisplayHeight));
+	CI_LOG_V(" mRenderX" + toString(mParameterBag->mRenderX) + " mRenderY" + toString(mParameterBag->mRenderY));
+	mParameterBag->mRenderResoXY = vec2(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
 	// in case only one screen , render from x = 0
 	if (mParameterBag->mDisplayCount == 1) mParameterBag->mRenderX = 0;
 	return w;
 }
-void Batchass::log(string msg)
-{
-	mLog->logTimedString(msg);
-}
+
 void Batchass::tempoZoom()
 {
 	tZoom = !tZoom;

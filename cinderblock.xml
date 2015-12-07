@@ -5,17 +5,24 @@
 	id="fr.batchass.reymenta"
 	author="Bruce Lane"
 	license="MIT"
-	summary="Reymenta block for Cinder: utilities for Spout, OSC, Watchdog, Shaders, Parameters"
+	summary="Reymenta block for Cinder 0.9: utilities for Spout, OSC, WebSockets, Watchdog, Shaders, Parameters"
 	url="https://github.com/brucelane/Cinder-Reymenta"
 	git="git://github.com/brucelane/Cinder-Reymenta.git"
 	>
 	<requires>org.libcinder.osc</requires>
+	<requires>ocornut.imgui</requires>
+	<requires>org.libcinder.hap2</requires>
+	<requires>org.libcinder.quicktime</requires>
+	<requires>mb.cinder.midi2</requires>
+	<requires>nl.cowlumbus.warping</requires>
+	<requires>com.wk.websocketpp</requires>
 	<requires>fr.batchass.spout</requires>
 	<supports os="msw" />
 	<includePath>include</includePath>
 	<includePath>src</includePath>
 	<headerPattern>include/*.h</headerPattern>
 	<sourcePattern>src/*.cpp</sourcePattern>
+	<sourcePattern>src/*.c</sourcePattern>
 </block>
 <template>templates/Reymenta/template.xml</template>
 </cinder>

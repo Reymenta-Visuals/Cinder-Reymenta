@@ -7,15 +7,28 @@ MessageRouter::MessageRouter(ParameterBagRef aParameterBag, TexturesRef aTexture
 	mParameterBag = aParameterBag;
 	mTextures = aTexturesRef;
 	mShaders = aShadersRef;
+	// remoteImGui
+	remoteClientActive = false;
+	Frame = 0;
+	FrameReceived = 0;
+	IsKeyFrame = false;
+	PrevPacketSize = 0;
+	mouseX = 0;
+	mouseY = 0;
+
+	// kinect
 	for (int i = 0; i < 20; i++)
 	{
-		skeleton[i] = Vec4i::zero();
+		skeleton[i] = ivec4(0.0f);
 	}
-	// OSC sender with broadcast = true
-	mOSCSender.setup(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort, true);
-	mOSCSender2.setup(mParameterBag->mOSCDestinationHost2, mParameterBag->mOSCDestinationPort2, true);
-	// OSC receiver
-	mOSCReceiver.setup(mParameterBag->mOSCReceiverPort);
+	// OSC
+	if (mParameterBag->mOSCEnabled) {
+		// OSC sender with broadcast = true
+		mOSCSender.setup(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort, true);
+		mOSCSender2.setup(mParameterBag->mOSCDestinationHost2, mParameterBag->mOSCDestinationPort2, true);
+		// OSC receiver
+		mOSCReceiver.setup(mParameterBag->mOSCReceiverPort);
+	}
 	// ws
 	clientConnected = false;
 	if (mParameterBag->mAreWebSocketsEnabledAtStartup) wsConnect();
@@ -28,28 +41,28 @@ MessageRouterRef MessageRouter::create(ParameterBagRef aParameterBag, TexturesRe
 	return shared_ptr<MessageRouter>(new MessageRouter(aParameterBag, aTexturesRef, aShadersRef));
 }
 void MessageRouter::shutdown() {
-	mMidiIn0.closePort();
-	mMidiIn1.closePort();
-	mMidiIn2.closePort();
+	mMidiIn0.ClosePort();
+	mMidiIn1.ClosePort();
+	mMidiIn2.ClosePort();
 }
 void MessageRouter::midiSetup()
 {
 	stringstream ss;
 	ss << "setupMidi: ";
 
-	if (mMidiIn0.getNumPorts() > 0)
+	mMidiIn0.GetPortList();
+	if (mMidiIn0.mPortCount > 0)
 	{
-		mMidiIn0.listPorts();
-		for (int i = 0; i < mMidiIn0.getNumPorts(); i++)
+		for (int i = 0; i < mMidiIn0.mPortCount; i++)
 		{
 			bool alreadyListed = false;
 			for (int j = 0; j < mMidiInputs.size(); j++)
 			{
-				if (mMidiInputs[j].portName == mMidiIn0.mPortNames[i]) alreadyListed = true;
+				if (mMidiInputs[j].portName == mMidiIn0.GetPortName(i)) alreadyListed = true;
 			}
 			if (!alreadyListed) {
 				midiInput mIn;
-				mIn.portName = mMidiIn0.mPortNames[i];
+				mIn.portName = mMidiIn0.GetPortName(i);
 				mMidiInputs.push_back(mIn);
 				if (mParameterBag->mMIDIOpenAllInputPorts)
 				{
@@ -60,7 +73,7 @@ void MessageRouter::midiSetup()
 				else
 				{
 					mMidiInputs[i].isConnected = false;
-					ss << "Available MIDI port " << i << " " << mMidiIn0.mPortNames[i];
+					ss << "Available MIDI port " << i << " " << mMidiIn0.GetPortName(i);
 				}
 
 			}
@@ -79,20 +92,22 @@ void MessageRouter::midiSetup()
 }
 void MessageRouter::openMidiInPort(int i) {
 	stringstream ss;
-	if (i == 0)
-	{
-		mMidiIn0.openPort(i);
-		mMidiIn0.midiSignal.connect(boost::bind(&MessageRouter::midiListener, this, boost::arg<1>::arg()));
-	}
-	if (i == 1)
-	{
-		mMidiIn1.openPort(i);
-		mMidiIn1.midiSignal.connect(boost::bind(&MessageRouter::midiListener, this, boost::arg<1>::arg()));
-	}
-	if (i == 2)
-	{
-		mMidiIn2.openPort(i);
-		mMidiIn2.midiSignal.connect(boost::bind(&MessageRouter::midiListener, this, boost::arg<1>::arg()));
+	if (i < mMidiIn0.mPortCount) {
+		if (i == 0)
+		{
+			mMidiIn0.OpenPort(i);
+			mMidiIn0.mMidiInCallback = std::bind(&MessageRouter::midiListener, this, std::placeholders::_1);
+		}
+		if (i == 1)
+		{
+			mMidiIn1.OpenPort(i);
+			mMidiIn1.mMidiInCallback = std::bind(&MessageRouter::midiListener, this, std::placeholders::_1);
+		}
+		if (i == 2)
+		{
+			mMidiIn2.OpenPort(i);
+			mMidiIn2.mMidiInCallback = std::bind(&MessageRouter::midiListener, this, std::placeholders::_1);
+		}
 	}
 	mMidiInputs[i].isConnected = true;
 	ss << "Opening MIDI port " << i << " " << mMidiInputs[i].portName << std::endl;
@@ -102,29 +117,29 @@ void MessageRouter::openMidiInPort(int i) {
 void MessageRouter::closeMidiInPort(int i) {
 	if (i == 0)
 	{
-		mMidiIn0.closePort();
+		mMidiIn0.ClosePort();
 	}
 	if (i == 1)
 	{
-		mMidiIn1.closePort();
+		mMidiIn1.ClosePort();
 	}
 	if (i == 2)
 	{
-		mMidiIn2.closePort();
+		mMidiIn2.ClosePort();
 	}
 	mMidiInputs[i].isConnected = false;
 }
 
-void MessageRouter::midiListener(midi::Message msg)
+void MessageRouter::midiListener(midi::MidiMessage msg)
 {
 	stringstream ss;
-	midiChannel = msg.channel;
-	switch (msg.status)
+	midiChannel = msg.Channel;
+	switch (msg.StatusCode)
 	{
 	case MIDI_CONTROL_CHANGE:
 		midiControlType = "/cc";
-		midiControl = msg.control;
-		midiValue = msg.value;
+		midiControl = msg.Control;
+		midiValue = msg.Value;
 		midiNormalizedValue = lmap<float>(midiValue, 0.0, 127.0, 0.0, 1.0);
 		if (mParameterBag->mOSCEnabled) {
 			updateAndSendOSCFloatMessage(midiControlType, midiControl, midiNormalizedValue, midiChannel);
@@ -137,14 +152,14 @@ void MessageRouter::midiListener(midi::Message msg)
 		break;
 	case MIDI_NOTE_ON:
 		midiControlType = "/on";
-		midiPitch = msg.pitch;
-		midiVelocity = msg.velocity;
+		midiPitch = msg.Pitch;
+		midiVelocity = msg.Velocity;
 		midiNormalizedValue = lmap<float>(midiVelocity, 0.0, 127.0, 0.0, 1.0);
 		break;
 	case MIDI_NOTE_OFF:
 		midiControlType = "/off";
-		midiPitch = msg.pitch;
-		midiVelocity = msg.velocity;
+		midiPitch = msg.Pitch;
+		midiVelocity = msg.Velocity;
 		midiNormalizedValue = lmap<float>(midiVelocity, 0.0, 127.0, 0.0, 1.0);
 		break;
 	default:
@@ -161,6 +176,106 @@ void MessageRouter::sendJSON(string params) {
 	}
 }
 
+void MessageRouter::Write(unsigned char c) { Packet.push_back(c); }
+void MessageRouter::Write(unsigned int i)
+{
+	if (IsKeyFrame)
+		Write(&i, sizeof(unsigned int));
+	else
+		WriteDiff(&i, sizeof(unsigned int));
+}
+void MessageRouter::Write(Cmd const &cmd)
+{
+	if (IsKeyFrame)
+		Write((void *)&cmd, sizeof(Cmd));
+	else
+		WriteDiff((void *)&cmd, sizeof(Cmd));
+}
+void MessageRouter::Write(Vtx const &vtx)
+{
+	if (IsKeyFrame)
+		Write((void *)&vtx, sizeof(Vtx));
+	else
+		WriteDiff((void *)&vtx, sizeof(Vtx));
+}
+void MessageRouter::Write(const void *data, int size)
+{
+	unsigned char *src = (unsigned char *)data;
+	for (int i = 0; i < size; i++)
+	{
+		int pos = Packet.size();
+		Write(src[i]);
+		PrevPacket[pos] = src[i];
+	}
+}
+void MessageRouter::WriteDiff(const void *data, int size)
+{
+	unsigned char *src = (unsigned char *)data;
+	for (int i = 0; i < size; i++)
+	{
+		int pos = Packet.size();
+		Write((unsigned char)(src[i] - (pos < PrevPacketSize ? PrevPacket[pos] : 0)));
+		PrevPacket[pos] = src[i];
+	}
+}
+
+void MessageRouter::SendPacket()
+{
+	static int buffer[65536];
+	int size = Packet.size();
+	int csize = LZ4_compress_limitedOutput((char *)&Packet[0], (char *)(buffer + 3), size, 65536 * sizeof(int) - 12);
+	buffer[0] = 0xBAADFEED; // Our LZ4 header magic number (used in custom lz4.js to decompress)
+	buffer[1] = size;
+	buffer[2] = csize;
+	//printf("ImWebSocket SendPacket: %s %d / %d (%.2f%%)\n", IsKeyFrame ? "(KEY)" : "", size, csize, (float)csize * 100.f / size);
+	wsWriteBinary(buffer, csize + 12);
+	PrevPacketSize = size;
+}
+void MessageRouter::wsWriteBinary(const void *data, int size)
+{
+	if (mParameterBag->mAreWebSocketsEnabledAtStartup)
+	{
+		if (mParameterBag->mIsWebSocketsServer)
+		{
+			mServer.writeBinary(data, size);
+		}
+		else
+		{
+			if (clientConnected) mClient.writeBinary(data, size);
+		}
+	}
+}
+
+void MessageRouter::PreparePacket(unsigned char data_type, unsigned int data_size)
+{
+	unsigned int size = sizeof(unsigned char) + data_size;
+	Packet.clear();
+	Packet.reserve(size);
+	PrevPacket.reserve(size);
+	while (size > PrevPacket.size())
+		PrevPacket.push_back(0);
+	Write(data_type);
+}
+
+void MessageRouter::PreparePacketTexFont(const void *data, unsigned int w, unsigned int h)
+{
+	IsKeyFrame = true;
+	PreparePacket(TEX_FONT, sizeof(unsigned int) * 2 + w*h);
+	Write(w);
+	Write(h);
+	Write(data, w*h);
+	ForceKeyFrame = true;
+}
+
+void MessageRouter::PreparePacketFrame(unsigned int cmd_count, unsigned int vtx_count)
+{
+	IsKeyFrame = (Frame%IMGUI_REMOTE_KEY_FRAME) == 0 || ForceKeyFrame;
+	PreparePacket(IsKeyFrame ? FRAME_KEY : FRAME_DIFF, 2 * sizeof(unsigned int) + cmd_count*sizeof(Cmd) + vtx_count*sizeof(Vtx));
+	Write(cmd_count);
+	Write(vtx_count);
+	//printf("ImWebSocket PreparePacket: cmd_count = %i, vtx_count = %i ( %lu bytes )\n", cmd_count, vtx_count, sizeof(unsigned int) + sizeof(unsigned int) + cmd_count * sizeof(Cmd) + vtx_count * sizeof(Vtx));
+	ForceKeyFrame = false;
+}
 void MessageRouter::updateParams(int iarg0, float farg1)
 {
 	if (farg1 > 0.1)
@@ -171,7 +286,7 @@ void MessageRouter::updateParams(int iarg0, float farg1)
 			// left assign
 			mParameterBag->mLeftFragIndex = mParameterBag->iTrack;
 		}
-		if (iarg0 == 52) { 
+		if (iarg0 == 52) {
 			sendOSCIntMessage("/live/next/cue", 0);		// next cue 
 			// right assign
 			mParameterBag->mRightFragIndex = mParameterBag->iTrack;
@@ -182,7 +297,6 @@ void MessageRouter::updateParams(int iarg0, float farg1)
 			mParameterBag->mPreviewFragIndex = mParameterBag->iTrack;
 		}
 		if (iarg0 == 54) sendOSCIntMessage("/live/play", 0);			// play
-			
 		if (iarg0 == 58)
 		{
 			// track left		
@@ -241,7 +355,6 @@ void MessageRouter::updateParams(int iarg0, float farg1)
 		mParameterBag->controlValues[iarg0] = farg1;
 	}
 
-
 }
 void MessageRouter::setupOSCSender()
 {
@@ -251,6 +364,8 @@ void MessageRouter::setupOSCSender()
 }
 void MessageRouter::update()
 {
+	// imgui
+	Frame++;
 	// websockets
 	if (mParameterBag->mAreWebSocketsEnabledAtStartup)
 	{
@@ -265,8 +380,8 @@ void MessageRouter::update()
 				mClient.poll();
 				/*double e = getElapsedSeconds();
 				if (e - mPingTime > 20.0) {
-					mClient.ping();
-					mPingTime = e;
+				mClient.ping();
+				mPingTime = e;
 				}*/
 
 			}
@@ -276,9 +391,9 @@ void MessageRouter::update()
 	// check for mouse moved message
 	if(m.getAddress() == "/mouse/position"){
 	// both the arguments are int32's
-	Vec2i pos = Vec2i( m.getArgAsInt32(0), m.getArgAsInt32(1));
-	Vec2f mouseNorm = Vec2f( pos ) / getWindowSize();
-	Vec2f mouseVel = Vec2f( pos - pMouse ) / getWindowSize();
+	ivec2 pos = ivec2( m.getArgAsInt32(0), m.getArgAsInt32(1));
+	vec2 mouseNorm = vec2( pos ) / getWindowSize();
+	vec2 mouseVel = vec2( pos - pMouse ) / getWindowSize();
 	addToFluid( mouseNorm, mouseVel, true, true );
 	pMouse = pos;
 	if ( m.getArgAsInt32(2) == 1 )
@@ -298,7 +413,7 @@ void MessageRouter::update()
 	// check for mouse button message
 	else if(m.getAddress() == "/mouse/button"){
 	// the single argument is a string
-	Vec2i pos = Vec2i( m.getArgAsInt32(0), m.getArgAsInt32(1));
+	ivec2 pos = ivec2( m.getArgAsInt32(0), m.getArgAsInt32(1));
 	mArcball.mouseDown( pos );
 	mCurrentMouseDown = mInitialMouseDown = pos;
 	if ( m.getArgAsInt32(2) == 1 )
@@ -486,7 +601,7 @@ void MessageRouter::update()
 			jointIndex = iargs[1];
 			if (jointIndex < 20)
 			{
-				skeleton[jointIndex] = Vec4i(iargs[2], iargs[3], iargs[4], iargs[5]);
+				skeleton[jointIndex] = ivec4(iargs[2], iargs[3], iargs[4], iargs[5]);
 			}
 		}
 		else
@@ -627,22 +742,326 @@ void MessageRouter::wsConnect()
 	// either a client or a server
 	if (mParameterBag->mIsWebSocketsServer)
 	{
-		mServer.addConnectCallback(&MessageRouter::onWsConnect, this);
-		mServer.addDisconnectCallback(&MessageRouter::onWsDisconnect, this);
-		mServer.addErrorCallback(&MessageRouter::onWsError, this);
-		mServer.addInterruptCallback(&MessageRouter::onWsInterrupt, this);
-		mServer.addPingCallback(&MessageRouter::onWsPing, this);
-		mServer.addReadCallback(&MessageRouter::onWsRead, this);
+		mServer.connectOpenEventHandler([&]()
+		{
+			clientConnected = true;
+			mParameterBag->mMsg = "Connected";
+			mParameterBag->newMsg = true;
+		});
+		mServer.connectCloseEventHandler([&]()
+		{
+			clientConnected = false;
+			mParameterBag->mMsg = "Disconnected";
+			mParameterBag->newMsg = true;
+		});
+		mServer.connectFailEventHandler([&](string err)
+		{
+			mParameterBag->mMsg = "WS Error";
+			mParameterBag->newMsg = true;
+			if (!err.empty()) {
+				mParameterBag->mMsg += ": " + err;
+			}
+
+		});
+		mServer.connectInterruptEventHandler([&]()
+		{
+			mParameterBag->mMsg = "WS Interrupted";
+			mParameterBag->newMsg = true;
+		});
+		mServer.connectPingEventHandler([&](string msg)
+		{
+			mParameterBag->mMsg = "WS Ponged";
+			mParameterBag->newMsg = true;
+			if (!msg.empty())
+			{
+				mParameterBag->mMsg += ": " + msg;
+			}
+		});
+		mServer.connectMessageEventHandler([&](string msg)
+		{
+			int left;
+			int index;
+			mParameterBag->mMsg = "WS onRead";
+			mParameterBag->newMsg = true;
+			if (!msg.empty())
+			{
+				mParameterBag->mMsg += ": " + msg;
+				string first = msg.substr(0, 1);
+				if (first == "{")
+				{
+					// json
+					JsonTree json;
+					try
+					{
+						json = JsonTree(msg);
+						JsonTree jsonParams = json.getChild("params");
+						for (JsonTree::ConstIter jsonElement = jsonParams.begin(); jsonElement != jsonParams.end(); ++jsonElement)
+						{
+							int name = jsonElement->getChild("name").getValue<int>();
+							float value = jsonElement->getChild("value").getValue<float>();
+							if (name > mParameterBag->controlValues.size()) {
+								switch (name)
+								{
+								case 300:
+									//selectShader
+									left = jsonElement->getChild("left").getValue<int>();
+									index = jsonElement->getChild("index").getValue<int>();
+									selectShader(left, index);
+									break;
+								default:
+									break;
+								}
+
+							}
+							else {
+								// basic name value 
+								mParameterBag->controlValues[name] = value;
+							}
+						}
+						JsonTree jsonSelectShader = json.getChild("selectShader");
+						for (JsonTree::ConstIter jsonElement = jsonSelectShader.begin(); jsonElement != jsonSelectShader.end(); ++jsonElement)
+						{
+						}
+					}
+					catch (cinder::JsonTree::Exception exception)
+					{
+						mParameterBag->mMsg += " error jsonparser exception: ";
+						mParameterBag->mMsg += exception.what();
+						mParameterBag->mMsg += "  ";
+					}
+				}
+				else if (msg.substr(0, 2) == "/*")
+				{
+					// shader with json info				
+					unsigned closingCommentPosition = msg.find("*/");
+					if (closingCommentPosition > 0) {
+						JsonTree json;
+						try
+						{
+							string jsonHeader = msg.substr(2, closingCommentPosition-2);
+							ci::JsonTree::ParseOptions parseOptions;
+							parseOptions.ignoreErrors(false);
+							json = JsonTree(jsonHeader, parseOptions);
+							string title = json.getChild("title").getValue<string>();
+							string fragFileName = title + ".frag"; // with uniforms
+							string glslFileName = title + ".glsl"; // without uniforms, need to include shadertoy.inc
+							string shader = msg.substr(closingCommentPosition + 2);
+
+							string processedContent = jsonHeader;
+							// check uniforms presence
+							unsigned uniformPosition = msg.find("uniform");
+							if (uniformPosition < 1) {
+								// uniforms not found, add include
+								processedContent += "#include shadertoy.inc";
+							}
+							processedContent += shader;
+
+
+							mShaders->loadLiveShader(processedContent); // need uniforms declared
+							mParameterBag->mShaderToLoad = shader; // CHECK if useless?
+							// route it to websockets clients
+							if (mParameterBag->mIsRouter) {
+								wsWrite(msg);
+							}
+							// save it as is
+							fs::path currentFile = getAssetPath("") / "glsl" / "received" / fragFileName;
+							ofstream mFrag(currentFile.string(), std::ofstream::binary);
+							mFrag << msg;
+							mFrag.close();
+							CI_LOG_V("received file saved:" + currentFile.string());
+
+							
+
+							// check vertex.uv presence
+
+							// save processed file
+							//processedContent = msg;
+							fs::path processedFile = getAssetPath("") / "glsl" / "processed" / fragFileName;
+							ofstream mFragProcessed(processedFile.string(), std::ofstream::binary);
+							mFragProcessed << processedContent;
+							mFragProcessed.close();
+							CI_LOG_V("processed file saved:" + processedFile.string());
+						}
+						catch (cinder::JsonTree::Exception exception)
+						{
+							mParameterBag->mMsg += " error jsonparser exception: ";
+							mParameterBag->mMsg += exception.what();
+							mParameterBag->mMsg += "  ";
+						}
+
+
+					}
+				}
+				else if (msg.substr(0, 7) == "uniform")
+				{
+					// fragment shader from live coding
+					mShaders->loadLiveShader(msg);
+					mParameterBag->mShaderToLoad = msg;
+					// route it to websockets clients
+					if (mParameterBag->mIsRouter) {
+						wsWrite(msg);
+					}
+				}
+				else if (msg.substr(0, 7) == "#version")
+				{
+					// fragment shader from live coding
+					mShaders->loadLiveShader(msg);
+					// route it to websockets clients
+					if (mParameterBag->mIsRouter) {
+						wsWrite(msg);
+					}
+
+				}
+				else if (first == "I")
+				{
+
+					if (msg == "ImInit") {
+						// send ImInit OK
+						if (!remoteClientActive)
+						{
+							remoteClientActive = true;
+							ForceKeyFrame = true;
+							// Send confirmation
+							mServer.write("ImInit");
+							// Send font texture
+							/*unsigned char* pixels;
+							int width, height;
+							ImGui::GetIO().Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
+
+							PreparePacketTexFont(pixels, width, height);
+							SendPacket();*/
+						}
+					}
+					else if (msg.substr(0, 11) == "ImMouseMove") {
+						string trail = msg.substr(12);
+						unsigned commaPosition = trail.find(",");
+						if (commaPosition > 0) {
+							mouseX = atoi(trail.substr(0, commaPosition).c_str());
+							mouseY = atoi(trail.substr(commaPosition + 1).c_str());
+							ImGuiIO& io = ImGui::GetIO();
+							io.MousePos = toPixels(vec2(mouseX, mouseY));
+
+						}
+
+					}
+					else if (msg.substr(0, 12) == "ImMousePress") {
+						ImGuiIO& io = ImGui::GetIO(); // 1,0 left click 1,1 right click
+						io.MouseDown[0] = false;
+						io.MouseDown[1] = false;
+						int rightClick = atoi(msg.substr(15).c_str());
+						if (rightClick == 1) {
+
+							io.MouseDown[0] = false;
+							io.MouseDown[1] = true;
+						}
+						else {
+							io.MouseDown[0] = true;
+							io.MouseDown[1] = false;
+						}
+					}
+				}
+			}
+		});
 		mServer.listen(mParameterBag->mWebSocketsPort);
 	}
 	else
 	{
-		mClient.addConnectCallback(&MessageRouter::onWsConnect, this);
-		mClient.addDisconnectCallback(&MessageRouter::onWsDisconnect, this);
-		mClient.addErrorCallback(&MessageRouter::onWsError, this);
-		mClient.addInterruptCallback(&MessageRouter::onWsInterrupt, this);
-		mClient.addPingCallback(&MessageRouter::onWsPing, this);
-		mClient.addReadCallback(&MessageRouter::onWsRead, this);
+		mClient.connectOpenEventHandler([&]()
+		{
+			clientConnected = true;
+			mParameterBag->mMsg = "Connected";
+			mParameterBag->newMsg = true;
+		});
+		mClient.connectCloseEventHandler([&]()
+		{
+			clientConnected = false;
+			mParameterBag->mMsg = "Disconnected";
+			mParameterBag->newMsg = true;
+		});
+		mClient.connectFailEventHandler([&](string err)
+		{
+			mParameterBag->mMsg = "WS Error";
+			mParameterBag->newMsg = true;
+			if (!err.empty()) {
+				mParameterBag->mMsg += ": " + err;
+			}
+
+		});
+		mClient.connectInterruptEventHandler([&]()
+		{
+			mParameterBag->mMsg = "WS Interrupted";
+			mParameterBag->newMsg = true;
+		});
+		mClient.connectPingEventHandler([&](string msg)
+		{
+			mParameterBag->mMsg = "WS Ponged";
+			mParameterBag->newMsg = true;
+			if (!msg.empty())
+			{
+				mParameterBag->mMsg += ": " + msg;
+			}
+		});
+		mClient.connectMessageEventHandler([&](string msg)
+		{
+			int left;
+			int index;
+			mParameterBag->mMsg = "WS onRead";
+			mParameterBag->newMsg = true;
+			if (!msg.empty())
+			{
+				mParameterBag->mMsg += ": " + msg;
+				string first = msg.substr(0, 1);
+				if (first == "{")
+				{
+					// json
+					JsonTree json;
+					try
+					{
+						json = JsonTree(msg);
+						JsonTree jsonParams = json.getChild("params");
+						for (JsonTree::ConstIter jsonElement = jsonParams.begin(); jsonElement != jsonParams.end(); ++jsonElement)
+						{
+							int name = jsonElement->getChild("name").getValue<int>();
+							float value = jsonElement->getChild("value").getValue<float>();
+							if (name > mParameterBag->controlValues.size()) {
+								switch (name)
+								{
+								case 300:
+									//selectShader
+									left = jsonElement->getChild("left").getValue<int>();
+									index = jsonElement->getChild("index").getValue<int>();
+									selectShader(left, index);
+									break;
+								default:
+									break;
+								}
+
+							}
+							else {
+								// basic name value 
+								mParameterBag->controlValues[name] = value;
+							}
+						}
+						JsonTree jsonSelectShader = json.getChild("selectShader");
+						for (JsonTree::ConstIter jsonElement = jsonSelectShader.begin(); jsonElement != jsonSelectShader.end(); ++jsonElement)
+						{
+						}
+					}
+					catch (cinder::JsonTree::Exception exception)
+					{
+						mParameterBag->mMsg += " error jsonparser exception: ";
+						mParameterBag->mMsg += exception.what();
+						mParameterBag->mMsg += "  ";
+					}
+				}
+				else if (first == "#")
+				{
+					// fragment shader from live coding
+					//mBatchass->getShadersRef()->loadLiveShader(msg);
+
+				}
+			}
+		});
 		wsClientConnect();
 	}
 	mParameterBag->mAreWebSocketsEnabledAtStartup = true;
@@ -661,124 +1080,108 @@ void MessageRouter::wsClientDisconnect()
 		mClient.disconnect();
 	}
 }
-void MessageRouter::onWsConnect()
-{
-	clientConnected = true;
-	mParameterBag->mMsg = "Connected";
-	mParameterBag->newMsg = true;
-}
-
-void MessageRouter::onWsDisconnect()
-{
-	clientConnected = false;
-	mParameterBag->mMsg = "Disconnected";
-	mParameterBag->newMsg = true;
-}
+/*//void MessageRouter::onWsConnect()
+//{
+//	clientConnected = true;
+//	mParameterBag->mMsg = "Connected";
+//	mParameterBag->newMsg = true;
+//}
+//
+//void MessageRouter::onWsDisconnect()
+//{
+//	clientConnected = false;
+//	mParameterBag->mMsg = "Disconnected";
+//	mParameterBag->newMsg = true;
+//}
 
 void MessageRouter::onWsError(string err)
 {
-	mParameterBag->mMsg = "WS Error";
-	mParameterBag->newMsg = true;
-	if (!err.empty()) {
-		mParameterBag->mMsg += ": " + err;
-	}
+mParameterBag->mMsg = "WS Error";
+mParameterBag->newMsg = true;
+if (!err.empty()) {
+mParameterBag->mMsg += ": " + err;
+}
 
 }
 
 void MessageRouter::onWsInterrupt()
 {
-	mParameterBag->mMsg = "WS Interrupted";
-	mParameterBag->newMsg = true;
+mParameterBag->mMsg = "WS Interrupted";
+mParameterBag->newMsg = true;
 }
 
 void MessageRouter::onWsPing(string msg)
 {
-	mParameterBag->mMsg = "WS Ponged";
-	mParameterBag->newMsg = true;
-	if (!msg.empty())
-	{
-		mParameterBag->mMsg += ": " + msg;
-	}
+mParameterBag->mMsg = "WS Ponged";
+mParameterBag->newMsg = true;
+if (!msg.empty())
+{
+mParameterBag->mMsg += ": " + msg;
+}
 }
 
 void MessageRouter::onWsRead(string msg)
 {
-	int left;
-	int index;
-	int rtn = -1;
-	mParameterBag->mMsg = "WS onRead";
-	mParameterBag->newMsg = true;
-	if (!msg.empty())
-	{
-		mParameterBag->mMsg += ": " + msg;
-		string first = msg.substr(0, 1);
-		if (first == "{")
-		{
-			// json
-			JsonTree json;
-			try
-			{
-				json = JsonTree(msg);
-				if (json.hasChild("params")) {
-					JsonTree jsonParams = json.getChild("params");
-					for (JsonTree::ConstIter jsonElement = jsonParams.begin(); jsonElement != jsonParams.end(); ++jsonElement)
-					{
-						int name = jsonElement->getChild("name").getValue<int>();
-						float value = jsonElement->getChild("value").getValue<float>();
-						if (name > mParameterBag->controlValues.size()) {
-							switch (name)
-							{
-							case 300:
-								// selectShader
-								left = jsonElement->getChild("left").getValue<int>();
-								index = jsonElement->getChild("index").getValue<int>();
-								selectShader(left, index);
-								break;
-							default:
-								break;
-							}
-
-						}
-						else {
-							// basic name value 
-							mParameterBag->controlValues[name] = value;
-						}
-					}
-				} // params
-
-				// glsl
-				if (json.hasChild("glsl")) {
-					JsonTree jsonSelectShader = json.getChild("glsl");
-					for (JsonTree::ConstIter jsonElement = jsonSelectShader.begin(); jsonElement != jsonSelectShader.end(); ++jsonElement)
-					{
-						//string filename = jsonElement->getChild("file").getValue<string>();
-						int index = jsonElement->getChild("index").getValue<int>();
-						//rtn = mShaders->loadPixelFragmentShaderAtIndex(filename, index);
-						//if (rtn == -1) { 
-							string name = jsonElement->getChild("name").getValue<string>();
-							string frag = jsonElement->getChild("frag").getValue<string>();
-							rtn = mShaders->setGLSLStringAtIndex(frag, name, index, true);
-
-						//}
-					}
-				} 
-
-			}
-			catch (cinder::JsonTree::Exception exception)
-			{
-				mParameterBag->mMsg += " error jsonparser exception: ";
-				mParameterBag->mMsg += exception.what();
-				mParameterBag->mMsg += "  ";
-			}
-		}
-		else if (first == "#")
-		{
-			// fragment shader from live coding
-			//mBatchass->getShadersRef()->loadLiveShader(msg);
-
-		}
-	}
+int left;
+int index;
+mParameterBag->mMsg = "WS onRead";
+mParameterBag->newMsg = true;
+if (!msg.empty())
+{
+mParameterBag->mMsg += ": " + msg;
+string first = msg.substr(0, 1);
+if (first == "{")
+{
+// json
+JsonTree json;
+try
+{
+json = JsonTree(msg);
+JsonTree jsonParams = json.getChild("params");
+for (JsonTree::ConstIter jsonElement = jsonParams.begin(); jsonElement != jsonParams.end(); ++jsonElement)
+{
+int name = jsonElement->getChild("name").getValue<int>();
+float value = jsonElement->getChild("value").getValue<float>();
+if (name > mParameterBag->controlValues.size()) {
+switch (name)
+{
+case 300:
+//selectShader
+left = jsonElement->getChild("left").getValue<int>();
+index = jsonElement->getChild("index").getValue<int>();
+selectShader(left, index);
+break;
+default:
+break;
 }
+
+}
+else {
+// basic name value
+mParameterBag->controlValues[name] = value;
+}
+}
+JsonTree jsonSelectShader = json.getChild("selectShader");
+for (JsonTree::ConstIter jsonElement = jsonSelectShader.begin(); jsonElement != jsonSelectShader.end(); ++jsonElement)
+{
+}
+}
+catch (cinder::JsonTree::Exception exception)
+{
+mParameterBag->mMsg += " error jsonparser exception: ";
+mParameterBag->mMsg += exception.what();
+mParameterBag->mMsg += "  ";
+}
+}
+else if (first == "#")
+{
+// fragment shader from live coding
+//mBatchass->getShadersRef()->loadLiveShader(msg);
+
+}
+}
+}
+*/
 void MessageRouter::wsWrite(string msg)
 {
 	if (mParameterBag->mAreWebSocketsEnabledAtStartup)

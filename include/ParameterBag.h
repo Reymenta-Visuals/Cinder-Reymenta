@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cinder/app/AppNative.h"
+#include "cinder/app/App.h"
 #include "cinder/gl/gl.h"
 #include "cinder/gl/GlslProg.h"
 #include "cinder/gl/Fbo.h"
@@ -12,7 +12,7 @@
 // webcam
 #include "cinder/Capture.h"
 #include "cinder/Surface.h"
-#include "cinder/MayaCamUI.h"
+//#include "cinder/MayaCamUI.h"
 // fonts
 #include "Resources.h"
 
@@ -34,7 +34,7 @@ namespace Reymenta {
 	struct FrameBuffa
 	{
 		char						name[32];
-		gl::Fbo						fbo;
+		gl::FboRef					fbo;
 		bool						isFlipV;
 		bool						isFlipH;
 	};
@@ -48,9 +48,9 @@ namespace Reymenta {
 	};
 	/*struct ShadaFbo
 	{
-		ci::gl::Fbo					fbo;
-		int							shadaIndex;
-		bool						active;
+	ci::gl::Fbo					fbo;
+	int							shadaIndex;
+	bool						active;
 	};*/
 	struct Shada
 	{
@@ -61,17 +61,17 @@ namespace Reymenta {
 	};
 	/*struct WarpInput
 	{
-		int							leftIndex;
-		int							leftMode;		// 0 for input texture, 1 for shader
-		int							rightIndex;
-		int							rightMode;		// 0 for input texture, 1 for shader
-		float						controlValues[18];		// from 0 left to 1 right
-		bool						hasTexture;		// has already a texture? if not the first one is put on left and right
-		bool						active;
+	int							leftIndex;
+	int							leftMode;		// 0 for input texture, 1 for shader
+	int							rightIndex;
+	int							rightMode;		// 0 for input texture, 1 for shader
+	float						controlValues[18];		// from 0 left to 1 right
+	bool						hasTexture;		// has already a texture? if not the first one is put on left and right
+	bool						active;
 	};*/
 	struct WarpFbo
 	{
-		ci::gl::Fbo					fbo;
+		ci::gl::FboRef				fbo;
 		int							textureIndex;
 		int							textureMode;	// 0 for input texture, 1 for shader
 		bool						active;
@@ -120,17 +120,17 @@ namespace Reymenta {
 		// render windows
 		int							mRenderWidth;
 		int							mRenderHeight;
-		Vec2f						mRenderXY, mLeftRenderXY, mRightRenderXY, mPreviewRenderXY, mWarp1RenderXY, mWarp2RenderXY;
-		Vec2f						mRenderPosXY;
-		Vec2f						mPreviewFragXY;
-		Vec2f						mCamPosXY;
-		Vec2f						mRenderResoXY;
+		vec2						mRenderXY, mLeftRenderXY, mRightRenderXY, mPreviewRenderXY, mWarp1RenderXY, mWarp2RenderXY;
+		vec2						mRenderPosXY;
+		vec2						mPreviewFragXY;
+		vec2						mCamPosXY;
+		vec2						mRenderResoXY;
 		bool						mAutoLayout;
 		bool						mCustomLayout;
 		bool						mStandalone;
 
 		// code editor
-		Vec2f						mRenderCodeEditorXY;
+		vec2						mRenderCodeEditorXY;
 		bool						mLiveCode;
 		bool						mShowUI;
 		bool						mCursorVisible;
@@ -149,9 +149,9 @@ namespace Reymenta {
 		float						iGlobalTime;        // shader playback time (in seconds)
 		float						iSpeedMultiplier;        // speed multiplier
 		float						iChannelTime[4];
-		Vec3f						iResolution;        // viewport resolution (in pixels)
-		Vec3f						iChannelResolution[MAX];	// channel resolution (in pixels)
-		Vec4f						iMouse;             // mouse pixel coords. xy: current (if MLB down), zw: click
+		vec3						iResolution;        // viewport resolution (in pixels)
+		vec3						iChannelResolution[MAX];	// channel resolution (in pixels)
+		vec4						iMouse;             // mouse pixel coords. xy: current (if MLB down), zw: click
 		bool						iFade;
 		bool						iRepeat;
 		bool						iLight;
@@ -176,7 +176,10 @@ namespace Reymenta {
 		// transition
 		int							iTransition;
 		Anim<float>					iAnim;
-		float						mTransitionDuration;
+		double						mTransitionDuration;
+		//! Time in seconds at which the transition to the next shader starts.
+		double						mTransitionTime;
+
 		int							multFactor;
 		// windows and params
 		int							mMainDisplayWidth;
@@ -234,7 +237,7 @@ namespace Reymenta {
 
 		ci::Anim<float>				mStateTransition;
 
-		Vec2i						mRenderResolution;        // render resolution (replaces iResolution which increments magically)
+		ivec2						mRenderResolution;        // render resolution (replaces iResolution which increments magically)
 		// 
 		bool						mSendToOutput;
 		bool						autoInvert;
@@ -244,7 +247,7 @@ namespace Reymenta {
 		// spout
 		int							mFboResolution;
 		int							mOutputVideoResolution;
-		Vec2f						mOutputResolution;
+		vec2						mOutputResolution;
 		// OSC/MIDI/JSON controlled UI and params
 		map<int, float>				controlValues;
 		// indexes for textures
@@ -264,19 +267,21 @@ namespace Reymenta {
 		int							mUIRefresh;
 		int							mCurrentPreviewFboIndex;
 		int							mSphereFboIndex, mMeshFboIndex, mLiveFboIndex, mMixFboIndex, mAudioFboIndex;
-		int							mLeftFboIndex, mRightFboIndex, mWarp1FboIndex, mWarp2FboIndex, mABPFboIndex;
+		int							mLeftFboIndex, mRightFboIndex, mVertexSphereFboIndex, mWarp1FboIndex, mWarp2FboIndex, mABPFboIndex;
 		int							mLeftFragIndex, mRightFragIndex, mPreviewFragIndex, mPreviousFragIndex, mWarp1FragIndex, mWarp2FragIndex, mLiveFragIndex;
 		float						iZoomLeft, iZoomRight;
 		int							iTrack;
 		// meshes
 		int							mMeshIndex;
-
+		// VertexSphere
+		int							mVertexSphereTextureIndex;
 		// camera
 		CameraPersp					mCamera;
-		MayaCamUI					mMayaCam;
-		Vec2f						mCamEyePointXY;
+		// Cam						mCam;
+		vec2						mCamEyePointXY;
 		float						mCamEyePointZ;
 		// web sockets
+		bool						mIsRouter;
 		bool						mAreWebSocketsEnabledAtStartup;
 		bool						mIsWebSocketsServer;
 		uint16_t					mWebSocketsPort;

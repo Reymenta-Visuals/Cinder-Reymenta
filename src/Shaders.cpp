@@ -5,9 +5,8 @@ using namespace Reymenta;
 Shaders::Shaders(ParameterBagRef aParameterBag)
 {
 	mParameterBag = aParameterBag;
-	// instanciate the logger class
-	log = Logger::create("ShadersLog.txt");
-	log->logTimedString("Shaders constructor");
+
+	CI_LOG_V("Shaders constructor");
 	liveError = true;
 	isLiveShaderSetup = false;
 	previousFileName = "0";
@@ -15,7 +14,9 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 
 	mCurrentPreviewShader = 0;
 	mCurrentRenderShader = 0;
-
+	fs::path passthruVertFile;
+	passthruVertFile = getAssetPath("") / "passthru.vert";
+	passthruvert = loadString(loadFile(passthruVertFile));
 	//load mix shader
 	try
 	{
@@ -26,19 +27,19 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 		}
 		else
 		{
-			log->logTimedString("mix.frag does not exist, should quit");
+			CI_LOG_V("mix.frag does not exist, should quit");
 
 		}
 	}
 	catch (gl::GlslProgCompileExc &exc)
 	{
 		mError = string(exc.what());
-		log->logTimedString("unable to load/compile shader:" + string(exc.what()));
+		CI_LOG_V("unable to load/compile shader:" + string(exc.what()));
 	}
 	catch (const std::exception &e)
 	{
 		mError = string(e.what());
-		log->logTimedString("unable to load shader:" + string(e.what()));
+		CI_LOG_V("unable to load shader:" + string(e.what()));
 	}
 	//load warp shader
 	try
@@ -51,24 +52,24 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 		}
 		else
 		{
-			log->logTimedString("passthru.frag does not exist, should quit");
+			CI_LOG_V("passthru.frag does not exist, should quit");
 
 		}
 	}
 	catch (gl::GlslProgCompileExc &exc)
 	{
 		mError = string(exc.what());
-		log->logTimedString("unable to load/compile shader:" + string(exc.what()));
+		CI_LOG_V("unable to load/compile shader:" + string(exc.what()));
 	}
 	catch (const std::exception &e)
 	{
 		mError = string(e.what());
-		log->logTimedString("unable to load shader:" + string(e.what()));
+		CI_LOG_V("unable to load shader:" + string(e.what()));
 	}
 
 	// shadertoy include
 	vs = loadString(loadAsset("live.vert"));
-	inc = loadString(loadAsset("shadertoy.inc"));
+	shaderInclude = loadString(loadAsset("shadertoy.inc"));
 
 	validFrag = false;
 	validVert = true;
@@ -79,6 +80,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 		// Load our shader and test if it is correctly compiled
 		try
 		{
+			mParameterBag->mShaderToLoad = loadString(loadAsset("live.frag"));
 			mLiveShader = gl::GlslProg::create(loadAsset("live.vert"), loadFile(liveFragFile));
 			liveError = false;
 		}
@@ -88,7 +90,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	}
 	else
 	{
-		log->logTimedString("live.frag does not exist");
+		CI_LOG_V("live.frag does not exist");
 	}
 	//fileName = "default.frag";
 	fs::path localFile; //= getAssetPath("") / "shaders" / fileName;
@@ -122,18 +124,39 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	mCurrentPreviewShader = 0;
 	mCurrentRenderShader = 0;
 	// Create our thread communication buffers.
-	//mRequests = new ConcurrentCircularBuffer<LoaderData>(10);
-	//mResponses = new ConcurrentCircularBuffer<LoaderData>(10);
+	mRequests = new ConcurrentCircularBuffer<LoaderData>(100);
+	mResponses = new ConcurrentCircularBuffer<LoaderData>(100);
 
-	// error on program termination, shutdownLoader() must be called
 	// Start the loading thread.
-	//setupLoader();
+	if (!setupLoader()) {
+		CI_LOG_E("Failed to create the loader thread and context.");
+		
+	}
+	// Load our textures and transition shader in the main thread.
+	try {
+
+		mShaderTransition = gl::GlslProg::create(loadAsset("common/shadertoy.vert"), loadAsset("common/shadertoy.frag"));
+	}
+	catch (const std::exception& e) {
+		// Quit if anything went wrong.
+		CI_LOG_EXCEPTION("Failed to load common shaders:", e);
+		
+	}
+
+	// Tell our loading thread to load the first shader. The path is converted to LoaderData implicitly.
+	mRequests->pushFront(getAssetPath("metrics.glsl"));
 }
-void Shaders::setupLoader()
+bool Shaders::setupLoader()
 {
+	auto ctx = gl::env()->createSharedContext(gl::context());
+	if (!ctx)
+		return false;
+
 	// If succeeded, start the loading thread.
-	//mThreadAbort = false;
-	//mThread = std::make_shared<std::thread>(&Shaders::loader, this);
+	mThreadAbort = false;
+	mThread = std::make_shared<std::thread>(&Shaders::loader, this, ctx);
+
+	return true;
 }
 void Shaders::setupLiveShader()
 {
@@ -154,13 +177,13 @@ void Shaders::setupLiveShader()
 		catch (gl::GlslProgCompileExc &exc)
 		{
 			mError = string(exc.what());
-			log->logTimedString("unable to load/compile shader:" + string(exc.what()));
+			CI_LOG_V("unable to load/compile shader:" + string(exc.what()));
 		}
 		catch (const std::exception &e)
 		{
 
 			mError = string(e.what());
-			log->logTimedString("unable to load shader:" + string(e.what()));
+			CI_LOG_V("unable to load shader:" + string(e.what()));
 		}
 		if (liveError)
 		{
@@ -192,42 +215,49 @@ string Shaders::loadLiveShader(string frag)
 void Shaders::shutdownLoader()
 {
 	// Tell the loading thread to abort, then wait for it to stop.
-	//mThreadAbort = true;
-	//mThread->join();
+	mThreadAbort = true;
+	if (mThread)
+		mThread->join();
+	// Properly destroy the buffers.
+	if (mResponses) delete mResponses;
+	mResponses = nullptr;
+	if (mRequests) delete mRequests;
+	mRequests = nullptr;
 }
-void Shaders::loader()
+void Shaders::loader(gl::ContextRef ctx)
 {
+	// This only works if we can make the render context current.
+	ctx->makeCurrent();
+
 	// Loading loop.
-	/*while (!mThreadAbort)
-	{
-	// Wait for a request.
-	if (mRequests->isNotEmpty())
-	{
-	// Take the request from the buffer.
-	LoaderData data;
-	mRequests->popBack(&data);
+	while (!mThreadAbort) {
+		// Wait for a request.
+		if (mRequests->isNotEmpty()) {
+			// Take the request from the buffer.
+			LoaderData data;
+			mRequests->popBack(&data);
 
-	// Try to load, parse and compile the shader.
-	try {
-	//std::string vs = loadString(loadAsset("shaders/templates/passThrough2.vert"));
-	std::string fs = inc + loadString(loadFile(data.path));
-	//data.shader = gl::GlslProg::create(vs.c_str(), fs.c_str());
-	data.shadertext = fs.c_str();
+			// Try to load, parse and compile the shader.
+			try {
+				std::string vs = loadString(loadAsset("common/shadertoy.vert"));
+				std::string fs = loadString(loadAsset("shadertoy.inc")) + loadString(loadFile(data.path));
 
-	// If the shader compiled successfully, pass it to the main thread.
-	mResponses->pushFront(data);
+				data.shader = gl::GlslProg::create(gl::GlslProg::Format().vertex(vs).fragment(fs));
+
+				// If the shader compiled successfully, pass it to the main thread.
+				mResponses->pushFront(data);
+			}
+			catch (const std::exception& e) {
+				// Uhoh, something went wrong, but it's not fatal.
+ 				CI_LOG_EXCEPTION("Failed to compile the shader: ", e);
+			}
+		}
+		else {
+			// Allow the CPU to do other things for a while.
+			std::chrono::milliseconds duration(100);
+			std::this_thread::sleep_for(duration);
+		}
 	}
-	catch (const std::exception& e) {
-	// Uhoh, something went wrong.
-	console() << e.what() << endl;
-	}
-	}
-	else {
-	// Allow the CPU to do other things for a while.
-	std::chrono::milliseconds duration(100);
-	std::this_thread::sleep_for(duration);
-	}
-	}*/
 }
 void Shaders::loadFragmentShader(boost::filesystem::path aFilePath)
 {
@@ -235,16 +265,59 @@ void Shaders::loadFragmentShader(boost::filesystem::path aFilePath)
 }
 void Shaders::update()
 {
-	/*LoaderData data;
+	LoaderData data;
 
 	// If we are ready for the next shader, take it from the buffer.
-	if (mResponses->isNotEmpty()) {
-	mResponses->popBack(&data);
+	if (!mShaderNext && mResponses->isNotEmpty()) {
+		mResponses->popBack(&data);
 
+		mPathNext = data.path;
+		mShaderNext = data.shader;
+
+		mParameterBag->mTransitionTime = getElapsedSeconds();
+		mParameterBag->mTransitionDuration = 2.0;
+
+
+	}
+	/*
 	setFragString(data.shadertext);
 	}*/
 }
+void Shaders::addRequest(boost::filesystem::path aFilePath) {
+	if (mRequests->isNotFull()) {
+		mRequests->pushFront(aFilePath);
+	}
+}
+void Shaders::swapShaders() {
+	mShaderCurrent = mShaderNext;
+	mShaderNext.reset();
 
+	mPathCurrent = mPathNext;
+	mPathNext.clear();
+}
+void Shaders::random()
+{
+	const fs::path assets = getAssetPath("");
+
+	// Find all *.frag files.
+	std::vector<fs::path> shaders;
+	for (fs::recursive_directory_iterator it(assets), end; it != end; ++it) {
+		if (fs::is_regular_file(it->path()))
+			if (it->path().extension() == ".glsl")
+				shaders.push_back(it->path());
+	}
+
+	if (shaders.empty())
+		return;
+
+	// Load random *.frag file, but make sure it is different from the current shader.
+	size_t idx = getElapsedFrames() % shaders.size();
+	if (shaders.at(idx) == mPathCurrent)
+		idx = (idx + 1) % shaders.size();
+
+	if (mRequests->isNotFull())
+		mRequests->pushFront(shaders.at(idx));
+}
 string Shaders::getFragStringFromFile(string fileName)
 {
 	string rtn = "";
@@ -255,7 +328,7 @@ string Shaders::getFragStringFromFile(string fileName)
 	catch (const std::exception &e)
 	{
 		mError = string(e.what());
-		log->logTimedString(fileName + " unable to load string from file:" + mError);
+		CI_LOG_V(fileName + " unable to load string from file:" + mError);
 		mParameterBag->mMsg = mError;
 		mParameterBag->newMsg = true;
 	}
@@ -268,7 +341,15 @@ string Shaders::getFragError()
 
 Shaders::~Shaders()
 {
-	log->logTimedString("Shaders destructor");
+	// Properly shut down the loading thread.
+	shutdownLoader();
+
+	// Properly destroy the buffers.
+	if (mResponses) delete mResponses;
+	mResponses = nullptr;
+	if (mRequests) delete mRequests;
+	mRequests = nullptr;
+	CI_LOG_V("Shaders destructor");
 }
 
 string Shaders::getFileName(string aFilePath)
@@ -323,37 +404,35 @@ int Shaders::loadPixelFragmentShaderAtIndex(string aFilePath, int index)
 		fs::path fr = aFilePath;
 		string name = "unknown";
 		string mFile = fr.string();
-		if (mFile.find_last_of("\\") != std::string::npos) {
-			name = mFile.substr(mFile.find_last_of("\\") + 1);
-			mFragFileName = name;
-			if (fs::exists(fr))
+		if (mFile.find_last_of("\\") != std::string::npos) name = mFile.substr(mFile.find_last_of("\\") + 1);
+		mFragFileName = name;
+		if (fs::exists(fr))
+		{
+			validFrag = false;
+			std::string fs = shaderInclude + loadString(loadFile(aFilePath));
+			rtn = setGLSLStringAtIndex(fs, name, index);
+			if (rtn > -1)
 			{
-				validFrag = false;
-				std::string fs = inc + loadString(loadFile(aFilePath));
-				rtn = setGLSLStringAtIndex(fs, name, index);
-				if (rtn > -1)
-				{
-					mParameterBag->mMsg = name + " loadPixelFragmentShaderAtIndex success";
-					mParameterBag->newMsg = true;
-				}
+				mParameterBag->mMsg = name + " success loadPixelFragmentShaderAtIndex:" + toString(index);
+				mParameterBag->newMsg = true;
 			}
-			else
-			{
-				log->logTimedString(mFragFile + " does not exist:" + aFilePath);
-			}
+		}
+		else
+		{
+			CI_LOG_V(mFragFile + " does not exist:" + aFilePath);
 		}
 	}
 	catch (gl::GlslProgCompileExc &exc)
 	{
 		mError = string(exc.what());
-		log->logTimedString(aFilePath + " unable to load/compile shader:" + mError);
+		CI_LOG_V(aFilePath + " unable to load/compile shader:" + mError);
 		mParameterBag->mMsg = mError;
 		mParameterBag->newMsg = true;
 	}
 	catch (const std::exception &e)
 	{
 		mError = string(e.what());
-		log->logTimedString(aFilePath + " unable to load shader:" + mError);
+		CI_LOG_V(aFilePath + " unable to load shader:" + mError);
 		mParameterBag->mMsg = mError;
 		mParameterBag->newMsg = true;
 	}
@@ -376,33 +455,32 @@ int Shaders::loadPixelFragmentShader(string aFilePath)
 		if (fs::exists(fr))
 		{
 			validFrag = false;
-			std::string fs = inc + loadString(loadFile(aFilePath));
+			std::string fs = shaderInclude + loadString(loadFile(aFilePath));
 			rtn = setGLSLString(fs, name);
 			if (rtn > -1)
 			{
+				CI_LOG_V(mFragFile + " loaded and compiled");
+				mParameterBag->mMsg = name + " loadPixelFragmentShader success";
+				mParameterBag->newMsg = true;
 				//mFragmentShadersNames[rtn] = name;
 			}
-			log->logTimedString(mFragFile + " loaded and compiled");
-			mParameterBag->mMsg = name + " loadPixelFragmentShader success";
-			mParameterBag->newMsg = true;
-
 		}
 		else
 		{
-			log->logTimedString(mFragFile + " does not exist");
+			CI_LOG_V(mFragFile + " does not exist");
 		}
 	}
 	catch (gl::GlslProgCompileExc &exc)
 	{
 		mError = string(exc.what());
-		log->logTimedString(aFilePath + " unable to load/compile shader err:" + mError);
+		CI_LOG_V(aFilePath + " unable to load/compile shader err:" + mError);
 		mParameterBag->mMsg = mError;
 		mParameterBag->newMsg = true;
 	}
 	catch (const std::exception &e)
 	{
 		mError = string(e.what());
-		log->logTimedString(aFilePath + " unable to load shader err:" + mError);
+		CI_LOG_V(aFilePath + " unable to load shader err:" + mError);
 		mParameterBag->mMsg = mError;
 		mParameterBag->newMsg = true;
 	}
@@ -420,7 +498,7 @@ void Shaders::loadCurrentFrag()
 		mFragmentShaders[mCurrentRenderShader].name = "some.frag";
 		mFragmentShaders[mCurrentRenderShader].active = true;
 
-		log->logTimedString("loadCurrentFrag success");
+		CI_LOG_V("loadCurrentFrag success");
 		mError = "";
 		validFrag = true;
 	}
@@ -428,7 +506,7 @@ void Shaders::loadCurrentFrag()
 	{
 		validFrag = false;
 		mError = string(exc.what());
-		log->logTimedString("loadCurrentFrag error: " + mError);
+		CI_LOG_V("loadCurrentFrag error: " + mError);
 	}
 	// reset to no transition
 	mParameterBag->iTransition = 0;
@@ -468,47 +546,48 @@ int Shaders::setGLSLString(string pixelFrag, string name)
 	currentFrag = pixelFrag;
 	try
 	{
+		Shada newShader;
+		newShader.shader = gl::GlslProg::create(passthruvert.c_str(), currentFrag.c_str());
+		newShader.name = name;
+		newShader.active = true;
 		// searching first index of not running shader
 		if (mFragmentShaders.size() < mParameterBag->MAX)
 		{
-			Shada newShader;
-			newShader.shader = gl::GlslProg::create(NULL, currentFrag.c_str());
-			newShader.name = name;
-			newShader.active = true;
 			mFragmentShaders.push_back(newShader);
 			foundIndex = mFragmentShaders.size() - 1;
 		}
 		else
 		{
 			bool indexFound = false;
-			/*if (mParameterBag->mDirectRender){foundIndex = mParameterBag->mRightFragIndex;}else{*/
 			while (!indexFound)
 			{
 				foundIndex++;
 				if (foundIndex != mParameterBag->mLeftFragIndex && foundIndex != mParameterBag->mRightFragIndex && foundIndex != mParameterBag->mPreviewFragIndex) indexFound = true;
 				if (foundIndex > mFragmentShaders.size() - 1) indexFound = true;
 			}
-			//}
+
 			// load the new shader
-			mFragmentShaders[foundIndex].shader = gl::GlslProg::create(NULL, currentFrag.c_str());
+			mFragmentShaders[foundIndex].shader = newShader.shader;
 			mFragmentShaders[foundIndex].name = name;
 			mFragmentShaders[foundIndex].active = true;
 		}
 		//preview the new loaded shader
 		mParameterBag->mPreviewFragIndex = foundIndex;
-		log->logTimedString("setGLSLString success");
+		CI_LOG_V("setGLSLString success");
 		mParameterBag->mMsg = name + " setGLSLString success";
 		mParameterBag->newMsg = true;
 		mError = "";
 		validFrag = true;
 	}
-	catch (gl::GlslProgCompileExc &exc)
+	catch (gl::GlslProgCompileExc exc)
 	{
 		validFrag = false;
+		// TODO CI_LOG_E("Problem Compiling ImGui::Renderer shader " << exc.what());
+		foundIndex = -1;
 		mError = string(exc.what());
-		log->logTimedString("setGLSLString error: " + mError);
-		mParameterBag->mMsg = mError;
+		mParameterBag->mMsg = "setGLSLString file: " + name + " error:" + mError;
 		mParameterBag->newMsg = true;
+		CI_LOG_V(mParameterBag->mMsg);
 	}
 	return foundIndex;
 }
@@ -517,61 +596,31 @@ void Shaders::setShaderMicroSeconds(int index, int micro)
 {
 	mFragmentShaders[index].microseconds = micro;
 }
-int Shaders::setGLSLStringAtIndex(string pixelFrag, string name, int index, bool fromNetwork)
+int Shaders::setGLSLStringAtIndex(string pixelFrag, string name, int index)
 {
 	int foundIndex = -1;
+	currentFrag = pixelFrag;
 	try
 	{
-		if (fromNetwork) {
-			currentFrag = inc + pixelFrag;
-		}
-		else {
-			currentFrag = pixelFrag;
-		}
 		// load the new shader
-		mFragmentShaders[index].shader = gl::GlslProg::create(NULL, currentFrag.c_str());
+		mFragmentShaders[index].shader = gl::GlslProg::create(passthruvert.c_str(), currentFrag.c_str());
 		mFragmentShaders[index].name = name;
 		mFragmentShaders[index].active = true;
 
 		foundIndex = index;
 		//preview the new loaded shader
 		mParameterBag->mPreviewFragIndex = index;
-		log->logTimedString("setGLSLStringAtIndex success");
+		CI_LOG_V("setGLSLStringAtIndex success");
 		mError = "";
 		mParameterBag->mMsg = name + " setGLSLStringAtIndex success";
 		mParameterBag->newMsg = true;
 		validFrag = true;
-		if (fromNetwork) {
-			fs::path directory = getAssetPath("");// / "default"
-			if (!fs::exists(directory)) {
-				if (createDirectories(directory)) {
-
-				}
-			}
-			if (fs::exists(directory)) {
-
-				fs::path path = directory / name;
-				std::ofstream oStream(path.string());
-				oStream << pixelFrag;
-				oStream.close();
-			}
-			/*
-				fs::path directory = getAssetPath("");
-	if (!fs::exists(directory)) {
-		if (!createDirectories(directory / settingsFileName)) {
-			return false;
-		}
-	}
-
-	fs::path path = directory / settingsFileName;
-			*/
-		}
 	}
 	catch (gl::GlslProgCompileExc &exc)
 	{
 		validFrag = false;
 		mError = string(exc.what());
-		log->logTimedString("setGLSLStringAtIndex error: " + mError);
+		CI_LOG_V("setGLSLStringAtIndex error: " + mError);
 		mParameterBag->mMsg = mError;
 		mParameterBag->newMsg = true;
 	}
@@ -589,12 +638,12 @@ bool Shaders::setFragString(string pixelFrag)
 		}
 		else
 		{
-			mFragmentShaders[mCurrentPreviewShader].shader = gl::GlslProg::create(NULL, currentFrag.c_str());
+			mFragmentShaders[mCurrentPreviewShader].shader = gl::GlslProg::create(passthruvert.c_str(), currentFrag.c_str());
 			mFragmentShaders[mCurrentPreviewShader].name = "some.frag";
 			mFragmentShaders[mCurrentPreviewShader].active = true;
 
 			//if (mParameterBag->mDirectRender) renderPreviewShader();// mFragmentShaders[mCurrentRenderShader] = gl::GlslProg(NULL, currentFrag.c_str());
-			log->logTimedString("setFragString success");
+			CI_LOG_V("setFragString success");
 			mError = "";
 			validFrag = true;
 		}
@@ -606,14 +655,14 @@ bool Shaders::setFragString(string pixelFrag)
 			ofstream mCurrentFrag(currentFile.string(), std::ofstream::binary);
 			mCurrentFrag << pixelFrag;
 			mCurrentFrag.close();
-			log->logTimedString("current live editor mix saved:" + currentFile.string());
+			CI_LOG_V("current live editor mix saved:" + currentFile.string());
 
 			mixFileName = previousFileName + "-" + currentFileName + ".frag";
 			fs::path defaultFile = getAssetPath("") / "shaders" / "default" / mixFileName;
 			ofstream mDefaultFrag(defaultFile.string(), std::ofstream::binary);
 			mDefaultFrag << pixelFrag;
 			mDefaultFrag.close();
-			log->logTimedString("default mix saved:" + defaultFile.string());
+			CI_LOG_V("default mix saved:" + defaultFile.string());
 		}
 		// if codeeditor mCodeEditor->setValue( pixelFrag );// CHECK 
 
@@ -622,7 +671,7 @@ bool Shaders::setFragString(string pixelFrag)
 	{
 		validFrag = false;
 		mError = string(exc.what());
-		log->logTimedString("setFragString error: " + mError);
+		CI_LOG_V("setFragString error: " + mError);
 		mParameterBag->mMsg = mError;
 		mParameterBag->newMsg = true;
 	}
@@ -642,13 +691,13 @@ bool Shaders::loadTextFile(string aFilePath)
 		{
 			DataSourceRef dsr = loadFile(txtFile);
 			rtn = loadString(loadFile(txtFile));
-			log->logTimedString(aFilePath + " content:" + rtn);
+			CI_LOG_V(aFilePath + " content:" + rtn);
 		}
 		success = true;
 	}
 	catch (const std::exception &e)
 	{
-		log->logTimedString(fileName + " unable to load string from text file:" + string(e.what()));
+		CI_LOG_V(fileName + " unable to load string from text file:" + string(e.what()));
 	}
 	return success;
 	/* TODO
@@ -682,14 +731,14 @@ void Shaders::createThumbsFromDir(string filePath)
 				{
 					try
 					{
-						std::string fs = inc + loadString(loadFile(it->path()));
+						std::string fs = shaderInclude + loadString(loadFile(it->path()));
 
 						Shada newShader;
-						newShader.shader = gl::GlslProg::create(NULL, fs.c_str());
+						newShader.shader = gl::GlslProg::create(passthruvert.c_str(), fs.c_str());
 						newShader.name = fileName;
 						newShader.active = true;
 						mFragmentShaders.push_back(newShader);
-						log->logTimedString("createThumbsFromDir loaded and compiled " + fileName);
+						CI_LOG_V("createThumbsFromDir loaded and compiled " + fileName);
 
 						/*mParameterBag->mPreviewFragIndex = mFragmentShaders.size() - 1;*/
 					}
@@ -697,7 +746,7 @@ void Shaders::createThumbsFromDir(string filePath)
 					{
 						validFrag = false;
 						mError = string(exc.what());
-						log->logTimedString("createThumbsFromDir error: " + mError + " on " + fileName);
+						CI_LOG_V("createThumbsFromDir error: " + mError + " on " + fileName);
 					}
 					//sequenceTextures.push_back(ci::gl::Texture(loadImage(filePath + fileName)));
 				}

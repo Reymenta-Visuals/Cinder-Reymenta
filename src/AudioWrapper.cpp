@@ -28,18 +28,17 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 	mParameterBag = aParameterBag;
 	mTextures = aTexturesRef;
 	// instanciate the logger class
-	log = Logger::create("AudioLog.txt");
-	log->logTimedString("Audio constructor");
+	CI_LOG_V("Audio constructor");
 
 	// linein
 	auto ctx = audio::Context::master();
 	mLineIn = ctx->createInputDeviceNode();
 
-	//*mScopeLineInFmt = audio::MonitorSpectralNode::Format().fftSize(512).windowSize(256);
-	auto scopeLineInFmt = audio::MonitorSpectralNode::Format().fftSize(mParameterBag->mFftSize).windowSize(mParameterBag->mWindowSize);
+	auto scopeLineInFmt = audio::MonitorSpectralNode::Format().fftSize(2048).windowSize(1024);
 	mMonitorLineInSpectralNode = ctx->makeNode(new audio::MonitorSpectralNode(scopeLineInFmt));
+
 	mLineIn >> mMonitorLineInSpectralNode;
-	
+
 	mLineIn->enable();
 
 	// wave
@@ -53,8 +52,8 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 	// Paul Houx
 	// setup camera
 	mCamera.setPerspective(50.0f, 1.0f, 1.0f, 10000.0f);
-	mCamera.setEyePoint(Vec3f(-kWidth / 4, kHeight / 2, -kWidth / 8));
-	mCamera.setCenterOfInterestPoint(Vec3f(kWidth / 4, -kHeight / 8, kWidth / 4));
+	mCamera.setEyePoint(vec3(-kWidth / 4, kHeight / 2, -kWidth / 8));
+	//mCamera.setCenterOfInterestPoint(vec3(kWidth / 4, -kHeight / 8, kWidth / 4));
 
 	// create channels from which we can construct our textures
 	mChannelLeft = Channel32f(kBands, kHistory);
@@ -63,30 +62,30 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 	memset(mChannelRight.getData(), 0, mChannelRight.getRowBytes() * kHistory);
 
 	// create texture format (wrap the y-axis, clamp the x-axis)
-	mTextureFormat.setWrapS(GL_CLAMP);
+	/*mTextureFormat.setWrapS(GL_CLAMP);
 	mTextureFormat.setWrapT(GL_REPEAT);
 	mTextureFormat.setMinFilter(GL_LINEAR);
 	mTextureFormat.setMagFilter(GL_LINEAR);
 
 	// compile shader
 	try {
-		mShaders.push_back(gl::GlslProg(loadAsset("spectrum.vert"), loadAsset("spectrum.frag")));
+		mShaders.push_back(gl::GlslProg(loadAsset("shaders/spectrum.vert"), loadAsset("shaders/spectrum.frag")));
 	}
 	catch (const std::exception& e) {
-		log->logTimedString("Could not compile spectrum.frag or vert");
+		CI_LOG_V("Could not compile shaders/spectrum.frag-vert");
 	}
 	try {
-		mShaders.push_back(gl::GlslProg(loadAsset("spectrum2.vert"), loadAsset("spectrum2.frag")));
+		mShaders.push_back(gl::GlslProg(loadAsset("shaders/spectrum2.vert"), loadAsset("shaders/spectrum2.frag")));
 	}
 	catch (const std::exception& e) {
-		log->logTimedString("Could not compile spectrum2.frag or vert");
+		CI_LOG_V("Could not compile shaders/spectrum2.frag-vert");
 
-	}
+	}*/
 	currentShaderIndex = 0;
 	// create static mesh (all animation is done in the vertex shader)
-	std::vector<Vec3f>	vertices;
+	std::vector<vec3>	vertices;
 	std::vector<Colorf>	colors;
-	std::vector<Vec2f>	coords;
+	std::vector<vec2>	coords;
 	std::vector<size_t>	indices;
 
 	for (size_t h = 0; h < kHeight; ++h)
@@ -107,7 +106,7 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 			}
 
 			// add vertex
-			vertices.push_back(Vec3f(float(w), 0, float(h)));
+			vertices.push_back(vec3(float(w), 0, float(h)));
 
 			// add texture coordinates
 			// note: we only want to draw the lower part of the frequency bands,
@@ -115,14 +114,14 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 			const float part = 0.5f;
 			float s = w / float(kWidth - 1);
 			float t = h / float(kHeight - 1);
-			coords.push_back(Vec2f(part - part * s, t));
+			coords.push_back(vec2(part - part * s, t));
 
 			// add vertex colors
 			colors.push_back(Color(CM_HSV, s, 0.5f, 0.75f));
 		}
 	}
 
-	gl::VboMesh::Layout layout;
+	/*gl::VboMesh::Layout layout;
 	layout.setStaticPositions();
 	layout.setStaticColorsRGB();
 	layout.setStaticIndices();
@@ -132,7 +131,7 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 	mMesh.bufferPositions(vertices);
 	mMesh.bufferColorsRGB(colors);
 	mMesh.bufferIndices(indices);
-	mMesh.bufferTexCoords2d(0, coords);
+	mMesh.bufferTexCoords2d(0, coords);*/
 
 
 	mIsMouseDown = false;
@@ -143,7 +142,6 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 	//  1) it tells us where to upload the next spectrum data
 	//  2) we use it to offset the texture coordinates in the shader for the scrolling effect
 	mOffset = 0;
-
 }
 
 AudioWrapperRef AudioWrapper::create(ParameterBagRef aParameterBag, TexturesRef aTexturesRef)
@@ -156,12 +154,12 @@ void AudioWrapper::loadWaveFile(string aFilePath)
 	{
 		if (!fs::exists(aFilePath))
 		{
-			log->logTimedString("file not found: " + aFilePath);
+			CI_LOG_V("file not found: " + aFilePath);
 
 		}
 		else
 		{
-			log->logTimedString("found file: " + aFilePath);
+			CI_LOG_V("found file: " + aFilePath);
 			auto ctx = audio::master();
 			mSourceFile = audio::load(loadFile(aFilePath), audio::master()->getSampleRate());
 			mSamplePlayerNode = ctx->makeNode(new audio::FilePlayerNode(mSourceFile, false));
@@ -187,7 +185,7 @@ void AudioWrapper::loadWaveFile(string aFilePath)
 	}
 	catch (...)
 	{
-		log->logTimedString("loadWaveFile error: " + aFilePath);
+		CI_LOG_V("loadWaveFile error: " + aFilePath);
 
 	}
 }
@@ -208,7 +206,7 @@ void AudioWrapper::update()
 	unsigned char signal[kBands];
 	mParameterBag->maxVolume = 0.0;
 	size_t mDataSize = mMagSpectrum.size();
-	if (mDataSize > 0 && mDataSize < 2048)
+	if (mDataSize > 0)
 	{
 		float mv;
 		float db;
@@ -231,30 +229,29 @@ void AudioWrapper::update()
 			{
 			case 11:
 				mParameterBag->iFreqs[0] = f;
-				arr[0] = f;
+				volumes[0] = f;
 				break;
 			case 13:
 				mParameterBag->iFreqs[1] = f;
-				arr[1] = f;
+				volumes[1] = f;
 				break;
 			case 15:
 				mParameterBag->iFreqs[2] = f;
-				arr[2] = f;
+				volumes[2] = f;
 				break;
 			case 18:
 				mParameterBag->iFreqs[3] = f;
-				arr[3] = f;
+				volumes[3] = f;
 				break;
 			case 25:
-				arr[4] = f;
+				volumes[4] = f;
 				break;
 			case 30:
-				arr[5] = f;
+				volumes[5] = f;
 				break;
 			case 35:
-				arr[6] = f;
+				volumes[6] = f;
 				break;
-
 			default:
 				break;
 			}
@@ -289,18 +286,17 @@ void AudioWrapper::update()
 		float x = 0.5f + 0.5f * math<float>::cos(t * 0.07f);
 		float y = 0.1f - 0.2f * math<float>::sin(t * 0.09f);
 		float z = 0.25f * math<float>::sin(t * 0.05f) - 0.25f;
-		Vec3f eye = Vec3f(kWidth * x, kHeight * y, kHeight * z);
+		vec3 eye = vec3(kWidth * x, kHeight * y, kHeight * z);
 
 		x = 1.0f - x;
 		y = -0.3f;
 		z = 0.6f + 0.2f *  math<float>::sin(t * 0.12f);
-		Vec3f interest = Vec3f(kWidth * x, kHeight * y, kHeight * z);
+		vec3 interest = vec3(kWidth * x, kHeight * y, kHeight * z);
 
 		// gradually move to eye position and center of interest
-		mCamera.setEyePoint(eye.lerp(0.995f, mCamera.getEyePoint()));
-		mCamera.setCenterOfInterestPoint(interest.lerp(0.990f, mCamera.getCenterOfInterestPoint()));
-		//mParameterBag->mCamera.setEyePoint(eye.lerp(0.995f, mCamera.getEyePoint()));
-		//mParameterBag->mCamera.setCenterOfInterestPoint(interest.lerp(0.990f, mCamera.getCenterOfInterestPoint()));
+		//mCamera.setEyePoint(eye.lerp(0.995f, mCamera.getEyePoint()));
+		//mCamera.setCenterOfInterestPoint(interest.lerp(0.990f, mCamera.getCenterOfInterestPoint()));
+
 	}
 
 }
@@ -308,7 +304,7 @@ void AudioWrapper::update()
 void AudioWrapper::draw()
 {
 	// Set up window	
-	mTextures->getFbo(mParameterBag->mAudioFboIndex).bindFramebuffer();
+	/*mTextures->getFbo(mParameterBag->mAudioFboIndex).bindFramebuffer();
 	gl::setViewport(mTextures->getFbo(mParameterBag->mAudioFboIndex).getBounds());	
 
 	gl::clear();
@@ -335,7 +331,7 @@ void AudioWrapper::draw()
 		mShaders[currentShaderIndex].uniform("uLeftTex", 0);
 		mShaders[currentShaderIndex].uniform("uRightTex", 1);
 		mShaders[currentShaderIndex].uniform("iRatio", mParameterBag->controlValues[11]);
-		mShaders[currentShaderIndex].uniform("iZoom", mParameterBag->controlValues[22]);
+		mShaders[currentShaderIndex].uniform("iZoom", mParameterBag->controlValues[13]);
 
 		// create textures from our channels and bind them
 		mTextureLeft = gl::Texture(mChannelLeft, mTextureFormat);
@@ -356,23 +352,19 @@ void AudioWrapper::draw()
 		mShaders[currentShaderIndex].unbind();
 	}
 	gl::popMatrices();
-	mTextures->getFbo(mParameterBag->mAudioFboIndex).unbindFramebuffer();
+	mTextures->getFbo(mParameterBag->mAudioFboIndex).unbindFramebuffer();*/
 }
 
 void AudioWrapper::mouseDown(MouseEvent event)
 {
 	// handle mouse down
 	mIsMouseDown = true;
-
-	mMayaCam.setCurrentCam(mCamera);
-	mMayaCam.mouseDown(mParameterBag->mCamPosXY);
 }
 
 void AudioWrapper::mouseDrag(MouseEvent event)
 {
 	// handle mouse drag
-	mMayaCam.mouseDrag(mParameterBag->mCamPosXY, event.isLeftDown(), event.isMiddleDown(), event.isRightDown());
-	mCamera = mMayaCam.getCamera();
+
 }
 
 void AudioWrapper::mouseUp(MouseEvent event)

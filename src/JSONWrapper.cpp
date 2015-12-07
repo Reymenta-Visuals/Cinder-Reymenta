@@ -4,14 +4,13 @@ using namespace Reymenta;
 
 JSONWrapper::JSONWrapper() 
 {
-	// instanciate the logger class
-	log = Logger::create( "JsonLog.txt" );
-	log->logTimedString("JSONWrapper constructor");
+
+	CI_LOG_V("JSONWrapper constructor");
 }
 
 JSONWrapper::~JSONWrapper() 
 {
-	log->logTimedString("JSONWrapper destructor");
+	CI_LOG_V("JSONWrapper destructor");
 }
 
 
@@ -26,12 +25,12 @@ string JSONWrapper::parseUIJson()
 	{
 		if ( !fs::exists( pathToFile ) ) 
 		{
-			log->logTimedString( "file not found: " +  pathToFile ); 
+			CI_LOG_V( "file not found: " +  pathToFile ); 
 			return "{ \"ok\":0 }";
 		}
 		else
 		{
-			log->logTimedString( "found file: " +  pathToFile ); 
+			CI_LOG_V( "found file: " +  pathToFile ); 
 		}
 		JsonTree json;
 		try
@@ -40,7 +39,7 @@ string JSONWrapper::parseUIJson()
 		} 
 		catch(cinder::JsonTree::Exception exception) 
 		{ 
-			log->logTimedString("jsonparser exception " + pathToFile +": " + exception.what());
+			CI_LOG_V("jsonparser exception " + pathToFile +": " + exception.what());
 			return  "{ \"ok\":0 }";
 		}
 		JsonTree jsonParams = json.getChild( "params" );   
@@ -57,7 +56,7 @@ string JSONWrapper::parseUIJson()
 	} 
 	catch ( ... ) 
 	{
-		log->logTimedString(  "Fragjson parsing error: " +  pathToFile );
+		CI_LOG_V(  "Fragjson parsing error: " +  pathToFile );
 		return  "{ \"ok\":0 }";
 	}
 	params << "}";
@@ -73,12 +72,12 @@ bool JSONWrapper::parseAssetsJson( TexturesRef aTexturesRef )
 	{
 		if ( !fs::exists( pathToFile ) ) 
 		{
-			log->logTimedString( "file not found: " +  pathToFile ); 
+			CI_LOG_V( "file not found: " +  pathToFile ); 
 			return false;
 		}
 		else
 		{
-			log->logTimedString( "found file: " +  pathToFile ); 
+			CI_LOG_V( "found file: " +  pathToFile ); 
 		}
 		JsonTree json;
 		try
@@ -87,7 +86,7 @@ bool JSONWrapper::parseAssetsJson( TexturesRef aTexturesRef )
 		} 
 		catch(cinder::JsonTree::Exception exception) 
 		{ 
-			log->logTimedString("jsonparser exception " + pathToFile +": " + exception.what());
+			CI_LOG_V("jsonparser exception " + pathToFile +": " + exception.what());
 			return false;
 		}
 
@@ -99,7 +98,7 @@ bool JSONWrapper::parseAssetsJson( TexturesRef aTexturesRef )
 			if ( i < mTextures->getTextureCount() )
 			{
 				string jsonFileName = jsonElement->getChild( "filename" ).getValue<string>();
-				log->logTimedString("asset filename: " + jsonFileName );
+				CI_LOG_V("asset filename: " + jsonFileName );
 				mTextures->setTexture( i, jsonFileName );
 
 				i++;
@@ -108,7 +107,7 @@ bool JSONWrapper::parseAssetsJson( TexturesRef aTexturesRef )
 	} 
 	catch ( ... ) 
 	{
-		log->logTimedString(  "Parsing error: " +  pathToFile );
+		CI_LOG_V(  "Parsing error: " +  pathToFile );
 		return false;
 	}
 	return true;

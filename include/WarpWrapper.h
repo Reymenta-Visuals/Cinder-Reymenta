@@ -1,18 +1,16 @@
 #pragma once
 
 #include "cinder/Cinder.h"
-#include "cinder/app/AppNative.h"
+#include "cinder/app/App.h"
 #include "cinder/ImageIo.h"
 #include "cinder/gl/Texture.h"
 #include "cinder/gl/Fbo.h"
 #include "cinder/gl/GlslProg.h"
 #include "cinder/Camera.h"
-#include "Logger.h"
+#include "Logan.h"
 #if !defined( NOWARPING )
 // warp
-#include "WarpBilinear.h"
-#include "WarpPerspective.h"
-#include "WarpPerspectiveBilinear.h"
+#include "Warp.h"
 #endif
 
 // textures
@@ -33,20 +31,20 @@ namespace Reymenta
 	typedef std::shared_ptr<class WarpWrapper> WarpWrapperRef;
 
 	class WarpWrapper {
-	public:		
+	public:
 		WarpWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesRef, ShadersRef aShadersRef);
 		virtual					~WarpWrapper();
 		static WarpWrapperRef	create(ParameterBagRef aParameterBag, TexturesRef aTexturesRef, ShadersRef aShadersRef)
 		{
-			return shared_ptr<WarpWrapper>(new WarpWrapper( aParameterBag, aTexturesRef, aShadersRef));
+			return shared_ptr<WarpWrapper>(new WarpWrapper(aParameterBag, aTexturesRef, aShadersRef));
 		}
 		void						resize();
-		void						mouseMove( MouseEvent event );
-		void						mouseDown( MouseEvent event );
-		void						mouseDrag( MouseEvent event );
-		void						mouseUp( MouseEvent event );
-		void						keyDown( KeyEvent event );
-		void						keyUp( KeyEvent event );
+		void						mouseMove(MouseEvent event);
+		void						mouseDown(MouseEvent event);
+		void						mouseDrag(MouseEvent event);
+		void						mouseUp(MouseEvent event);
+		void						keyDown(KeyEvent event);
+		void						keyUp(KeyEvent event);
 		void						draw();
 		void						load();
 		void						loadWarps(const std::string &filename);
@@ -56,7 +54,7 @@ namespace Reymenta
 		bool						isEditModeEnabled() { return Warp::isEditModeEnabled(); };
 	private:
 		// Logger
-		LoggerRef					log;	
+		LoganRef					log;
 		WarpList					mWarps;
 		bool						mUseBeginEnd;
 		Area						mSrcArea, mViewportArea;
@@ -65,6 +63,6 @@ namespace Reymenta
 		// Shaders
 		ShadersRef					mShaders;
 		// Textures
-		TexturesRef					mTextures;	
+		TexturesRef					mTextures;
 	};
 }

@@ -8,8 +8,7 @@ WarpWrapper::WarpWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesRef
 	mShaders = aShadersRef;
 	mTextures = aTexturesRef;
 	// instanciate the logger class
-	log = Logger::create("WarpWrapperLog.txt");
-	log->logTimedString("WarpWrapper constructor");
+	CI_LOG_V("WarpWrapper constructor");
 
 	mUseBeginEnd = false;
 	// initialize warps
@@ -24,7 +23,7 @@ WarpWrapper::WarpWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesRef
 		// otherwise create a warp from scratch
 		mWarps.push_back(WarpPerspectiveBilinear::create());
 	}
-	log->logTimedString("Warps size" + mWarps.size());
+	CI_LOG_V("Warps size: " + toString(mWarps.size()));
 	// vector + dynamic resize
 	for (int a = 0; a < mWarps.size(); a++)
 	{
@@ -34,25 +33,25 @@ WarpWrapper::WarpWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesRef
 			newWarpFbo.textureIndex = 0; // spout
 			newWarpFbo.textureMode = mParameterBag->TEXTUREMODEINPUT;
 			newWarpFbo.active = true;
-			newWarpFbo.fbo = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
+			newWarpFbo.fbo = gl::Fbo::create(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
 		}
 		else
 		{
 			newWarpFbo.textureIndex = 0; // index of MixFbo for shadamixa
 			newWarpFbo.textureMode = mParameterBag->TEXTUREMODESHADER;
 			newWarpFbo.active = false;
-			newWarpFbo.fbo = gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight);
+			newWarpFbo.fbo = gl::Fbo::create(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight);
 		}
 		mParameterBag->mWarpFbos.push_back(newWarpFbo);
 	}
 
-	mSrcArea = mTextures->getTexture(1).getBounds();
+	mSrcArea = mTextures->getTexture(1)->getBounds();
 
 	// adjust the content size of the warps
-	Warp::setSize(mWarps, mTextures->getFboTexture(mParameterBag->mMixFboIndex).getSize());
+	Warp::setSize(mWarps, vec2( mTextures->getFboTexture(mParameterBag->mMixFboIndex)->getSize().x,999));
 
-	gl::enableDepthRead();
-	gl::enableDepthWrite();
+	//MUST NOT BE CALLED gl::enableDepthRead();
+	//gl::enableDepthWrite();
 }
 void WarpWrapper::createWarp()
 {
@@ -62,7 +61,7 @@ void WarpWrapper::createWarp()
 	newWarpFbo.textureIndex = 3 + odd; // index of MixFbo for shadamixa
 	newWarpFbo.textureMode = mParameterBag->TEXTUREMODESHADER;
 	newWarpFbo.active = false;
-	newWarpFbo.fbo = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
+	newWarpFbo.fbo = gl::Fbo::create(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
 
 	mParameterBag->mWarpFbos.push_back(newWarpFbo);
 
@@ -146,14 +145,14 @@ void WarpWrapper::keyDown(KeyEvent event)
 			break;
 		case KeyEvent::KEY_a:
 			// toggle drawing a random region of the image
-			if (mSrcArea.getWidth() != mTextures->getFboTexture(mParameterBag->mMixFboIndex).getWidth() || mSrcArea.getHeight() != mTextures->getFboTexture(mParameterBag->mMixFboIndex).getHeight())
-				mSrcArea = mTextures->getFboTexture(mParameterBag->mMixFboIndex).getBounds();
+			if (mSrcArea.getWidth() != mTextures->getFboTexture(mParameterBag->mMixFboIndex)->getWidth() || mSrcArea.getHeight() != mTextures->getFboTexture(mParameterBag->mMixFboIndex)->getHeight())
+				mSrcArea = mTextures->getFboTexture(mParameterBag->mMixFboIndex)->getBounds();
 			else
 			{
-				int x1 = Rand::randInt(0, mTextures->getFboTexture(mParameterBag->mMixFboIndex).getWidth() - 150);
-				int y1 = Rand::randInt(0, mTextures->getFboTexture(mParameterBag->mMixFboIndex).getHeight() - 150);
-				int x2 = Rand::randInt(x1 + 150, mTextures->getFboTexture(mParameterBag->mMixFboIndex).getWidth());
-				int y2 = Rand::randInt(y1 + 150, mTextures->getFboTexture(mParameterBag->mMixFboIndex).getHeight());
+				int x1 = Rand::randInt(0, mTextures->getFboTexture(mParameterBag->mMixFboIndex)->getWidth() - 150);
+				int y1 = Rand::randInt(0, mTextures->getFboTexture(mParameterBag->mMixFboIndex)->getHeight() - 150);
+				int x2 = Rand::randInt(x1 + 150, mTextures->getFboTexture(mParameterBag->mMixFboIndex)->getWidth());
+				int y2 = Rand::randInt(y1 + 150, mTextures->getFboTexture(mParameterBag->mMixFboIndex)->getHeight());
 				mSrcArea = Area(x1, y1, x2, y2);
 			}
 			break;
@@ -206,7 +205,7 @@ void WarpWrapper::draw()
 	gl::setMatricesWindow(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
 	mViewportArea = Area(0, 0, mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
 
-	gl::setViewport(mViewportArea);
+	//gl::setViewport(mViewportArea);
 	// clear the window and set the drawing color to white
 	gl::clear();
 	gl::color(Color::white());
@@ -215,18 +214,15 @@ void WarpWrapper::draw()
 
 	int i = 0;
 	// iterate over the warps and draw their content
-	for (WarpConstIter itr = mWarps.begin(); itr != mWarps.end(); ++itr)
+	for (auto &warp : mWarps)
 	{
-		// create a readable reference to our warp, to prevent code like this: (*itr)->begin();
-		WarpRef warp(*itr);
-
-		warp->draw(mTextures->getFboTexture(mParameterBag->mWarpFbos[i].textureIndex), mTextures->getFboTexture(mParameterBag->mWarpFbos[i].textureIndex).getBounds());// was i
+		warp->draw(mTextures->getFboTexture(mParameterBag->mWarpFbos[i].textureIndex), mViewportArea);
 		i++;
 	}
 }
 WarpWrapper::~WarpWrapper()
 {
-	log->logTimedString("WarpWrapper destructor");
+	CI_LOG_V("WarpWrapper destructor");
 }
 
 

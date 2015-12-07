@@ -7,14 +7,12 @@ SpoutWrapper::SpoutWrapper(ParameterBagRef aParameterBag, TexturesRef aTextures)
 	mParameterBag = aParameterBag;
 	mTextures = aTextures;
 	// instanciate the logger class
-	log = Logger::create("SpoutLog.txt");
-	log->logTimedString("SpoutWrapper constructor");
+	CI_LOG_V("SpoutWrapper constructor");
 
 	bInitialized = false;
 	nReceivers = 0;
 
-	log->logTimedString("SpoutWrapper constructor end");
-
+	CI_LOG_V("SpoutWrapper constructor end");
 }
 
 void SpoutWrapper::update()
@@ -26,7 +24,7 @@ void SpoutWrapper::update()
 	{
 		//! the name will be filled when the receiver connects to a sender
 		mNewSenderName[0] = NULL;
-		log->logTimedString("new sender found or sender deleted");
+		CI_LOG_V("new sender found or sender deleted");
 
 		nReceivers = 0;
 		//! loop to find existing sender with that name
@@ -43,11 +41,11 @@ void SpoutWrapper::update()
 				{
 					receiverIndexes.push_back(mTextures->createSpoutTexture(&SenderNames[i][0], mNewWidth, mNewHeight));
 				}
-				log->logTimedString("create receiver");
-				log->logTimedString(&SenderNames[i][0]);
+				CI_LOG_V("create receiver");
+				CI_LOG_V(&SenderNames[i][0]);
 				nReceivers++;
-				log->logTimedString("new receiver count:");
-				log->logTimedString(mNewSenderName);
+				CI_LOG_V("new receiver count:");
+				CI_LOG_V(mNewSenderName);
 				mParameterBag->mWarpFbos[0].textureIndex = 0;
 				mParameterBag->mWarpFbos[0].textureMode = mParameterBag->TEXTUREMODEINPUT;
 			}
@@ -76,7 +74,7 @@ void SpoutWrapper::draw()
 	{
 		for (int i = 0; i < nReceivers; i++)
 		{
-			if (mSpoutReceivers[i].ReceiveTexture(&SenderNames[i][0], width, height, mTextures->getTexture(receiverIndexes[i]).getId(), mTextures->getTexture(receiverIndexes[i]).getTarget()))
+			if (mSpoutReceivers[i].ReceiveTexture(&SenderNames[i][0], width, height, mTextures->getTexture(receiverIndexes[i])->getId(), mTextures->getTexture(receiverIndexes[i])->getTarget()))
 			{
 				mTextures->setSenderTextureSize(receiverIndexes[i], width, height);
 				actualReceivers++;

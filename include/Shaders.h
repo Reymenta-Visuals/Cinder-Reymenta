@@ -1,14 +1,36 @@
+/*
+Copyright (c) 2014, Paul Houx - All rights reserved.
+This code is intended for use with the Cinder C++ library: http://libcinder.org
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that
+the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this list of conditions and
+the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
+the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
+WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+*/
+
 #pragma once
 
 #include "cinder/Cinder.h"
-#include "cinder/app/AppNative.h"
+#include "cinder/app/App.h"
 #include "cinder/gl/GlslProg.h"
 #include "cinder/Utilities.h"
 #include "cinder/Timeline.h"
 
 #include "Resources.h"
 // log
-#include "Logger.h"
+#include "Logan.h"
 
 // parameters
 #include "ParameterBag.h"
@@ -16,12 +38,6 @@
 #include "cinder/ConcurrentCircularBuffer.h"
 // Watchdog
 #include "Watchdog.h"
-// VisualStudio does'nt seem to support initializer_list
-// yet so let's use boost::assign::list_of instead
-#if defined( CINDER_MSW )
-#include "boost/assign/list_of.hpp"
-using namespace boost::assign;
-#endif
 
 #pragma warning(push)
 #pragma warning(disable: 4996) // _CRT_SECURE_NO_WARNINGS
@@ -51,7 +67,7 @@ namespace Reymenta
 		void							doTransition();
 		bool							setFragString(string pixelFrag);
 		int								setGLSLString(string pixelFrag, string name);
-		int								setGLSLStringAtIndex(string pixelFrag, string name, int index, bool fromNetwork = false);
+		int								setGLSLStringAtIndex(string pixelFrag, string name, int index);
 		bool							loadTextFile(string aFilePath);
 		void							loadCurrentFrag();
 
@@ -77,13 +93,26 @@ namespace Reymenta
 		string							getFragStringFromFile(string fileName);
 		void							renderPreviewShader();
 
+		//! Shuts down the loader thread and its associated OpenGL context.
 		void							shutdownLoader();
 		void							createThumbsFromDir(string filePath);
 		void							setShaderMicroSeconds(int index, int micro);
+		void							random();
+		void							addRequest(boost::filesystem::path aFilePath);
+		//! Shader that will perform the transition to the next shader.
+		gl::GlslProgRef					getShaderTransition() { return mShaderTransition; };
+		//! Currently active shader.
+		gl::GlslProgRef					getShaderCurrent() { return mShaderCurrent; };
+		//! Shader that has just been loaded and we are transitioning to.
+		gl::GlslProgRef					getShaderNext() { return mShaderNext; };
+		// Transition is done. Swap shaders.
+		void							swapShaders();
+		// get the include shader
+		std::string						getShaderInclude() { return shaderInclude; };
 
 	private:
 		// Logger
-		LoggerRef						log;
+		LoganRef						log;
 
 		string							mFragFile;
 		string							mFragFileName;
@@ -107,33 +136,50 @@ namespace Reymenta
 		// current frag string
 		string							currentFrag;
 		// thread
-		void							setupLoader();
-		void							loader();
-		struct LoaderData
-		{
+		//! Initializes the loader thread and the shared OpenGL context.
+		bool							setupLoader();
+		void loader(gl::ContextRef ctx);
+		//! We will use this structure to pass data from one thread to another.
+		struct LoaderData {
 			LoaderData() {}
-			//LoaderData(const fs::path& path, gl::GlslProgRef shader): path(path), shader(shader) {}
+			LoaderData(const fs::path& path, gl::GlslProgRef shader)
+				: path(path), shader(shader)
+			{
+			}
 
 			//! This constructor allows implicit conversion from path to LoaderData.
 			LoaderData(const fs::path& path)
-				: path(path) {}
+				: path(path)
+			{
+			}
 
 			fs::path path;
-			std::string shadertext;
-			//gl::GlslProgRef shader;
+			gl::GlslProgRef shader;
 		};
+		//! Shader that will perform the transition to the next shader.
+		gl::GlslProgRef mShaderTransition;
+		//! Currently active shader.
+		gl::GlslProgRef mShaderCurrent;
+		//! Shader that has just been loaded and we are transitioning to.
+		gl::GlslProgRef mShaderNext;
+
 		//! The main thread will push data to this buffer, to be picked up by the loading thread.
-		//ConcurrentCircularBuffer<LoaderData>*	mRequests;
+		ConcurrentCircularBuffer<LoaderData>* mRequests;
 		//! The loading thread will push data to this buffer, to be picked up by the main thread.
-		//ConcurrentCircularBuffer<LoaderData>*	mResponses;
-		//! Our loading thread, sharing a OpenGL context with the main thread.
-		//std::shared_ptr<std::thread>			mThread;
+		ConcurrentCircularBuffer<LoaderData>* mResponses;
+		//! Our loading thread, sharing an OpenGL context with the main thread.
+		std::shared_ptr<std::thread>          mThread;
 		//! Signals if the loading thread should abort.
-		//bool									mThreadAbort;
+		bool                                  mThreadAbort;
+		//! Keep track of the current path.
+		fs::path        mPathCurrent;
+		//! Keep track of the next path.
+		fs::path        mPathNext;
+
 		// default vertex shader
 		std::string						vs;
 		// include shader lines
-		std::string						inc;
+		std::string						shaderInclude;
 		// mix shader
 		gl::GlslProgRef					mMixShader;
 		// live coding shader
@@ -142,6 +188,17 @@ namespace Reymenta
 		gl::GlslProgRef					mWarpShader;
 		//! PassThru shader
 		gl::GlslProgRef					mPassThruShader;
-
+		std::string						passthruvert;
 	};
 }
+/*
+for (auto &shader : mFragmentShaders)
+{
+auto map = shader.prog->getActiveUniformTypes();
+if (map.find("iResolution") != map.end())
+{
+shader.prog->uniform("iResolution", vec3(mParameterBag->mFboWidth, mParameterBag->mFboHeight, 0.0f));
+//shader.prog->uniform("iResolution", vec3(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, 0.0f));
+//}
+	}
+*/

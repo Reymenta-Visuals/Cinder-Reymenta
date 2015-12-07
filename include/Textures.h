@@ -4,11 +4,11 @@
 #include <vector>
 
 #include "cinder/Cinder.h"
-#include "cinder/app/AppNative.h"
+#include "cinder/app/App.h"
 #include "cinder/ImageIo.h"
 #include "cinder/gl/Texture.h"
 #include "cinder/Rand.h"
-#include "Logger.h"
+#include "Logan.h"
 #include "cinder/Utilities.h"
 #include "cinder/Filesystem.h"
 #include "cinder/Capture.h"
@@ -56,37 +56,37 @@ namespace Reymenta
 		bool						loadingFilesComplete;
 		bool						playing;
 		float						speed;
-		vector<ci::gl::Texture>		sequenceTextures;
+		vector<ci::gl::TextureRef>		sequenceTextures;
 	};
 	class Textures {
-	public:		
+	public:
 		Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef);
 		virtual					~Textures();
 		static TexturesRef	create(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 		{
 			return shared_ptr<Textures>(new Textures(aParameterBag, aShadersRef));
 		}
-		//ci::gl::Texture				getFboThumb(int index);
-		ci::gl::Texture				getWarpTexture(int index);
-		WarpFbo						getWarpFbo(int index) { return mParameterBag->mWarpFbos[min((int)(mParameterBag->mWarpFbos.size()-1), index)]; };
+		//ci::gl::Texture			getFboThumb(int index);
+		ci::gl::TextureRef			getWarpTexture(int index);
+		WarpFbo						getWarpFbo(int index) { return mParameterBag->mWarpFbos[min((int)(mParameterBag->mWarpFbos.size() - 1), index)]; };
 		void						renderWarpFbos();
 		// shaders
 		void						renderShadaThumbFbo();
 		int							currentShadaThumbIndex;
 		// textures
-		void						setTexture( int index, string fileName );
-		ci::gl::Texture				getTexture(int index);
+		void						setTexture(int index, string fileName);
+		ci::gl::TextureRef			getTexture(int index);
 		int							getTextureCount() { return sTextures.size(); };
 		void						flipTexture(int index);
-		void						setTexture(int index, ci::gl::Texture texture);
+		void						setTexture(int index, ci::gl::TextureRef texture);
 		char*						getTextureName(int index);
 		void						setTextureName(int index, char* name);
 		// from audio
-		void						setAudioTexture( unsigned char *signal );
+		void						setAudioTexture(unsigned char *signal);
 		// fbos
-		ci::gl::Texture				getFboTexture(int index);
+		ci::gl::TextureRef			getFboTexture(int index);
 		GLuint						getFboTextureId(int index);
-		ci::gl::Fbo					getFbo(int index);
+		ci::gl::FboRef				getFbo(int index);
 		int							getFboCount() { return mFbos.size(); };
 		int							getThumbsFboCount() { return mThumbFbos.size(); };
 		void						flipFboV(int index);
@@ -115,7 +115,7 @@ namespace Reymenta
 		bool						isSequence(int textureIndex);
 		int							getMaxFrames(int textureIndex);
 		// image
-		void						loadImageFile( int index, string aFile );
+		void						loadImageFile(int index, string aFile);
 		// quicktime video
 		void						loadMovieFile(int index, string aFile);
 		void						update();
@@ -124,7 +124,7 @@ namespace Reymenta
 		char*						getPreviewTime() { return previewTime; };
 	private:
 		// Logger
-		LoggerRef					log;	
+		LoganRef					log;
 		char						buf[32];
 
 		//static const int			mTexturesCount = 12; //match MAX from mParameterBag
@@ -132,7 +132,7 @@ namespace Reymenta
 		//ci::gl::Texture				previousTexture;
 		//ci::gl::Texture				currentTexture;
 		unsigned char				dTexture[1024];
-		vector<ci::gl::Texture>		sTextures;
+		vector<ci::gl::TextureRef>	sTextures;
 		vector<Texta>				textas;
 		char						spoutSenderName[256];
 		string						fileName;
@@ -152,13 +152,13 @@ namespace Reymenta
 		// profiling
 		char						previewTime[256];
 		// quicktime movie
-		qtime::MovieGlRef			mMovie;
+		//qtime::MovieGlRef			mMovie;
 		int							mMovieIndex;
 		// image sequence
 		void						updateSequence(int sequenceIndex);
 		void						createFromPathList(vector<string> paths);
-		void						createFromTextureList(vector<ci::gl::Texture> textureList);
-		ci::gl::Texture				getCurrentSequenceTexture(int sequenceIndex);
+		void						createFromTextureList(vector<ci::gl::TextureRef> textureList);
+		ci::gl::TextureRef			getCurrentSequenceTexture(int sequenceIndex);
 		//bool						complete;
 		//bool						looping;
 		int							playheadFrameInc;
