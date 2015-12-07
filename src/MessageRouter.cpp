@@ -195,13 +195,13 @@ void MessageRouter::updateParams(int iarg0, float farg1)
 			mParameterBag->iTrack++;
 			if (mParameterBag->iTrack > mShaders->getCount() - 1) mParameterBag->iTrack = 0;
 		}
-		if (iarg0 == 61 && farg1 > 0.1)
+		if (iarg0 == 61)
 		{
 			// right arrow
 			mParameterBag->iBlendMode--;
 			if (mParameterBag->iBlendMode < 0) mParameterBag->iBlendMode = mParameterBag->maxBlendMode;
 		}
-		if (iarg0 == 62 && farg1 > 0.1)
+		if (iarg0 == 62)
 		{
 			// left arrow
 			mParameterBag->iBlendMode++;
