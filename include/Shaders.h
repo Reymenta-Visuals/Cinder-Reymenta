@@ -9,7 +9,6 @@
 #include "Resources.h"
 // log
 #include "Logger.h"
-
 // parameters
 #include "ParameterBag.h"
 // thread safe circular buffer

@@ -2,6 +2,7 @@
 
 using namespace Reymenta;
 
+
 JSONWrapper::JSONWrapper() 
 {
 	// instanciate the logger class

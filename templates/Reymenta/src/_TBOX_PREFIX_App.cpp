@@ -1,5 +1,4 @@
-/*
-                
+/*              
         Reymenta Spout sender for Cinder
 
         Search for "SPOUT" to see what is required

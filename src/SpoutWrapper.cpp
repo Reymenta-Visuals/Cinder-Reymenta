@@ -2,6 +2,7 @@
 
 using namespace Reymenta;
 
+
 SpoutWrapper::SpoutWrapper(ParameterBagRef aParameterBag, TexturesRef aTextures)
 {
 	mParameterBag = aParameterBag;

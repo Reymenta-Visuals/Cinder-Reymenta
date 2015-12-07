@@ -46,6 +46,7 @@ uniform int         iGlitch;           		// 1 for glitch
 const 	float 		PI = 3.14159265;
 // uniforms end
 
+
 // global functions begin
 const float kCharBlank = 12.0;
 const float kCharMinus = 11.0;

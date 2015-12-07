@@ -2,6 +2,7 @@
 
 using namespace Reymenta;
 
+
 Shaders::Shaders(ParameterBagRef aParameterBag)
 {
 	mParameterBag = aParameterBag;

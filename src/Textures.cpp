@@ -144,7 +144,6 @@ warpInputs.push_back(newWarpInput);
 // init mixTextures
 mMixesFbos.push_back(gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight));
 }*/
-
 void Textures::setAudioTexture(unsigned char *signal)
 {
 	sTextures[0] = gl::Texture(signal, GL_LUMINANCE, 512, 2);

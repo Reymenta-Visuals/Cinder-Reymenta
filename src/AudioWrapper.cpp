@@ -23,6 +23,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 using namespace Reymenta;
 
+
 AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesRef)
 {
 	mParameterBag = aParameterBag;

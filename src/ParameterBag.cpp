@@ -2,7 +2,6 @@
 //  ParameterBag.cpp
 //  From Nathan Selikoff on 4/26/14.
 //
-//
 
 #include "ParameterBag.h"
 

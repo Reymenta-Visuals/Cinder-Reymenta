@@ -1,7 +1,7 @@
 #include "Logger.h"
 
 using namespace Reymenta;
-	
+
 Logger::Logger( string aLogFile ) 
 {
 

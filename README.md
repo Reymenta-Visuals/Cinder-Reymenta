@@ -1,4 +1,4 @@
 Cinder-Reymenta
 ===============
 
-block for Spout, OSC
+wrapper block for Spout, websockets, OSC, shaders, warping

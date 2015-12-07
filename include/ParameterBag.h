@@ -8,7 +8,6 @@
 #include "cinder/Json.h"
 #include "cinder/Xml.h"
 #include "cinder/gl/Fbo.h"
-
 // webcam
 #include "cinder/Capture.h"
 #include "cinder/Surface.h"

@@ -26,7 +26,6 @@ using namespace std;
 
 namespace Reymenta 
 {
-
 	typedef std::shared_ptr<class AudioWrapper> AudioWrapperRef;
 
 	class AudioWrapper 

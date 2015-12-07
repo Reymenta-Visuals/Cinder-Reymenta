@@ -2,7 +2,6 @@
 
 #include <string>
 #include <vector>
-
 #include "cinder/Cinder.h"
 #include "cinder/app/AppNative.h"
 #include "Logger.h"

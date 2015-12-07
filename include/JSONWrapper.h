@@ -40,6 +40,5 @@ namespace Reymenta
 		TexturesRef					mTextures;	
 		// shaders
 		ShadersRef					mShaders;
-
 	};
 }

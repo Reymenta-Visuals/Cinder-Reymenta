@@ -2,6 +2,7 @@
 
 using namespace Reymenta;
 
+
 MessageRouter::MessageRouter(ParameterBagRef aParameterBag, TexturesRef aTexturesRef, ShadersRef aShadersRef)
 {
 	mParameterBag = aParameterBag;

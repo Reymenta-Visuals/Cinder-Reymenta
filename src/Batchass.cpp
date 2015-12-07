@@ -2,6 +2,7 @@
 
 using namespace Reymenta;
 
+
 Batchass::Batchass(ParameterBagRef aParameterBag)
 {
 	mParameterBag = aParameterBag;

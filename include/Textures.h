@@ -24,7 +24,6 @@
 
 // to use UI element for update background image
 //#include "UIElement.h"
-
 // gstreamer
 // #include "_2RealGStreamerWrapper.h"
 // WMFVideo
