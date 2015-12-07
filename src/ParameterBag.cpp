@@ -435,6 +435,7 @@ void ParameterBag::reset()
 	mOutputVideoResolution = 1024;
 	mInfo = "";
 	mTrackName = "";
+	iTrack = 0;
 	// parameters not exposed in XML
 	mMainWindowX = 0;
 	mMainWindowY = 0;
