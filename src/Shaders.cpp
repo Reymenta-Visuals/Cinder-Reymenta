@@ -11,12 +11,13 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	isLiveShaderSetup = false;
 	previousFileName = "0";
 	currentFileName = "0";
-
+	mShaderIndex = 4;
 	mCurrentPreviewShader = 0;
 	mCurrentRenderShader = 0;
-	fs::path passthruVertFile;
+	/*fs::path passthruVertFile;
 	passthruVertFile = getAssetPath("") / "passthru.vert";
-	passthruvert = loadString(loadFile(passthruVertFile));
+	passthruvert = loadString(loadFile(passthruVertFile));*/
+	mPassthruVextexShader = loadString(loadAsset("common/shadertoy.vert"));
 	//load mix shader
 	try
 	{
@@ -68,7 +69,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	}
 
 	// shadertoy include
-	vs = loadString(loadAsset("live.vert"));
+	//vs = loadString(loadAsset("live.vert"));
 	shaderInclude = loadString(loadAsset("shadertoy.inc"));
 
 	validFrag = false;
@@ -81,7 +82,8 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 		try
 		{
 			mParameterBag->mShaderToLoad = loadString(loadAsset("live.frag"));
-			mLiveShader = gl::GlslProg::create(loadAsset("live.vert"), loadFile(liveFragFile));
+			//mLiveShader = gl::GlslProg::create( loadAsset("live.vert"), loadFile(liveFragFile));
+			mLiveShader = gl::GlslProg::create(mPassthruVextexShader, mParameterBag->mShaderToLoad);
 			liveError = false;
 		}
 		catch (gl::GlslProgCompileExc exc){
@@ -130,7 +132,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	// Start the loading thread.
 	if (!setupLoader()) {
 		CI_LOG_E("Failed to create the loader thread and context.");
-		
+
 	}
 	// Load our textures and transition shader in the main thread.
 	try {
@@ -140,7 +142,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	catch (const std::exception& e) {
 		// Quit if anything went wrong.
 		CI_LOG_EXCEPTION("Failed to load common shaders:", e);
-		
+
 	}
 
 	// Tell our loading thread to load the first shader. The path is converted to LoaderData implicitly.
@@ -203,7 +205,7 @@ string Shaders::loadLiveShader(string frag)
 	liveError = true;
 	try
 	{
-		mLiveShader = gl::GlslProg::create(vs.c_str(), frag.c_str());
+		mLiveShader = gl::GlslProg::create(mPassthruVextexShader, frag.c_str());//.c_str()
 		liveError = false;
 	}
 	catch (gl::GlslProgCompileExc exc)
@@ -239,17 +241,17 @@ void Shaders::loader(gl::ContextRef ctx)
 
 			// Try to load, parse and compile the shader.
 			try {
-				std::string vs = loadString(loadAsset("common/shadertoy.vert"));
+				//std::string vs = loadString(loadAsset("common/shadertoy.vert"));
 				std::string fs = loadString(loadAsset("shadertoy.inc")) + loadString(loadFile(data.path));
 
-				data.shader = gl::GlslProg::create(gl::GlslProg::Format().vertex(vs).fragment(fs));
+				data.shader = gl::GlslProg::create(gl::GlslProg::Format().vertex(mPassthruVextexShader).fragment(fs));
 
 				// If the shader compiled successfully, pass it to the main thread.
 				mResponses->pushFront(data);
 			}
 			catch (const std::exception& e) {
 				// Uhoh, something went wrong, but it's not fatal.
- 				CI_LOG_EXCEPTION("Failed to compile the shader: ", e);
+				CI_LOG_EXCEPTION("Failed to compile the shader: ", e);
 			}
 		}
 		else {
@@ -276,14 +278,17 @@ void Shaders::update()
 
 		mParameterBag->mTransitionTime = getElapsedSeconds();
 		mParameterBag->mTransitionDuration = 2.0;
-
-
+		string name = "unknown";
+		string fileName = mPathNext.string();
+		if (fileName.find_last_of("\\") != std::string::npos) name = fileName.substr(fileName.find_last_of("\\") + 1);
+		setGLSLPixelShaderAtIndex(data.shader, name, mShaderIndex);
+		mShaderIndex++;
 	}
 	/*
 	setFragString(data.shadertext);
 	}*/
 }
-void Shaders::addRequest(boost::filesystem::path aFilePath) {
+void Shaders::addRequest(boost::filesystem::path aFilePath, int index) {
 	if (mRequests->isNotFull()) {
 		mRequests->pushFront(aFilePath);
 	}
@@ -547,7 +552,7 @@ int Shaders::setGLSLString(string pixelFrag, string name)
 	try
 	{
 		Shada newShader;
-		newShader.shader = gl::GlslProg::create(passthruvert.c_str(), currentFrag.c_str());
+		newShader.shader = gl::GlslProg::create(mPassthruVextexShader, currentFrag.c_str());
 		newShader.name = name;
 		newShader.active = true;
 		// searching first index of not running shader
@@ -596,6 +601,56 @@ void Shaders::setShaderMicroSeconds(int index, int micro)
 {
 	mFragmentShaders[index].microseconds = micro;
 }
+// find index for insert/update in mFragmentShaders
+int Shaders::findFragmentShaderIndex(int index, string name) {
+
+	int foundIndex = -1;
+	// search inactive shader
+	for (int i = 0; i < mFragmentShaders.size() - 1; i++)
+	{
+		if (!mFragmentShaders[i].active) foundIndex = i;
+		if (mFragmentShaders[i].name == name) foundIndex = i;
+	}
+	// if inactive shader or shader with a same name not found
+	if (foundIndex == -1) {
+		// check if index is out of bounds
+		if (index > mFragmentShaders.size() - 1) {
+			Shada newShader;
+			newShader.name = name;
+			newShader.shader = gl::GlslProg::create(mPassthruVextexShader, currentFrag.c_str());
+			newShader.active = true;
+			mFragmentShaders.push_back(newShader);
+			foundIndex = mFragmentShaders.size() - 1;
+		}
+		else {
+			// if we found an inactive shader, we replace it
+			foundIndex = index;
+		}
+	}
+	return foundIndex;
+}
+
+int Shaders::setGLSLPixelShaderAtIndex(gl::GlslProgRef pixelFrag, string name, int index) {
+	int foundIndex = -1;
+
+	foundIndex = findFragmentShaderIndex(index, name);
+
+	// load the new shader
+	mFragmentShaders[foundIndex].shader = pixelFrag;
+	mFragmentShaders[foundIndex].name = name;
+	mFragmentShaders[foundIndex].active = true;
+
+	//preview the new loaded shader
+	mParameterBag->mPreviewFragIndex = foundIndex;
+	CI_LOG_V("setGLSLStringAtIndex success");
+	mError = "";
+	mParameterBag->mMsg = name + " setGLSLStringAtIndex success";
+	mParameterBag->newMsg = true;
+	validFrag = true;
+
+	return foundIndex;
+}
+
 int Shaders::setGLSLStringAtIndex(string pixelFrag, string name, int index)
 {
 	int foundIndex = -1;
@@ -603,7 +658,7 @@ int Shaders::setGLSLStringAtIndex(string pixelFrag, string name, int index)
 	try
 	{
 		// load the new shader
-		mFragmentShaders[index].shader = gl::GlslProg::create(passthruvert.c_str(), currentFrag.c_str());
+		mFragmentShaders[index].shader = gl::GlslProg::create(mPassthruVextexShader, currentFrag.c_str());
 		mFragmentShaders[index].name = name;
 		mFragmentShaders[index].active = true;
 
@@ -638,7 +693,7 @@ bool Shaders::setFragString(string pixelFrag)
 		}
 		else
 		{
-			mFragmentShaders[mCurrentPreviewShader].shader = gl::GlslProg::create(passthruvert.c_str(), currentFrag.c_str());
+			mFragmentShaders[mCurrentPreviewShader].shader = gl::GlslProg::create(mPassthruVextexShader, currentFrag.c_str());
 			mFragmentShaders[mCurrentPreviewShader].name = "some.frag";
 			mFragmentShaders[mCurrentPreviewShader].active = true;
 
@@ -734,7 +789,7 @@ void Shaders::createThumbsFromDir(string filePath)
 						std::string fs = shaderInclude + loadString(loadFile(it->path()));
 
 						Shada newShader;
-						newShader.shader = gl::GlslProg::create(passthruvert.c_str(), fs.c_str());
+						newShader.shader = gl::GlslProg::create(mPassthruVextexShader, fs.c_str());
 						newShader.name = fileName;
 						newShader.active = true;
 						mFragmentShaders.push_back(newShader);

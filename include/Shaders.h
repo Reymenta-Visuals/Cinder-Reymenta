@@ -68,6 +68,7 @@ namespace Reymenta
 		bool							setFragString(string pixelFrag);
 		int								setGLSLString(string pixelFrag, string name);
 		int								setGLSLStringAtIndex(string pixelFrag, string name, int index);
+		int								setGLSLPixelShaderAtIndex(gl::GlslProgRef pixelFrag, string name, int index);
 		bool							loadTextFile(string aFilePath);
 		void							loadCurrentFrag();
 
@@ -98,7 +99,7 @@ namespace Reymenta
 		void							createThumbsFromDir(string filePath);
 		void							setShaderMicroSeconds(int index, int micro);
 		void							random();
-		void							addRequest(boost::filesystem::path aFilePath);
+		void							addRequest(boost::filesystem::path aFilePath, int index);
 		//! Shader that will perform the transition to the next shader.
 		gl::GlslProgRef					getShaderTransition() { return mShaderTransition; };
 		//! Currently active shader.
@@ -125,7 +126,7 @@ namespace Reymenta
 		// new
 		int								mCurrentRenderShader;
 		int								mCurrentPreviewShader;
-
+		int								mShaderIndex;
 		//! shaders
 		vector<Shada>					mFragmentShaders;
 
@@ -135,6 +136,8 @@ namespace Reymenta
 		ParameterBagRef					mParameterBag;
 		// current frag string
 		string							currentFrag;
+		//! find index for insert/update in mFragmentShaders
+		int								findFragmentShaderIndex(int index, string name);
 		// thread
 		//! Initializes the loader thread and the shared OpenGL context.
 		bool							setupLoader();
@@ -177,7 +180,7 @@ namespace Reymenta
 		fs::path        mPathNext;
 
 		// default vertex shader
-		std::string						vs;
+		std::string						mPassthruVextexShader;
 		// include shader lines
 		std::string						shaderInclude;
 		// mix shader
@@ -188,7 +191,7 @@ namespace Reymenta
 		gl::GlslProgRef					mWarpShader;
 		//! PassThru shader
 		gl::GlslProgRef					mPassThruShader;
-		std::string						passthruvert;
+
 	};
 }
 /*
