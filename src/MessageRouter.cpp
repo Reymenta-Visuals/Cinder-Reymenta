@@ -511,17 +511,18 @@ void MessageRouter::update()
 		int panel = 0;
 		int controlIndex = 0;
 		unsigned faderFound = oscAddress.find("fader");
-		if (faderFound > 0)
+		if (faderFound == 3)
 		{
 			panel = atoi(oscAddress.substr(1, 1).c_str());
-			controlIndex = atoi(oscAddress.substr(8, 1).c_str());
-			switch (controlIndex)
-			{
-			case 3:
-				mParameterBag->controlValues[18] = fargs[0]; // crossfade
-				break;
-			default:
-				break;
+			if (oscAddress.length()>8) {
+				controlIndex = atoi(oscAddress.substr(8, 1).c_str());
+				switch (controlIndex) {
+				case 3:
+					mParameterBag->controlValues[18] = fargs[0]; // crossfade
+					break;
+				default:
+					break;
+				}
 			}
 		}
 		if (oscAddress == "/1/fader3")
