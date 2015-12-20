@@ -14,9 +14,7 @@ Shaders::Shaders(ParameterBagRef aParameterBag)
 	mShaderIndex = 4;
 	mCurrentPreviewShader = 0;
 	mCurrentRenderShader = 0;
-	/*fs::path passthruVertFile;
-	passthruVertFile = getAssetPath("") / "passthru.vert";
-	passthruvert = loadString(loadFile(passthruVertFile));*/
+
 	mPassthruVextexShader = loadString(loadAsset("common/shadertoy.vert"));
 	//load mix shader
 	try
@@ -242,7 +240,8 @@ void Shaders::loader(gl::ContextRef ctx)
 			// Try to load, parse and compile the shader.
 			try {
 				//std::string vs = loadString(loadAsset("common/shadertoy.vert"));
-				std::string fs = loadString(loadAsset("shadertoy.inc")) + loadString(loadFile(data.path));
+				//std::string fs = loadString(loadAsset("shadertoy.inc")) + loadString(loadFile(data.path));
+				std::string fs = shaderInclude + loadString(loadFile(data.path));
 
 				data.shader = gl::GlslProg::create(gl::GlslProg::Format().vertex(mPassthruVextexShader).fragment(fs));
 
@@ -493,12 +492,12 @@ int Shaders::loadPixelFragmentShader(string aFilePath)
 	return rtn;
 }
 
-void Shaders::loadCurrentFrag()
+/*void Shaders::loadCurrentFrag()
 {
 	mParameterBag->controlValues[4] = 0.0;
 	try
 	{
-		//string dbg = currentFrag.c_str();
+	
 		mFragmentShaders[mCurrentRenderShader].shader = gl::GlslProg::create(NULL, currentFrag.c_str());
 		mFragmentShaders[mCurrentRenderShader].name = "some.frag";
 		mFragmentShaders[mCurrentRenderShader].active = true;
@@ -543,16 +542,16 @@ void Shaders::doTransition()
 			loadCurrentFrag();
 		});
 	}
-}
+}*/
 
 int Shaders::setGLSLString(string pixelFrag, string name)
 {
 	int foundIndex = -1;
-	currentFrag = pixelFrag;
+
 	try
 	{
 		Shada newShader;
-		newShader.shader = gl::GlslProg::create(mPassthruVextexShader, currentFrag.c_str());
+		newShader.shader = gl::GlslProg::create(mPassthruVextexShader, pixelFrag);
 		newShader.name = name;
 		newShader.active = true;
 		// searching first index of not running shader
@@ -617,7 +616,7 @@ int Shaders::findFragmentShaderIndex(int index, string name) {
 		if (index > mFragmentShaders.size() - 1) {
 			Shada newShader;
 			newShader.name = name;
-			newShader.shader = gl::GlslProg::create(mPassthruVextexShader, currentFrag.c_str());
+			//newShader.shader = gl::GlslProg::create(mPassthruVextexShader, currentFrag.c_str());
 			newShader.active = true;
 			mFragmentShaders.push_back(newShader);
 			foundIndex = mFragmentShaders.size() - 1;
@@ -631,9 +630,7 @@ int Shaders::findFragmentShaderIndex(int index, string name) {
 }
 
 int Shaders::setGLSLPixelShaderAtIndex(gl::GlslProgRef pixelFrag, string name, int index) {
-	int foundIndex = -1;
-
-	foundIndex = findFragmentShaderIndex(index, name);
+	int foundIndex = findFragmentShaderIndex(index, name);
 
 	// load the new shader
 	mFragmentShaders[foundIndex].shader = pixelFrag;
@@ -653,16 +650,14 @@ int Shaders::setGLSLPixelShaderAtIndex(gl::GlslProgRef pixelFrag, string name, i
 
 int Shaders::setGLSLStringAtIndex(string pixelFrag, string name, int index)
 {
-	int foundIndex = -1;
-	currentFrag = pixelFrag;
+	int foundIndex = findFragmentShaderIndex(index, name);
 	try
 	{
 		// load the new shader
-		mFragmentShaders[index].shader = gl::GlslProg::create(mPassthruVextexShader, currentFrag.c_str());
-		mFragmentShaders[index].name = name;
-		mFragmentShaders[index].active = true;
+		mFragmentShaders[foundIndex].shader = gl::GlslProg::create(mPassthruVextexShader, pixelFrag);
+		mFragmentShaders[foundIndex].name = name;
+		mFragmentShaders[foundIndex].active = true;
 
-		foundIndex = index;
 		//preview the new loaded shader
 		mParameterBag->mPreviewFragIndex = index;
 		CI_LOG_V("setGLSLStringAtIndex success");
@@ -684,16 +679,16 @@ int Shaders::setGLSLStringAtIndex(string pixelFrag, string name, int index)
 
 bool Shaders::setFragString(string pixelFrag)
 {
-	currentFrag = pixelFrag;
+	//currentFrag = pixelFrag;
 	try
 	{
 		if (mParameterBag->iTransition > 0)
 		{
-			doTransition();
+			//doTransition();
 		}
 		else
 		{
-			mFragmentShaders[mCurrentPreviewShader].shader = gl::GlslProg::create(mPassthruVextexShader, currentFrag.c_str());
+			mFragmentShaders[mCurrentPreviewShader].shader = gl::GlslProg::create(mPassthruVextexShader, pixelFrag);
 			mFragmentShaders[mCurrentPreviewShader].name = "some.frag";
 			mFragmentShaders[mCurrentPreviewShader].active = true;
 
@@ -702,8 +697,8 @@ bool Shaders::setFragString(string pixelFrag)
 			mError = "";
 			validFrag = true;
 		}
-		// save as current.frag for code editor
-		/* not refreshed but ok to load before live code is enabled */
+		// save as current.frag for code editor not refreshed but ok to load before live code is enabled
+		/* */
 		if (mParameterBag->iDebug)
 		{
 			fs::path currentFile = getAssetPath("") / "shaders" / "current.frag";

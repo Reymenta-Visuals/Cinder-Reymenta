@@ -64,13 +64,13 @@ namespace Reymenta
 		string							getFragFileName() { return mFragFileName; };
 		string							getFragFullPath() { return mFragFile; };
 
-		void							doTransition();
+		//void							doTransition();
 		bool							setFragString(string pixelFrag);
 		int								setGLSLString(string pixelFrag, string name);
 		int								setGLSLStringAtIndex(string pixelFrag, string name, int index);
 		int								setGLSLPixelShaderAtIndex(gl::GlslProgRef pixelFrag, string name, int index);
 		bool							loadTextFile(string aFilePath);
-		void							loadCurrentFrag();
+		//void							loadCurrentFrag();
 
 		string							getFragError();
 
@@ -135,7 +135,7 @@ namespace Reymenta
 		// parameters
 		ParameterBagRef					mParameterBag;
 		// current frag string
-		string							currentFrag;
+		//string							currentFrag;
 		//! find index for insert/update in mFragmentShaders
 		int								findFragmentShaderIndex(int index, string name);
 		// thread

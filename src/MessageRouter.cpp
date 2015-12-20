@@ -508,8 +508,27 @@ void MessageRouter::update()
 				}
 			}
 		}
-
-		if (oscAddress == "/cc")
+		int panel = 0;
+		int controlIndex = 0;
+		unsigned faderFound = oscAddress.find("fader");
+		if (faderFound > 0)
+		{
+			panel = atoi(oscAddress.substr(1, 1).c_str());
+			controlIndex = atoi(oscAddress.substr(8, 1).c_str());
+			switch (controlIndex)
+			{
+			case 3:
+				mParameterBag->controlValues[18] = fargs[0]; // crossfade
+				break;
+			default:
+				break;
+			}
+		}
+		if (oscAddress == "/1/fader3")
+		{
+			mParameterBag->controlValues[18] = fargs[0];
+		}
+		else if (oscAddress == "/cc")
 		{
 			mParameterBag->controlValues[iargs[0]] = fargs[1];
 			updateParams(iargs[0], fargs[1]);
@@ -838,7 +857,7 @@ void MessageRouter::wsConnect()
 						JsonTree json;
 						try
 						{
-							string jsonHeader = msg.substr(2, closingCommentPosition-2);
+							string jsonHeader = msg.substr(2, closingCommentPosition - 2);
 							ci::JsonTree::ParseOptions parseOptions;
 							parseOptions.ignoreErrors(false);
 							json = JsonTree(jsonHeader, parseOptions);
@@ -847,7 +866,7 @@ void MessageRouter::wsConnect()
 							string glslFileName = title + ".glsl"; // without uniforms, need to include shadertoy.inc
 							string shader = msg.substr(closingCommentPosition + 2);
 
-							string processedContent = jsonHeader;
+							string processedContent = "/*" + jsonHeader + "*/";
 							// check uniforms presence
 							unsigned uniformPosition = msg.find("uniform");
 							if (uniformPosition < 1) {
@@ -870,7 +889,7 @@ void MessageRouter::wsConnect()
 							mFrag.close();
 							CI_LOG_V("received file saved:" + currentFile.string());
 
-							
+
 
 							// check vertex.uv presence
 
