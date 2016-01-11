@@ -127,7 +127,7 @@ namespace Reymenta {
 		bool						mAutoLayout;
 		bool						mCustomLayout;
 		bool						mStandalone;
-
+		bool						mRenderWindowAtStartup;
 		// code editor
 		Vec2f						mRenderCodeEditorXY;
 		bool						mLiveCode;

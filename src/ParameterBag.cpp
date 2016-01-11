@@ -48,6 +48,10 @@ bool ParameterBag::save()
 	AutoLayout.setAttribute("value", toString(mAutoLayout));
 	settings.push_back(AutoLayout);
 
+	XmlTree RenderWindowAtStartup("RenderWindowAtStartup", "");
+	RenderWindowAtStartup.setAttribute("value", toString(mRenderWindowAtStartup));
+	settings.push_back(RenderWindowAtStartup);
+
 	XmlTree CustomLayout("CustomLayout", "");
 	CustomLayout.setAttribute("value", toString(mCustomLayout));
 	settings.push_back(CustomLayout);
@@ -191,7 +195,10 @@ bool ParameterBag::restore()
 		}
 		else {
 			const XmlTree settings = xml.getChild("settings");
-
+			if (settings.hasChild("RenderWindowAtStartup")) {
+				XmlTree RenderWindowAtStartup = settings.getChild("RenderWindowAtStartup");
+				mRenderWindowAtStartup = RenderWindowAtStartup.getAttributeValue<bool>("value");
+			}
 			if (settings.hasChild("Standalone")) {
 				XmlTree Standalone = settings.getChild("Standalone");
 				mStandalone = Standalone.getAttributeValue<bool>("value");
@@ -421,8 +428,8 @@ void ParameterBag::resetSomeParams() {
 void ParameterBag::reset()
 {
 	// parameters exposed in XML
-	mMIDIOpenAllInputPorts = mAutoLayout =mShowUI = mCursorVisible = true;
-	mStandalone = mCustomLayout = mRenderThumbs = false;
+	mMIDIOpenAllInputPorts = mAutoLayout =mShowUI = mCursorVisible = mRenderThumbs = true;
+	mStandalone = mCustomLayout = false;
 	mOutputVideoResolution = 1024;
 	mInfo = "";
 	mTrackName = "";
@@ -575,7 +582,7 @@ void ParameterBag::reset()
 	mOSCDestinationPort = 7001;
 	mOSCDestinationHost2 = "127.0.0.1";
 	mOSCDestinationPort2 = 7002;
-	mOSCReceiverPort = 7000;
+	mOSCReceiverPort = 9001;
 	mMsg = "";
 	newMsg = false;
 	InfoMsg = "";
@@ -593,8 +600,8 @@ void ParameterBag::reset()
 	iRedMultiplier = 1.0f;
 	iGreenMultiplier = 1.0f;
 	iBlueMultiplier = 1.0f;
+	// create render window at startup
+	mRenderWindowAtStartup = true;
 
 	resetSomeParams();
-
-
 }
