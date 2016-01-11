@@ -30,19 +30,21 @@ WarpWrapper::WarpWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesRef
 	for (int a = 0; a < mWarps.size(); a++)
 	{
 		WarpFbo newWarpFbo;
-		if (a == 0)
+		switch (a)
 		{
+		case 0:
 			newWarpFbo.textureIndex = 0; // spout
 			newWarpFbo.textureMode = mParameterBag->TEXTUREMODEINPUT;
 			newWarpFbo.active = true;
 			newWarpFbo.fbo = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
-		}
-		else
-		{
-			newWarpFbo.textureIndex = 0; // index of MixFbo for shadamixa
+			break;
+		default:
+			newWarpFbo.textureIndex = 3 + (a % 2 == 0); // index of MixFbo for shadamixa
 			newWarpFbo.textureMode = mParameterBag->TEXTUREMODESHADER;
 			newWarpFbo.active = false;
-			newWarpFbo.fbo = gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight);
+			//newWarpFbo.fbo = gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight);
+			newWarpFbo.fbo = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
+			break;
 		}
 		mParameterBag->mWarpFbos.push_back(newWarpFbo);
 	}
@@ -89,6 +91,8 @@ void WarpWrapper::save(const std::string &filename)
 {
 	fs::path settings = getAssetPath("") / filename;
 	Warp::writeSettings(mWarps, writeFile(settings));
+	fs::path customSettings = getAssetPath("") / mParameterBag->mAssetsPath / filename;
+	Warp::writeSettings(mWarps, writeFile(customSettings));
 }
 
 void WarpWrapper::resize()
