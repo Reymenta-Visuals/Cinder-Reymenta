@@ -172,7 +172,7 @@ void MessageRouter::updateParams(int iarg0, float farg1)
 			// left assign
 			mParameterBag->mLeftFragIndex = mParameterBag->iTrack;
 		}
-		if (iarg0 == 52) { 
+		if (iarg0 == 52) {
 			sendOSCIntMessage("/live/next/cue", 0);		// next cue 
 			// right assign
 			mParameterBag->mRightFragIndex = mParameterBag->iTrack;
@@ -183,7 +183,7 @@ void MessageRouter::updateParams(int iarg0, float farg1)
 			mParameterBag->mPreviewFragIndex = mParameterBag->iTrack;
 		}
 		if (iarg0 == 54) sendOSCIntMessage("/live/play", 0);			// play
-			
+
 		if (iarg0 == 58)
 		{
 			// track left		
@@ -266,8 +266,8 @@ void MessageRouter::update()
 				mClient.poll();
 				/*double e = getElapsedSeconds();
 				if (e - mPingTime > 20.0) {
-					mClient.ping();
-					mPingTime = e;
+				mClient.ping();
+				mPingTime = e;
 				}*/
 
 			}
@@ -720,6 +720,8 @@ void MessageRouter::onWsRead(string msg)
 			try
 			{
 				json = JsonTree(msg);
+
+				// params
 				if (json.hasChild("params")) {
 					JsonTree jsonParams = json.getChild("params");
 					for (JsonTree::ConstIter jsonElement = jsonParams.begin(); jsonElement != jsonParams.end(); ++jsonElement)
@@ -745,7 +747,37 @@ void MessageRouter::onWsRead(string msg)
 							mParameterBag->controlValues[name] = value;
 						}
 					}
-				} // params
+				}
+				// params
+
+				// lib
+				if (json.hasChild("lib")) {
+					JsonTree jsonParams = json.getChild("lib");
+					for (JsonTree::ConstIter jsonElement = jsonParams.begin(); jsonElement != jsonParams.end(); ++jsonElement)
+					{
+						int name = jsonElement->getChild("name").getValue<int>();
+						int value = jsonElement->getChild("value").getValue<int>();
+
+						switch (name)
+						{
+						case 1:
+							mParameterBag->mWarp1FragIndex = value;
+							break;
+						case 2:
+							mParameterBag->mWarp2FragIndex = value;
+							break;
+						case 3:
+							mParameterBag->mLeftFragIndex = value;
+							break;
+						case 4:
+							mParameterBag->mRightFragIndex = value;
+							break;
+						default:
+							break;
+						}
+					}
+				}
+				// lib
 
 				// glsl
 				if (json.hasChild("glsl")) {
@@ -756,13 +788,14 @@ void MessageRouter::onWsRead(string msg)
 						int index = jsonElement->getChild("index").getValue<int>();
 						//rtn = mShaders->loadPixelFragmentShaderAtIndex(filename, index);
 						//if (rtn == -1) { 
-							string name = jsonElement->getChild("name").getValue<string>();
-							string frag = jsonElement->getChild("frag").getValue<string>();
-							rtn = mShaders->setGLSLStringAtIndex(frag, name, index, true);
+						string name = jsonElement->getChild("name").getValue<string>();
+						string frag = jsonElement->getChild("frag").getValue<string>();
+						rtn = mShaders->setGLSLStringAtIndex(frag, name, index, true);
 
 						//}
 					}
-				} 
+				}
+				// glsl
 
 			}
 			catch (cinder::JsonTree::Exception exception)
