@@ -536,6 +536,7 @@ void ParameterBag::reset()
 	mSphereFboIndex = 8;
 	mMeshFboIndex = 9;
 	mAudioFboIndex = 10;
+	mWarpMixFboIndex = 11;
 
 	mPreviewFragIndex = 0;
 	mPreviousFragIndex = 1;

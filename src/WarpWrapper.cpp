@@ -39,7 +39,7 @@ WarpWrapper::WarpWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesRef
 			newWarpFbo.fbo = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
 			break;
 		default:
-			newWarpFbo.textureIndex = 3 + (a % 2 == 0); // index of MixFbo for shadamixa
+			newWarpFbo.textureIndex = 11;//11 is fbo index!! CHECK 3 + (a % 2 == 0); // index of MixFbo for shadamixa
 			newWarpFbo.textureMode = mParameterBag->TEXTUREMODESHADER;
 			newWarpFbo.active = false;
 			//newWarpFbo.fbo = gl::Fbo(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight);

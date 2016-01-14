@@ -263,7 +263,7 @@ namespace Reymenta {
 		int							mUIRefresh;
 		int							mCurrentPreviewFboIndex;
 		int							mSphereFboIndex, mMeshFboIndex, mLiveFboIndex, mMixFboIndex, mAudioFboIndex;
-		int							mLeftFboIndex, mRightFboIndex, mWarp1FboIndex, mWarp2FboIndex, mABPFboIndex;
+		int							mLeftFboIndex, mRightFboIndex, mWarp1FboIndex, mWarp2FboIndex, mWarpMixFboIndex, mABPFboIndex;
 		int							mLeftFragIndex, mRightFragIndex, mPreviewFragIndex, mPreviousFragIndex, mWarp1FragIndex, mWarp2FragIndex, mLiveFragIndex;
 		float						iZoomLeft, iZoomRight;
 		int							iTrack;
