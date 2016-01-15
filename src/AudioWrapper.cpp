@@ -32,16 +32,24 @@ AudioWrapper::AudioWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 	log = Logger::create("AudioLog.txt");
 	log->logTimedString("Audio constructor");
 
-	// linein
 	auto ctx = audio::Context::master();
-	mLineIn = ctx->createInputDeviceNode();
+	// linein
+	if (mParameterBag->mUseLineIn) {
+		try {
+			mLineIn = ctx->createInputDeviceNode(); //crashes if linein is present but disabled, doesn't go to catch block
 
-	//*mScopeLineInFmt = audio::MonitorSpectralNode::Format().fftSize(512).windowSize(256);
-	auto scopeLineInFmt = audio::MonitorSpectralNode::Format().fftSize(mParameterBag->mFftSize).windowSize(mParameterBag->mWindowSize);
-	mMonitorLineInSpectralNode = ctx->makeNode(new audio::MonitorSpectralNode(scopeLineInFmt));
-	mLineIn >> mMonitorLineInSpectralNode;
+			//*mScopeLineInFmt = audio::MonitorSpectralNode::Format().fftSize(512).windowSize(256);
+			auto scopeLineInFmt = audio::MonitorSpectralNode::Format().fftSize(mParameterBag->mFftSize).windowSize(mParameterBag->mWindowSize);
+			mMonitorLineInSpectralNode = ctx->makeNode(new audio::MonitorSpectralNode(scopeLineInFmt));
+			mLineIn >> mMonitorLineInSpectralNode;
 	
-	mLineIn->enable();
+			mLineIn->enable();
+		}
+		catch (...) {
+			// never called
+			mParameterBag->mUseLineIn = false;
+		}
+	}
 
 	// wave
 	// TODO: it is pretty surprising when you recreate mScope here without checking if there has already been one added.
@@ -195,13 +203,13 @@ void AudioWrapper::loadWaveFile(string aFilePath)
 
 void AudioWrapper::update()
 {
-	if (mParameterBag->mUseLineIn || !mSamplePlayerNode)
+	if (mParameterBag->mUseLineIn)
 	{
 		mMagSpectrum = mMonitorLineInSpectralNode->getMagSpectrum();
 	}
 	else
 	{
-		mMagSpectrum = mMonitorWaveSpectralNode->getMagSpectrum();
+		if (mSamplePlayerNode) mMagSpectrum = mMonitorWaveSpectralNode->getMagSpectrum();
 	}
 	if (mMagSpectrum.empty())
 		return;
