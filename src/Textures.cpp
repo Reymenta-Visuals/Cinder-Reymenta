@@ -2,10 +2,11 @@
 
 using namespace Reymenta;
 
-Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
+Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef, VDSessionRef aSessionRef)
 {
 	mParameterBag = aParameterBag;
 	mShaders = aShadersRef;
+	mSession = aSessionRef;
 	// instanciate the logger class
 	log = Logger::create("TexturesLog.txt");
 	log->logTimedString("Textures constructor");
@@ -15,8 +16,8 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	FrameBuffa mixFbo;
 	mixFbo.fbo = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
 	sprintf_s(mixFbo.name, "mix");
-	mixFbo.isFlipV = false;
-	mixFbo.isFlipH = false;
+	mixFbo.isFlipV = mSession->mFlipV;
+	mixFbo.isFlipH = mSession->mFlipH;
 	mFbos.push_back(mixFbo);
 
 	// preview fbo at index 5
@@ -43,7 +44,8 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 	// audio fbo at index 6
 	sprintf_s(mFbos[mParameterBag->mAudioFboIndex].name, "audio");// = gl::Fbo(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
 	mFbos[mParameterBag->mAudioFboIndex].isFlipV = true;//.getTexture(0).setFlipped(true);
-
+	mFbos[mParameterBag->mWarpMixFboIndex].isFlipV = mSession->mFlipV;
+	mFbos[mParameterBag->mWarpMixFboIndex].isFlipH = mSession->mFlipH;
 	//const char* fboNames[] = { "mix", "", "", "", "", "", "", "", "", "", "audio", "", "1", "2", "3", "4" };
 	sprintf_s(mFbos[1].name, "left");
 	sprintf_s(mFbos[2].name, "right");
@@ -78,7 +80,8 @@ Textures::Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
 		}
 		else
 		{
-			gl::Texture img(loadImage(loadAsset("reymenta.jpg")));
+			localFile = getAssetPath("") / mParameterBag->mAssetsPath / "0.jpg";
+			gl::Texture img(loadImage(localFile));
 			sTextures.push_back(img);
 		}
 		Texta tex;
@@ -191,10 +194,12 @@ void Textures::flipTexture(int index)
 void Textures::flipFboV(int index)
 {
 	mFbos[index].isFlipV = !mFbos[index].isFlipV;
+	if (mParameterBag->mMixFboIndex == index) mSession->mFlipV = mFbos[index].isFlipV;
 }
 void Textures::flipFboH(int index)
 {
 	mFbos[index].isFlipH = !mFbos[index].isFlipH;
+	if (mParameterBag->mMixFboIndex == index) mSession->mFlipH = mFbos[index].isFlipH;
 }
 /*void Textures::setCurrentFboIndex(int aFbo)
 {

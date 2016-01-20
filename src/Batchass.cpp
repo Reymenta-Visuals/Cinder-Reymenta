@@ -60,16 +60,17 @@ void Batchass::shutdown() {
 
 void Batchass::setup()
 {
+	// session
+	mSession = VDSession::create(mParameterBag);
 	// instanciate the Shaders class, must not be in prepareSettings
 	mShaders = Shaders::create(mParameterBag);
 
 	// instanciate the textures class
-	mTextures = Textures::create(mParameterBag, mShaders);
+	mTextures = Textures::create(mParameterBag, mShaders, mSession);
 	// instanciate the warps class
 	mWarpings = WarpWrapper::create(mParameterBag, mTextures, mShaders);
 	// MessageRouter
 	mMessageRouter = MessageRouter::create(mParameterBag, mTextures, mShaders);
-
 	//createWarpFbos();
 }
 void Batchass::midiSetup() {

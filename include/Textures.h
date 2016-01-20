@@ -21,6 +21,8 @@
 #include "Shaders.h"
 // quicktime
 #include "cinder/qtime/QuickTime.h"
+// session
+#include "VDSession.h"
 
 // to use UI element for update background image
 //#include "UIElement.h"
@@ -32,6 +34,7 @@
 using namespace ci;
 using namespace ci::app;
 using namespace std;
+using namespace VideoDromm;
 //using namespace _2RealGStreamerWrapper;
 
 namespace Reymenta
@@ -59,11 +62,11 @@ namespace Reymenta
 	};
 	class Textures {
 	public:		
-		Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef);
+		Textures(ParameterBagRef aParameterBag, ShadersRef aShadersRef, VDSessionRef aSessionRef);
 		virtual					~Textures();
-		static TexturesRef	create(ParameterBagRef aParameterBag, ShadersRef aShadersRef)
+		static TexturesRef	create(ParameterBagRef aParameterBag, ShadersRef aShadersRef, VDSessionRef aSessionRef)
 		{
-			return shared_ptr<Textures>(new Textures(aParameterBag, aShadersRef));
+			return shared_ptr<Textures>(new Textures(aParameterBag, aShadersRef, aSessionRef));
 		}
 		//ci::gl::Texture				getFboThumb(int index);
 		ci::gl::Texture				getWarpTexture(int index);
@@ -148,6 +151,8 @@ namespace Reymenta
 		ParameterBagRef				mParameterBag;
 		// Shaders
 		ShadersRef					mShaders;
+		// Session
+		VDSessionRef				mSession;
 		// profiling
 		char						previewTime[256];
 		// quicktime movie

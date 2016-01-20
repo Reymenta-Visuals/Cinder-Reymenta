@@ -14,7 +14,7 @@ WarpWrapper::WarpWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesRef
 
 	mUseBeginEnd = false;
 	// initialize warps
-	fs::path settings = getAssetPath("") / "warps.xml";
+	fs::path settings = getAssetPath("") / mParameterBag->mAssetsPath  / "warps.xml"; 
 	if (fs::exists(settings))
 	{
 		// load warp settings from file if one exists

@@ -19,10 +19,13 @@
 #include "Logger.h"
 // MessageRouter
 #include "MessageRouter.h"
+// session
+#include "VDSession.h"
 
 using namespace ci;
 using namespace ci::app;
 using namespace std;
+using namespace VideoDromm;
 
 namespace Reymenta
 {
@@ -48,6 +51,7 @@ namespace Reymenta
 		ShadersRef					getShadersRef() { return mShaders; };
 		TexturesRef					getTexturesRef() { return mTextures; };
 		WarpWrapperRef				getWarpsRef() { return mWarpings; };
+		VDSessionRef				getSessionRef() { return mSession; };
 		bool						isEditModeEnabled() { return mWarpings->isEditModeEnabled(); };
 		// animation
 		// exposure
@@ -140,6 +144,8 @@ namespace Reymenta
 		LoggerRef					mLog;
 		// MessageRouter
 		MessageRouterRef			mMessageRouter;
+		// Session
+		VDSessionRef				mSession;
 		// tempo
 		void						calculateTempo();
 		std::deque <double>			buffer;
