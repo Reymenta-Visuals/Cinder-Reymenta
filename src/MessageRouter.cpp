@@ -402,6 +402,7 @@ void MessageRouter::update()
 		}
 		else if (oscAddress == "/live/beat")
 		{
+			//if (iargs[0]>344) iargs[0]-=300;
 			mParameterBag->iBeat = iargs[0];
 			routeMessage = true;
 		}

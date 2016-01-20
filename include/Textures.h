@@ -54,7 +54,7 @@ namespace Reymenta
 		bool						loadingPaused;
 		bool						loadingFilesComplete;
 		bool						playing;
-		float						speed;
+		int							speed;
 		vector<ci::gl::Texture>		sequenceTextures;
 	};
 	class Textures {
@@ -107,8 +107,8 @@ namespace Reymenta
 		int							getPlayheadPosition(int textureIndex);
 		void						setPlayheadPosition(int textureIndex, int position);
 
-		float						getSpeed(int textureIndex);
-		void						setSpeed(int textureIndex, float speed);
+		int							getSpeed(int textureIndex);
+		void						setSpeed(int textureIndex, int speed);
 		void						reverseSequence(int textureIndex);
 		bool						isLoadingFromDisk(int textureIndex);
 		bool						isSequence(int textureIndex);

@@ -288,7 +288,7 @@ void Textures::update()
 	}
 	if (sequences.size() > 0) {
 		for (int i = 0; i < sequences.size(); i++) {
-			if (sequences[i].playing) updateSequence(i);
+			updateSequence(i);
 			if (!sequences[i].loadingFilesComplete) loadNextImageFromDisk(i);
 		}
 
@@ -1189,16 +1189,13 @@ void Textures::setPlayheadPosition(int textureIndex, int position) {
 }
 
 void Textures::reverseSequence(int textureIndex) {
-
 	sequences[textas[textureIndex].sequenceIndex].speed *= -1;
-
 }
-float Textures::getSpeed(int textureIndex) {
+int Textures::getSpeed(int textureIndex) {
 
 	return sequences[textas[textureIndex].sequenceIndex].speed;
 }
-void Textures::setSpeed(int textureIndex, float speed) {
-
+void Textures::setSpeed(int textureIndex, int speed) {
 	sequences[textas[textureIndex].sequenceIndex].speed = speed;
 }
 bool Textures::isLoadingFromDisk(int textureIndex) {
@@ -1366,16 +1363,17 @@ void Textures::createFromTextureList(vector<ci::gl::Texture> textureList)
 //timeline().apply( &mAlpha, 1.0f, 2.0f ).finishFn( [&]{ textureSequence.update(); mAlpha= 1.0f; } );
 void Textures::updateSequence(int sequenceIndex)
 {
+	int newPosition;
 	if (sequences[sequenceIndex].sequenceTextures.size() > 0) {
 		// Call on each frame to update the playhead
-		if (sequences[sequenceIndex].playing)
-		{
-			int newPosition = sequences[sequenceIndex].playheadPosition + (playheadFrameInc * sequences[sequenceIndex].speed);
+		if (sequences[sequenceIndex].playing) {
+			newPosition = sequences[sequenceIndex].playheadPosition + (playheadFrameInc * sequences[sequenceIndex].speed);
 			if (newPosition < 0) newPosition = sequences[sequenceIndex].sequenceTextures.size() - 1;
 			if (newPosition > sequences[sequenceIndex].sequenceTextures.size() - 1) newPosition = 0;
-			sequences[sequenceIndex].playheadPosition = max(0, min(newPosition, (int)sequences[sequenceIndex].sequenceTextures.size() - 1));
-
+		} else {
+			newPosition = (int)mParameterBag->iBeat%(sequences[sequenceIndex].sequenceTextures.size());
 		}
+		sequences[sequenceIndex].playheadPosition = max(0, min(newPosition, (int)sequences[sequenceIndex].sequenceTextures.size() - 1));
 		sTextures[sequences[sequenceIndex].index] = getCurrentSequenceTexture(sequenceIndex);
 	}
 
