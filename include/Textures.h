@@ -160,11 +160,9 @@ namespace Reymenta
 		int							mMovieIndex;
 		// image sequence
 		void						updateSequence(int sequenceIndex);
-		void						createFromPathList(vector<string> paths);
-		void						createFromTextureList(vector<ci::gl::Texture> textureList);
+		//void						createFromPathList(vector<string> paths);
+		//void						createFromTextureList(vector<ci::gl::Texture> textureList);
 		ci::gl::Texture				getCurrentSequenceTexture(int sequenceIndex);
-		//bool						complete;
-		//bool						looping;
 		int							playheadFrameInc;
 		vector<sequence>			sequences;
 		void						loadNextImageFromDisk(int currentSeq);

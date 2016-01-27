@@ -287,6 +287,8 @@ namespace Reymenta {
 		string						mInfo;
 		// ableton liveOSC
 		string						mTrackName;
+		// clear mix fbo?
+		bool						mClear;
 	private:
 		const string settingsFileName = "Settings.xml";
 	};

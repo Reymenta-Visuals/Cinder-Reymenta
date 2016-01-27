@@ -423,6 +423,7 @@ void ParameterBag::resetSomeParams() {
 	// invert
 	controlValues[48] = 0.0f;
 	autoInvert = false;
+	mClear = true;
 }
 
 void ParameterBag::reset()

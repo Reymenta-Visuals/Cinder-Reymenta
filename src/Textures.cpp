@@ -969,7 +969,7 @@ void Textures::draw()
 	gl::setViewport(mFbos[mParameterBag->mMixFboIndex].fbo.getBounds());
 
 	// clear the FBO
-	gl::clear();
+	if (mParameterBag->mClear) gl::clear();
 	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
 
 	aShader = mShaders->getMixShader();
@@ -1293,7 +1293,7 @@ bool Textures::isSequence(int textureIndex) {
 }
 
 ci::gl::Texture Textures::getCurrentSequenceTexture(int sequenceIndex) {
-	if (sequenceIndex > sequences.size()) {
+	if (sequenceIndex > sequences.size()-1) {
 		sequenceIndex = 0;
 	}
 	if (sequences[sequenceIndex].playheadPosition > sequences[sequenceIndex].framesLoaded) {
@@ -1348,22 +1348,22 @@ void Textures::loadNextImageFromDisk(int currentSeq) {
 
 
 // Loads all of the images in the supplied list of file paths
-void Textures::createFromPathList(vector<string> paths)
+/*void Textures::createFromPathList(vector<string> paths)
 {
-	/*sequenceTextures.clear();
+	sequenceTextures.clear();
 	for (int i = 0; i < paths.size(); ++i)
 	{
 	sequenceTextures.push_back(ci::gl::Texture(loadImage(paths[i])));
 	}
-	totalFrames = seq.sequenceTextures.size();*/
+	totalFrames = seq.sequenceTextures.size();
 }
 
 void Textures::createFromTextureList(vector<ci::gl::Texture> textureList)
 {
-	/*sequenceTextures.clear();
+	sequenceTextures.clear();
 	sequenceTextures = textureList;
-	totalFrames = sequenceTextures.size();*/
-}
+	totalFrames = sequenceTextures.size();
+}*/
 
 //timeline().apply( &mAlpha, 1.0f, 2.0f ).finishFn( [&]{ textureSequence.update(); mAlpha= 1.0f; } );
 void Textures::updateSequence(int sequenceIndex)
