@@ -370,8 +370,8 @@ void Batchass::update()
 		}
 
 	}
-}
 #pragma endregion animation
+}
 
 void Batchass::shutdownLoader()
 {
