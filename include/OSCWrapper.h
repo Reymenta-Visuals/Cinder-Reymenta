@@ -1,26 +1,34 @@
 #pragma once
 
 #include "cinder/app/App.h"
-#include "OscListener.h"
-#include "OSCSender.h"
+#include "Osc.h"
 #include "Resources.h"
 #include "ParameterBag.h"
-
-using namespace ci;
-using namespace ci::app;
-using namespace std;
 // shaders
 #include "Shaders.h"
 // textures
 #include "Textures.h"
-		
+	
+using namespace ci;
+using namespace ci::app;
+using namespace std;
+using namespace asio;
+using namespace asio::ip;
+	
 static const int			MAX = 16;
 
 namespace Reymenta 
 {
 
 	typedef std::shared_ptr<class OSC> OSCRef;
-
+	// stores the pointer to the ReceiverUdp or ReceiverTcp instance
+#if USE_UDP
+	typedef std::shared_ptr<class osc::ReceiverUdp> ReceiverRef;
+#else
+	typedef std::shared_ptr<class osc::ReceiverTcp> ReceiverRef;
+#endif
+	// stores the pointer to the SenderUdp instance
+	typedef std::shared_ptr<class osc::SenderUdp> SenderRef;
 	class OSC 
 	{
 
@@ -46,8 +54,8 @@ namespace Reymenta
 		// textures
 		TexturesRef					mTextures;
 
-		osc::Listener 				mOSCReceiver;
-		osc::Sender					mOSCSender;
+		ReceiverRef					mOSCReceiver;
+		SenderRef					mOSCSender;
 
 		int							iargs[MAX];
 		float						fargs[MAX];

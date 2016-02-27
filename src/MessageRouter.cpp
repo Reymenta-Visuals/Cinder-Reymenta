@@ -23,11 +23,172 @@ MessageRouter::MessageRouter(ParameterBagRef aParameterBag, TexturesRef aTexture
 	}
 	// OSC
 	if (mParameterBag->mOSCEnabled) {
-		// OSC sender with broadcast = true
-		mOSCSender.setup(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort, true);
-		mOSCSender2.setup(mParameterBag->mOSCDestinationHost2, mParameterBag->mOSCDestinationPort2, true);
-		// OSC receiver
-		mOSCReceiver.setup(mParameterBag->mOSCReceiverPort);
+
+		if (mParameterBag->mIsOSCSender) {
+			setupOSCSender();
+
+		}
+		else {
+			// OSC receiver
+#if USE_UDP
+			mOSCReceiver = shared_ptr<osc::ReceiverUdp>(new osc::ReceiverUdp(mParameterBag->mOSCReceiverPort));
+#else
+			mOSCReceiver = shared_ptr<osc::ReceiverTcp>(new osc::ReceiverTcp(mParameterBag->mOSCReceiverPort));
+#endif
+			int skeletonIndex = 0;
+			int jointIndex = 0;
+			mOSCReceiver->setListener("/cc",
+				[&](const osc::Message &msg){
+				mParameterBag->controlValues[msg[0].int32()] = msg[1].flt();
+				updateParams(msg[0].int32(), msg[1].flt());
+			});
+			mOSCReceiver->setListener("/live/beat",
+				[&](const osc::Message &msg){
+				mParameterBag->iBeat = msg[0].int32();
+				if (mParameterBag->mIsOSCSender && mParameterBag->mOSCDestinationPort != 9000) mOSCSender->send(msg);
+			});
+			mOSCReceiver->setListener("/live/tempo",
+				[&](const osc::Message &msg){
+				mParameterBag->mTempo = msg[0].flt();
+				if (mParameterBag->mIsOSCSender && mParameterBag->mOSCDestinationPort != 9000) mOSCSender->send(msg);
+			});
+			mOSCReceiver->setListener("/live/track/meter",
+				[&](const osc::Message &msg){
+				mParameterBag->liveMeter = msg[2].flt();
+				if (mParameterBag->mIsOSCSender && mParameterBag->mOSCDestinationPort != 9000) mOSCSender->send(msg);
+			});
+			mOSCReceiver->setListener("/live/name/trackblock",
+				[&](const osc::Message &msg){
+				mParameterBag->mTrackName = msg[0].string();
+				for (int a = 0; a < MAX; a++)
+				{
+					tracks[a] = msg[a].string();
+				}
+
+			});
+
+			mOSCReceiver->setListener("/live/play",
+				[&](const osc::Message &msg){
+				osc::Message m;
+				m.setAddress("/tracklist");
+
+				for (int a = 0; a < MAX; a++)
+				{
+					if (tracks[a] != "") m.append(tracks[a]);
+				}
+				mOSCSender->send(m);
+
+			});
+			mOSCReceiver->setListener("/sumMovement",
+				[&](const osc::Message &msg){
+				float sumMovement = msg[0].flt();
+				//exposure
+				mParameterBag->controlValues[14] = sumMovement;
+				//greyScale
+				if (sumMovement < 0.1)
+				{
+					mParameterBag->iGreyScale = 1.0f;
+				}
+				else
+				{
+					mParameterBag->iGreyScale = 0.0f;
+				}
+			});
+			mOSCReceiver->setListener("/handsHeadHeight",
+				[&](const osc::Message &msg){
+				float handsHeadHeight = msg[0].flt();
+				if (handsHeadHeight > 0.3)
+				{
+					// glitch
+					mParameterBag->controlValues[45] = 1.0f;
+				}
+				else
+				{
+					// glitch
+					mParameterBag->controlValues[45] = 0.0f;
+				}
+				// background red
+				mParameterBag->controlValues[5] = handsHeadHeight*3.0;
+			});
+			mOSCReceiver->setListener("/centerXY",
+				[&](const osc::Message &msg){
+				float x = msg[0].flt();
+				float y = msg[1].flt();
+				// background green
+				mParameterBag->controlValues[6] = y;
+				// green
+				mParameterBag->controlValues[2] = x;
+			});
+			mOSCReceiver->setListener("/selectShader",
+				[&](const osc::Message &msg){
+				//selectShader(msg[0].int32(), msg[1].int32());
+			});
+
+			mOSCReceiver->setListener("/joint",
+				[&](const osc::Message &msg){
+				int skeletonIndex = msg[0].int32();
+				int jointIndex = msg[1].int32();
+				if (jointIndex < 20)
+				{
+					skeleton[jointIndex] = ivec4(msg[2].int32(), msg[3].int32(), msg[4].int32(), msg[5].int32());
+				}
+			});
+			/*else
+			{
+				console() << "OSC message received: " << oscAddress << std::endl;
+				// is it a layer msg?
+				int layer = 0;
+				unsigned layerFound = oscAddress.find("layer");
+				if (layerFound == 1)
+				{
+					unsigned clipFound = oscAddress.find("/clip");
+					if (clipFound == 7) // layer must be < 10
+					{
+						cout << "clipFound " << clipFound;
+						layer = atoi(oscAddress.substr(6, 1).c_str());
+						int clip = atoi(oscAddress.substr(12, 1).c_str());
+						string fileName = toString((layer * 10) + clip) + ".fragjson";
+						fs::path fragFile = getAssetPath("") / "shaders" / "fragjson" / fileName;
+						if (fs::exists(fragFile))
+						{
+							//mShaders->loadFragJson(fragFile.string());
+						}
+					}
+					else
+					{
+						if (clipFound == 8)
+						{
+							layer = atoi(oscAddress.substr(6, 2).c_str());
+						}
+					}
+					// connect or preview
+					unsigned connectFound = oscAddress.find("connect");
+					if (connectFound != string::npos) cout << "connectFound " << connectFound;
+				}
+				//if ( layerFound != string::npos ) cout << "layerFound " << layerFound;
+
+				unsigned found = oscAddress.find_last_of("/");
+				int name = atoi(oscAddress.substr(found + 1).c_str());
+			}
+			stringstream ss;
+			ss << message.getRemoteIp() << " adr:" << oscAddress << " ";
+			for (int a = 0; a < MAX; a++)
+			{
+				ss << a << ":" << sargs[a] << " ";
+			}
+			ss << std::endl;
+			mParameterBag->newMsg = true;
+			mParameterBag->mMsg = ss.str();
+			// filter messages
+			if (routeMessage)
+			{
+				// avoid LiveOSC infinite loop
+				if (mParameterBag->mIsOSCSender && mParameterBag->mOSCDestinationPort != 9000) mOSCSender.sendMessage(message);
+				if (mParameterBag->mIsOSCSender && mParameterBag->mOSCDestinationPort2 != 9000) mOSCSender2.sendMessage(message);
+
+			}
+			*/
+		}
 	}
 	// ws
 	clientConnected = false;
@@ -358,9 +519,19 @@ void MessageRouter::updateParams(int iarg0, float farg1)
 }
 void MessageRouter::setupOSCSender()
 {
-	// OSC sender with broadcast = true
-	mOSCSender.setup(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort, true);
-	mOSCSender2.setup(mParameterBag->mOSCDestinationHost2, mParameterBag->mOSCDestinationPort2, true);
+	// OSC sender with broadcast
+	osc::UdpSocketRef mSocket(new udp::socket(App::get()->io_service(), udp::endpoint(udp::v4(), mParameterBag->mOSCDestinationPort)));
+	mSocket->set_option(asio::socket_base::broadcast(true));
+	mOSCSender = shared_ptr<osc::SenderUdp>(new osc::SenderUdp(mSocket, udp::endpoint(address_v4::broadcast(), mParameterBag->mOSCDestinationPort)));
+	mOSCSender->bind();
+
+	//mOSCSender.setup(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort, true);
+	//mOSCSender2.setup(mParameterBag->mOSCDestinationHost2, mParameterBag->mOSCDestinationPort2, true);
+	osc::Message msg("/start");
+	msg.append(1);
+	msg.append(2);
+
+	mOSCSender->send(msg);
 }
 void MessageRouter::update()
 {
@@ -455,231 +626,7 @@ void MessageRouter::update()
 	}
 
 	}*/
-	// osc
-	while (mOSCReceiver.hasWaitingMessages())
-	{
-		osc::Message message;
-		bool routeMessage = false;
-		mOSCReceiver.getNextMessage(&message);
-		for (int a = 0; a < MAX; a++)
-		{
-			iargs[a] = 0;
-			fargs[a] = 0.0;
-			sargs[a] = "";
-		}
-		int skeletonIndex = 0;
-		int jointIndex = 0;
-		string oscAddress = message.getAddress();
 
-		int numArgs = message.getNumArgs();
-		// get arguments
-		for (int i = 0; i < message.getNumArgs(); i++)
-		{
-			if (i < MAX)
-			{
-				if (message.getArgType(i) == osc::TYPE_INT32) {
-					try
-					{
-						iargs[i] = message.getArgAsInt32(i);
-						sargs[i] = toString(iargs[i]);
-					}
-					catch (...) {
-						cout << "Exception reading argument as int32" << std::endl;
-					}
-				}
-				if (message.getArgType(i) == osc::TYPE_FLOAT) {
-					try
-					{
-						fargs[i] = message.getArgAsFloat(i);
-						sargs[i] = toString(fargs[i]);
-					}
-					catch (...) {
-						cout << "Exception reading argument as float" << std::endl;
-					}
-				}
-				if (message.getArgType(i) == osc::TYPE_STRING) {
-					try
-					{
-						sargs[i] = message.getArgAsString(i);
-					}
-					catch (...) {
-						cout << "Exception reading argument as string" << std::endl;
-					}
-				}
-			}
-		}
-		int panel = 0;
-		int controlIndex = 0;
-		unsigned faderFound = oscAddress.find("fader");
-		if (faderFound == 3)
-		{
-			panel = atoi(oscAddress.substr(1, 1).c_str());
-			if (oscAddress.length()>8) {
-				controlIndex = atoi(oscAddress.substr(8, 1).c_str());
-				switch (controlIndex) {
-				case 3:
-					mParameterBag->controlValues[18] = fargs[0]; // crossfade
-					break;
-				default:
-					break;
-				}
-			}
-		}
-		if (oscAddress == "/1/fader3")
-		{
-			mParameterBag->controlValues[18] = fargs[0];
-		}
-		else if (oscAddress == "/cc")
-		{
-			mParameterBag->controlValues[iargs[0]] = fargs[1];
-			updateParams(iargs[0], fargs[1]);
-		}
-		else if (oscAddress == "/live/beat")
-		{
-			mParameterBag->iBeat = iargs[0];
-			routeMessage = true;
-		}
-		else if (oscAddress == "/live/tempo")
-		{
-			mParameterBag->mTempo = fargs[0];
-			routeMessage = true;
-		}
-		else if (oscAddress == "/live/track/meter")
-		{
-			mParameterBag->liveMeter = fargs[2];
-			routeMessage = true;
-		}
-		else if (oscAddress == "/live/name/trackblock")
-		{
-			mParameterBag->mTrackName = sargs[0];
-			for (int a = 0; a < MAX; a++)
-			{
-				tracks[a] = sargs[a];
-			}
-
-		}
-		else if (oscAddress == "/live/play")
-		{
-			osc::Message m;
-			m.setAddress("/reymenta/tracklist");
-
-			for (int a = 0; a < MAX; a++)
-			{
-				if (tracks[a] != "") m.addStringArg(tracks[a]);
-			}
-			mOSCSender.sendMessage(m);
-
-		}
-		else if (oscAddress == "/sumMovement")
-		{
-			float sumMovement = fargs[0];
-			//exposure
-			mParameterBag->controlValues[14] = sumMovement;
-			//greyScale
-			if (sumMovement < 0.1)
-			{
-				mParameterBag->iGreyScale = 1.0f;
-			}
-			else
-			{
-				mParameterBag->iGreyScale = 0.0f;
-			}
-		}
-		else if (oscAddress == "/handsHeadHeight")
-		{
-			float handsHeadHeight = fargs[0];
-			if (handsHeadHeight > 0.3)
-			{
-				// glitch
-				mParameterBag->controlValues[45] = 1.0f;
-			}
-			else
-			{
-				// glitch
-				mParameterBag->controlValues[45] = 0.0f;
-			}
-			// background red
-			mParameterBag->controlValues[5] = handsHeadHeight*3.0;
-		}
-		else if (oscAddress == "/centerXY")
-		{
-			float x = fargs[0];
-			float y = fargs[1];
-			// background green
-			mParameterBag->controlValues[6] = y;
-			// green
-			mParameterBag->controlValues[2] = x;
-		}
-		else if (oscAddress == "/selectShader")
-		{
-			selectShader(iargs[0], iargs[1]);
-		}
-
-		else if (oscAddress == "/joint")
-		{
-			skeletonIndex = iargs[0];
-			jointIndex = iargs[1];
-			if (jointIndex < 20)
-			{
-				skeleton[jointIndex] = ivec4(iargs[2], iargs[3], iargs[4], iargs[5]);
-			}
-		}
-		else
-		{
-			console() << "OSC message received: " << oscAddress << std::endl;
-			// is it a layer msg?
-			int layer = 0;
-			unsigned layerFound = oscAddress.find("layer");
-			if (layerFound == 1)
-			{
-				unsigned clipFound = oscAddress.find("/clip");
-				if (clipFound == 7) // layer must be < 10
-				{
-					cout << "clipFound " << clipFound;
-					layer = atoi(oscAddress.substr(6, 1).c_str());
-					int clip = atoi(oscAddress.substr(12, 1).c_str());
-					string fileName = toString((layer * 10) + clip) + ".fragjson";
-					fs::path fragFile = getAssetPath("") / "shaders" / "fragjson" / fileName;
-					if (fs::exists(fragFile))
-					{
-						//mShaders->loadFragJson(fragFile.string());
-					}
-				}
-				else
-				{
-					if (clipFound == 8)
-					{
-						layer = atoi(oscAddress.substr(6, 2).c_str());
-					}
-				}
-				// connect or preview
-				unsigned connectFound = oscAddress.find("connect");
-				if (connectFound != string::npos) cout << "connectFound " << connectFound;
-			}
-			//if ( layerFound != string::npos ) cout << "layerFound " << layerFound;
-
-			unsigned found = oscAddress.find_last_of("/");
-			int name = atoi(oscAddress.substr(found + 1).c_str());
-		}
-		stringstream ss;
-		ss << message.getRemoteIp() << " adr:" << oscAddress << " ";
-		for (int a = 0; a < MAX; a++)
-		{
-			ss << a << ":" << sargs[a] << " ";
-		}
-		ss << std::endl;
-		mParameterBag->newMsg = true;
-		mParameterBag->mMsg = ss.str();
-		// filter messages
-		if (routeMessage)
-		{
-			// avoid LiveOSC infinite loop
-			if (mParameterBag->mIsOSCSender && mParameterBag->mOSCDestinationPort != 9000) mOSCSender.sendMessage(message);
-			if (mParameterBag->mIsOSCSender && mParameterBag->mOSCDestinationPort2 != 9000) mOSCSender2.sendMessage(message);
-
-		}
-
-	}
 }
 
 
@@ -687,58 +634,42 @@ void MessageRouter::update()
 
 void MessageRouter::sendOSCIntMessage(string controlType, int iarg0, int iarg1, int iarg2, int iarg3, int iarg4, int iarg5)
 {
-	osc::Message m;
-	m.setAddress(controlType);
-	m.addIntArg(iarg0);
-	m.addIntArg(iarg1);
-	m.addIntArg(iarg2);
-	m.addIntArg(iarg3);
-	m.addIntArg(iarg4);
-	m.addIntArg(iarg5);
-	m.setRemoteEndpoint(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort);
-	mOSCSender.sendMessage(m);
-	m.setRemoteEndpoint(mParameterBag->mOSCDestinationHost2, mParameterBag->mOSCDestinationPort2);
-	mOSCSender2.sendMessage(m);
+	osc::Message m(controlType);
+	m.append(iarg0);
+	m.append(iarg1);
+	m.append(iarg2);
+	m.append(iarg3);
+	m.append(iarg4);
+	m.append(iarg5);
+	mOSCSender->send(m);
 }
 void MessageRouter::sendOSCStringMessage(string controlType, int iarg0, string sarg1, string sarg2, string sarg3, string sarg4, string sarg5)
 {
-	osc::Message m;
-	m.setAddress(controlType);
-	m.addIntArg(iarg0);
-	if (sarg1 != "") m.addStringArg(sarg1);
-	if (sarg2 != "") m.addStringArg(sarg2);
-	if (sarg3 != "") m.addStringArg(sarg3);
-	if (sarg4 != "") m.addStringArg(sarg4);
-	if (sarg5 != "") m.addStringArg(sarg5);
-	m.setRemoteEndpoint(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort);
-	mOSCSender.sendMessage(m);
-	m.setRemoteEndpoint(mParameterBag->mOSCDestinationHost2, mParameterBag->mOSCDestinationPort2);
-	mOSCSender2.sendMessage(m);
+	osc::Message m(controlType);
+	m.append(iarg0);
+	if (sarg1 != "") m.append(sarg1);
+	if (sarg2 != "") m.append(sarg2);
+	if (sarg3 != "") m.append(sarg3);
+	if (sarg4 != "") m.append(sarg4);
+	if (sarg5 != "") m.append(sarg5);
+	mOSCSender->send(m);
 }
 void MessageRouter::sendOSCColorMessage(string controlType, float val)
 {
-	osc::Message m;
-	m.setAddress(controlType);
-	m.addFloatArg(val);
-	m.setRemoteEndpoint(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort);
-	mOSCSender.sendMessage(m);
-	m.setRemoteEndpoint(mParameterBag->mOSCDestinationHost2, mParameterBag->mOSCDestinationPort2);
-	mOSCSender2.sendMessage(m);
+	osc::Message m(controlType);
+	m.append(val);
+	mOSCSender->send(m);
 }
 void MessageRouter::sendOSCFloatMessage(string controlType, int iarg0, float farg1, float farg2, float farg3, float farg4, float farg5)
 {
-	osc::Message m;
-	m.setAddress(controlType);
-	m.addIntArg(iarg0);
-	m.addFloatArg(farg1);
-	m.addFloatArg(farg2);
-	m.addFloatArg(farg3);
-	m.addFloatArg(farg4);
-	m.addFloatArg(farg5);
-	m.setRemoteEndpoint(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort);
-	mOSCSender.sendMessage(m);
-	m.setRemoteEndpoint(mParameterBag->mOSCDestinationHost2, mParameterBag->mOSCDestinationPort2);
-	mOSCSender2.sendMessage(m);
+	osc::Message m(controlType);
+	m.append(iarg0);
+	m.append(farg1);
+	m.append(farg2);
+	m.append(farg3);
+	m.append(farg4);
+	m.append(farg5);
+	mOSCSender->send(m);
 }
 void MessageRouter::updateAndSendOSCFloatMessage(string controlType, int iarg0, float farg1, float farg2, float farg3, float farg4, float farg5)
 {
@@ -790,7 +721,7 @@ void MessageRouter::wsConnect()
 		});
 		mServer.connectPingEventHandler([&](string msg)
 		{
-			mParameterBag->mMsg = "WS Ponged";
+			mParameterBag->mMsg = "WS Pinged";
 			mParameterBag->newMsg = true;
 			if (!msg.empty())
 			{

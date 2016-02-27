@@ -13,8 +13,8 @@
 #include "CinderMidi.h"
 
 // OSC
-#include "OscListener.h"
-#include "OSCSender.h"
+#include "Osc.h"
+#define USE_UDP 1
 
 // WebSockets
 #include "WebSocketClient.h"
@@ -32,6 +32,8 @@
 using namespace ci;
 using namespace ci::app;
 using namespace std;
+using namespace asio;
+using namespace asio::ip;
 
 namespace Reymenta 
 {
@@ -39,6 +41,14 @@ namespace Reymenta
 	typedef std::shared_ptr<class MessageRouter> MessageRouterRef;
 	// midi
 	typedef std::shared_ptr<class MIDI> MIDIRef;
+	// stores the pointer to the ReceiverUdp or ReceiverTcp instance
+#if USE_UDP
+	typedef std::shared_ptr<class osc::ReceiverUdp> ReceiverRef;
+#else
+	typedef std::shared_ptr<class osc::ReceiverTcp> ReceiverRef;
+#endif
+	// stores the pointer to the SenderUdp instance
+	typedef std::shared_ptr<class osc::SenderUdp> SenderRef;
 	struct midiInput
 	{
 		string			portName;
@@ -97,6 +107,7 @@ namespace Reymenta
 		MessageRouter(ParameterBagRef aParameterBag, TexturesRef aTexturesRef, ShadersRef aShadersRef);
 		static	MessageRouterRef create(ParameterBagRef aParameterBag, TexturesRef aTexturesRef, ShadersRef aShadersRef);
 		void						update();
+		void						shutdown();
 		// messages
 		void						sendJSON(string params);
 		void						updateParams(int iarg0, float farg1);
@@ -107,7 +118,6 @@ namespace Reymenta
 		bool						isMidiInConnected(int i) { return (i<mMidiInputs.size()) ? mMidiInputs[i].isConnected : false; };
 		void						openMidiInPort(int i);
 		void						closeMidiInPort(int i);
-		void						shutdown();
 		// OSC
 		void						setupOSCSender();
 		void						sendOSCIntMessage(string controlType, int iarg0 = 0, int iarg1 = 0, int iarg2 = 0, int iarg3 = 0, int iarg4 = 0, int iarg5 = 0);
@@ -172,9 +182,9 @@ namespace Reymenta
 		void						serverDisconnect();
 		double						mPingTime;
 		// osc
-		osc::Listener 				mOSCReceiver;
-		osc::Sender					mOSCSender;
-		osc::Sender					mOSCSender2;
+		ReceiverRef					mOSCReceiver;
+		SenderRef					mOSCSender;
+		//SenderRef					mOSCSender2;
 		static const int			MAX = 16;
 		int							iargs[MAX];
 		float						fargs[MAX];

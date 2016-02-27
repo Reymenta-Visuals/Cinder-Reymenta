@@ -33,8 +33,11 @@ OSCRef OSC::create(ParameterBagRef aParameterBag, ShadersRef aShadersRef, Textur
 
 void OSC::setupSender()
 {
-	// OSC sender
-	mOSCSender.setup(mParameterBag->mOSCDestinationHost, mParameterBag->mOSCDestinationPort);
+	// OSC sender with broadcast
+	osc::UdpSocketRef mSocket(new udp::socket(App::get()->io_service(), udp::endpoint(udp::v4(), mParameterBag->mOSCDestinationPort)));
+	mSocket->set_option(asio::socket_base::broadcast(true));
+	mOSCSender = shared_ptr<osc::SenderUdp>(new osc::SenderUdp(mSocket, udp::endpoint(address_v4::broadcast(), mParameterBag->mOSCDestinationPort)));
+	mOSCSender->bind();
 }
 
 void OSC::update()
