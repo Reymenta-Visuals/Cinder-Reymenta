@@ -41,8 +41,10 @@ Batchass::Batchass(ParameterBagRef aParameterBag)
 	tRotationSpeed = autoRotationSpeed = false;
 	// tempo
 	counter = 0;
-	//startTime = timer.getSeconds();
-	//currentTime = timer.getSeconds();
+	// init tempo
+	timer.start();
+	startTime = currentTime = timer.getSeconds();
+
 	mParameterBag->iDeltaTime = 60 / mParameterBag->mTempo;
 	previousTime = 0.0f;
 	beatIndex = 0;
