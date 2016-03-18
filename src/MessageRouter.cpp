@@ -125,14 +125,17 @@ void MessageRouter::midiListener(midi::Message msg)
 	case MIDI_CONTROL_CHANGE:
 		midiControlType = "/cc";
 		midiControl = msg.control;
-		midiValue = msg.value;
-		midiNormalizedValue = lmap<float>(midiValue, 0.0, 127.0, 0.0, 1.0);
-		if (mParameterBag->mOSCEnabled) {
-			updateAndSendOSCFloatMessage(midiControlType, midiControl, midiNormalizedValue, midiChannel);
+		if (midiControl != 11) {
+			midiValue = msg.value;
+			midiNormalizedValue = lmap<float>(midiValue, 0.0, 127.0, 0.0, 1.0);
+			if (mParameterBag->mOSCEnabled) {
+				updateAndSendOSCFloatMessage(midiControlType, midiControl, midiNormalizedValue, midiChannel);
+			}
+			else {
+				updateParams(midiControl, midiNormalizedValue);
+			}
 		}
-		else {
-			updateParams(midiControl, midiNormalizedValue);
-		}
+
 
 		//mWebSockets->write("{\"params\" :[{" + controlType);
 		break;
