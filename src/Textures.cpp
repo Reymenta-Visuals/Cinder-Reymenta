@@ -1254,8 +1254,8 @@ void Textures::createFromDir(string filePath, int index)
 				int firstDigit = fileName.find_first_of("0123456789");
 				// if valid image sequence (contains a digit)
 				if (firstDigit > -1) {
-					seq.numberOfDigits = dotIndex - firstDigit;
-					int prefixIndex = fileName.find_last_of(".") - seq.numberOfDigits;//-4 or -3
+					seq.numberOfDigits = dotIndex - firstDigit - 1;
+					int prefixIndex = fileName.find_last_of(".") - seq.numberOfDigits - 1;//-4 or -3
 					seq.prefix = fileName.substr(0, prefixIndex);
 					if (!firstIndexFound) {
 						firstIndexFound = true;
@@ -1314,11 +1314,11 @@ void Textures::loadNextImageFromDisk(int currentSeq) {
 			// thank you Omar!
 			char restOfFileName[32];
 			if (sequences[currentSeq].numberOfDigits == 4) {
-				sprintf(restOfFileName, "%04d", sequences[currentSeq].nextIndexFrameToTry);
+				sprintf(restOfFileName, "%05d", sequences[currentSeq].nextIndexFrameToTry);
 
 			}
 			else {
-				sprintf(restOfFileName, "%03d", sequences[currentSeq].nextIndexFrameToTry);
+				sprintf(restOfFileName, "%04d", sequences[currentSeq].nextIndexFrameToTry);
 
 			}
 

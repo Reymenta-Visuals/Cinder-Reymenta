@@ -21,7 +21,7 @@ MessageRouter::MessageRouter(ParameterBagRef aParameterBag, TexturesRef aTexture
 	clientConnected = false;
 	if (mParameterBag->mAreWebSocketsEnabledAtStartup) wsConnect();
 	mPingTime = getElapsedSeconds();
-	if (mParameterBag->mMIDIOpenAllInputPorts) midiSetup();
+	midiSetup();
 }
 
 MessageRouterRef MessageRouter::create(ParameterBagRef aParameterBag, TexturesRef aTexturesRef, ShadersRef aShadersRef)
@@ -60,8 +60,17 @@ void MessageRouter::midiSetup()
 				}
 				else
 				{
-					mMidiInputs[i].isConnected = false;
-					ss << "Available MIDI port " << i << " " << mMidiIn0.mPortNames[i];
+					// TODO remove this
+					if (i == 0) {
+						openMidiInPort(i);
+						mMidiInputs[i].isConnected = true;
+						ss << "Opening MIDI port " << i << " " << mMidiInputs[i].portName;
+					}
+					else {
+						mMidiInputs[i].isConnected = false;
+						ss << "Available MIDI port " << i << " " << mMidiIn0.mPortNames[i];
+
+					}
 				}
 
 			}
@@ -740,6 +749,18 @@ void MessageRouter::onWsRead(string msg)
 								left = jsonElement->getChild("left").getValue<int>();
 								index = jsonElement->getChild("index").getValue<int>();
 								selectShader(left, index);
+								break;
+							case 301:
+								//beat
+								mParameterBag->iBeat = jsonElement->getChild("value").getValue<int>();
+								break;
+							case 302:
+								//tempo
+								mParameterBag->mTempo = value;
+								break;
+							case 303:
+								//meter
+								mParameterBag->liveMeter = value;
 								break;
 							default:
 								break;

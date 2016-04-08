@@ -541,7 +541,7 @@ void ParameterBag::reset()
 
 	mPreviewFragIndex = 0;
 	mPreviousFragIndex = 1;
-	mLeftFragIndex = 0;
+	mLeftFragIndex = 2;
 	mRightFragIndex = 1;
 	mWarp1FragIndex = 2;
 	mWarp2FragIndex = 3;
