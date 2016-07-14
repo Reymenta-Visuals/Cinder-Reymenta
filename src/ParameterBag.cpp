@@ -522,6 +522,7 @@ void ParameterBag::reset()
 	{
 		iChannels[a] = a;
 	}
+	//iChannels[0] = 10;// 20160408 spout
 	iChannels[4] = 10;//spout
 	selectedChannel = 0;
 	// fbo indexes for warp (should be constants)

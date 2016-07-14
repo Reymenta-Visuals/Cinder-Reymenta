@@ -1372,7 +1372,7 @@ void Textures::updateSequence(int sequenceIndex)
 	if (sequences[sequenceIndex].sequenceTextures.size() > 0) {
 		// Call on each frame to update the playhead
 		if (sequences[sequenceIndex].playing) {
-			newPosition = sequences[sequenceIndex].playheadPosition + (playheadFrameInc * sequences[sequenceIndex].speed);
+			newPosition = sequences[sequenceIndex].playheadPosition +(playheadFrameInc * sequences[sequenceIndex].speed);
 			if (newPosition < 0) newPosition = sequences[sequenceIndex].sequenceTextures.size() - 1;
 			if (newPosition > sequences[sequenceIndex].sequenceTextures.size() - 1) newPosition = 0;
 		} else {
