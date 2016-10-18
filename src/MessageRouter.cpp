@@ -412,6 +412,29 @@ void MessageRouter::update()
 			mParameterBag->controlValues[iargs[0]] = fargs[1];
 			updateParams(iargs[0], fargs[1]);
 		}
+		else if (oscAddress == "/cv")
+		{
+			mParameterBag->controlValues[(int)fargs[0]] = fargs[1];
+			updateParams((int)fargs[0], fargs[1]);
+		}
+		else if (oscAddress == "/frgb") // Open Stage Control
+		{
+			mParameterBag->controlValues[1] = fargs[0] / 255.0f;
+			updateParams(1, fargs[0] / 255.0f);
+			mParameterBag->controlValues[2] = fargs[1] / 255.0f;
+			updateParams(2, fargs[1] / 255.0f);
+			mParameterBag->controlValues[3] = fargs[2] / 255.0f;
+			updateParams(3, fargs[2] / 255.0f);
+		}
+		else if (oscAddress == "/brgb") // Open Stage Control
+		{
+			mParameterBag->controlValues[5] = fargs[0] / 255.0f;
+			updateParams(5, fargs[0] / 255.0f);
+			mParameterBag->controlValues[6] = fargs[1] / 255.0f;
+			updateParams(6, fargs[1] / 255.0f);
+			mParameterBag->controlValues[7] = fargs[2] / 255.0f;
+			updateParams(7, fargs[2] / 255.0f);
+		}
 		else if (oscAddress == "/live/beat")
 		{
 			//if (iargs[0]>344) iargs[0]-=300;
