@@ -9,10 +9,12 @@ VDUIFbos::VDUIFbos(VDSettingsRef aVDSettings, VDSessionRef aVDSession) {
 
 void VDUIFbos::Run(const char* title) {
 	// fbos
-	xPos = mVDSettings->uiMargin + mVDSettings->uiXPosCol1;
-	yPos = mVDSettings->uiYPosRow2;
+	// xPos = mVDSettings->uiMargin + mVDSettings->uiXPosCol1;
+	// yPos = mVDSettings->uiYPosRow2;
 
 	for (unsigned int f = 0; f < mVDSession->getFboListSize(); f++) {
+		xPos = mVDSettings->uiMargin + mVDSettings->uiXPosCol1 + ((mVDSettings->uiLargePreviewW + mVDSettings->uiMargin) * f);
+		yPos = mVDSettings->uiYPosRow2;
 		ui::SetNextWindowSize(ImVec2(mVDSettings->uiLargePreviewW, mVDSettings->uiLargePreviewH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		sprintf(buf, "%s##fbolbl%d", mVDSession->getFboName(f).c_str(), f);
@@ -51,14 +53,6 @@ void VDUIFbos::Run(const char* title) {
 			sprintf(buf, "T##fboupd%d", f);
 			if (ui::Button(buf)) mVDSession->updateShaderThumbFile(f);
 			ui::Text("wh %dx%d", mVDSession->getFboRenderedTexture(f)->getWidth(), mVDSession->getFboRenderedTexture(f)->getHeight());
-			// next UI position		
-			xPos += mVDSettings->uiLargePreviewW + mVDSettings->uiMargin;
-
-			if (xPos > mVDSettings->mRenderWidth - mVDSettings->uiXPosCol1)
-			{
-				xPos = mVDSettings->uiMargin + mVDSettings->uiXPosCol1;
-				yPos += mVDSettings->uiLargePreviewH + mVDSettings->uiMargin;
-			}
 			ui::PopID();
 		}
 		ui::End();
@@ -107,6 +101,23 @@ void VDUIFbos::Run(const char* title) {
 				if (ui::IsItemHovered()) ui::SetTooltip(buf);
 				ui::PopStyleColor(1);
 			}
+
+			// spout output
+			if (mVDSession->getSharedMixIndex() == m && mVDSession->isSharedOutputActive()) {
+				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.9f, 1.0f, 0.5f));
+			}
+			else {
+				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
+			}
+			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.9f, 0.7f, 0.7f));
+			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.9f, 0.8f, 0.8f));
+			sprintf(buf, "O##sp%d", m);
+			if (ui::Button(buf)) {
+				mVDSession->toggleSharedOutput(m);
+			}
+			ui::PopStyleColor(3);
+			if (ui::IsItemHovered()) ui::SetTooltip("Toggle Spout output");
+			ui::SameLine();
 			ui::Text("mixwh %dx%d", mVDSession->getMixTexture(m)->getWidth(), mVDSession->getMixTexture(m)->getHeight());
 			
 			ui::PopID();
