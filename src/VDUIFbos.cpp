@@ -101,7 +101,13 @@ void VDUIFbos::Run(const char* title) {
 				if (ui::IsItemHovered()) ui::SetTooltip(buf);
 				ui::PopStyleColor(1);
 			}
-
+			// crossfade
+			float xFade = mVDSession->getMixCrossfade(m);
+			sprintf(buf, "xfade##xf%d", m);
+			if (ui::SliderFloat(buf, &xFade, 0.0f, 1.0f))
+			{
+				mVDSession->setMixCrossfade(m, xFade);
+			}
 			// spout output
 			if (mVDSession->getSharedMixIndex() == m && mVDSession->isSharedOutputActive()) {
 				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.9f, 1.0f, 0.5f));

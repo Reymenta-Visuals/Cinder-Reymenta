@@ -130,7 +130,8 @@ namespace VideoDromm {
 		bool							getFreqWSSend() { return mFreqWSSend; };
 		void							toggleFreqWSSend() { mFreqWSSend = !mFreqWSSend; };
 		// uniforms
-		//void							setCrossfade(float aCrossfade); // TODO use setControlValue
+		void							setMixCrossfade(unsigned int aWarpIndex, float aCrossfade) { mVDSettings->xFade = aCrossfade; mVDSettings->xFadeChanged = true; };
+		float							getMixCrossfade(unsigned int aWarpIndex) { return mVDSettings->xFade; }; // TODO? mVDMix->getCrossfade(aWarpIndex);
 		void							setFboAIndex(unsigned int aIndex, unsigned int aFboIndex);
 		void							setFboBIndex(unsigned int aIndex, unsigned int aFboIndex);
 		unsigned int					getFboAIndex(unsigned int aIndex) { return mVDMix->getFboAIndex(aIndex); };
