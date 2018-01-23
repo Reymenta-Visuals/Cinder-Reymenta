@@ -10,15 +10,11 @@
 #include "cinder/Timeline.h"
 
 #if defined( CINDER_MSW )
-// hap codec movie
-#include "MovieHap.h"
 // spout
 #include "CiSpoutIn.h"
 #endif
 
 #if defined( CINDER_MAC )
-// quicktime movie
-#include "cinder/qtime/QuickTimeGl.h"
 // syphon
 #include "cinderSyphon.h"
 #endif
@@ -37,7 +33,6 @@
 #include "cinder/audio/SampleRecorderNode.h"
 #include "cinder/audio/NodeEffects.h"
 #include "cinder/Rand.h"
-// #include "../../../../cinder/samples/_audio/common/AudioDrawUtils.h"
 // base64 for stream
 #include "cinder/Base64.h"
 
@@ -62,7 +57,7 @@ namespace VideoDromm
 
 	class VDTexture : public std::enable_shared_from_this < VDTexture > {
 	public:
-		typedef enum { UNKNOWN, IMAGE, SEQUENCE, MOVIE, CAMERA, SHARED, AUDIO, STREAM } TextureType;
+		typedef enum { UNKNOWN, IMAGE, SEQUENCE, CAMERA, SHARED, AUDIO, STREAM } TextureType;
 	public:
 		VDTexture(TextureType aType = UNKNOWN);
 		virtual ~VDTexture(void);
@@ -237,44 +232,6 @@ namespace VideoDromm
 		vector<ci::gl::TextureRef>	mSequenceTextures;
 	};
 
-	/*
-	** ---- TextureMovie ------------------------------------------------
-	*/
-#if (defined(  CINDER_MSW) ) || (defined( CINDER_MAC ))
-	typedef std::shared_ptr<class TextureMovie>	TextureMovieRef;
-
-	class TextureMovie
-		: public VDTexture {
-	public:
-		//
-		static TextureMovieRef	create() { return std::make_shared<TextureMovie>(); }
-		//!
-		bool					fromXml(const XmlTree &xml) override;
-		//!
-		virtual	XmlTree			toXml() const override;
-		//!
-		virtual bool			loadFromFullPath(string aPath) override;
-
-	public:
-		TextureMovie();
-		virtual ~TextureMovie(void);
-
-		//! returns a shared pointer 
-		TextureMovieRef	getPtr() { return std::static_pointer_cast<TextureMovie>(shared_from_this()); }
-	protected:
-		//! 
-		virtual ci::gl::Texture2dRef	getTexture() override;
-	private:
-#if defined( CINDER_MSW )
-		qtime::MovieGlHapRef		mMovie;
-#endif
-#if defined( CINDER_MAC )
-		qtime::MovieGlRef			mMovie;
-#endif
-		bool						mLoopVideo;
-		ci::gl::Texture2dRef		mTexture;
-	};
-#endif
 	/*
 	** ---- TextureCamera ------------------------------------------------
 	*/

@@ -12,6 +12,12 @@
 #include "VDLog.h"
 // UI
 #include "VDUI.h"
+// Spout
+#include "CiSpoutIn.h"
+#include "CiSpoutOut.h"
+// NDI
+#include "CinderNDISender.h"
+#include "CinderNDIReceiver.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -23,7 +29,7 @@ using namespace VideoDromm;
 class _TBOX_PREFIX_App : public App {
 
 public:
-	void setup() override;
+	_TBOX_PREFIX_App();
 	void mouseMove(MouseEvent event) override;
 	void mouseDown(MouseEvent event) override;
 	void mouseDrag(MouseEvent event) override;
@@ -37,39 +43,51 @@ public:
 	void setUIVisibility(bool visible);
 private:
 	// Settings
-	VDSettingsRef				mVDSettings;
+	VDSettingsRef					mVDSettings;
 	// Session
-	VDSessionRef				mVDSession;
+	VDSessionRef					mVDSession;
 	// Log
-	VDLogRef					mVDLog;
+	VDLogRef							mVDLog;
 	// UI
-	VDUIRef						mVDUI;
+	VDUIRef								mVDUI;
 	// handle resizing for imgui
-	void						resizeWindow();
-	bool						mIsResizing;
+	void									resizeWindow();
+	bool									mIsResizing;
 	// imgui
-	float						color[4];
-	float						backcolor[4];
-	int							playheadPositions[12];
-	int							speeds[12];
+	float									color[4];
+	float									backcolor[4];
+	int										playheadPositions[12];
+	int										speeds[12];
 
-	float						f = 0.0f;
-	char						buf[64];
-	unsigned int				i, j;
+	float									f = 0.0f;
+	char									buf[64];
+	unsigned int					i, j;
 
-	bool						mouseGlobal;
+	bool									mouseGlobal;
 
-	string						mError;
+	string								mError;
 	// fbo
-	bool						mIsShutDown;
-	Anim<float>					mRenderWindowTimer;
-	void						positionRenderWindow();
-	bool						mFadeInDelay;
+	bool									mIsShutDown;
+	Anim<float>						mRenderWindowTimer;
+	void									positionRenderWindow();
+	bool									mFadeInDelay;
+	SpoutIn								mSpoutIn;
+	SpoutOut 							mSpoutOut;
+	CinderNDIReceiver 		mReceiver;
+	CinderNDISender				mSender;
+	ci::SurfaceRef 				mSurface;
+	ci::gl::Texture2dRef	mTexture;
 };
 
 
-void _TBOX_PREFIX_App::setup()
+_TBOX_PREFIX_App::_TBOX_PREFIX_App()
+	: mSender("Reymenta")
+	, mReceiver{}
+	, mSpoutOut("NDIReceiver", app::getWindowSize())
 {
+	mSurface = ci::Surface::create(getWindowWidth(), getWindowHeight(), true, SurfaceChannelOrder::BGRA);
+	mTexture = ci::gl::Texture::create(getWindowWidth(), getWindowHeight());
+
 	// Settings
 	mVDSettings = VDSettings::create();
 	// Session
@@ -112,6 +130,26 @@ void _TBOX_PREFIX_App::update()
 {
 	mVDSession->setFloatUniformValueByIndex(mVDSettings->IFPS, getAverageFps());
 	mVDSession->update();
+	// NDI Receive	
+	mReceiver.update();
+
+	// Spout Receive
+	if (mSpoutIn.getSize() != app::getWindowSize()) {
+		app::setWindowSize(mSpoutIn.getSize());
+		mTexture = ci::gl::Texture::create(getWindowWidth(), getWindowHeight(), ci::gl::Texture::Format().loadTopDown(true));
+	}
+
+	mTexture = mSpoutIn.receiveTexture();
+	// Ndi Send
+	if (mTexture) {
+		mSurface = Surface::create(mTexture->createSource());
+	}
+
+	long long timecode = app::getElapsedFrames();
+
+	XmlTree msg{ "ci_meta", mSpoutIn.getSenderName() };
+	mSender.sendMetadata(msg, timecode);
+	mSender.sendSurface(*mSurface, timecode);	
 }
 void _TBOX_PREFIX_App::cleanup()
 {
@@ -137,6 +175,10 @@ void _TBOX_PREFIX_App::mouseDown(MouseEvent event)
 {
 	if (!mVDSession->handleMouseDown(event)) {
 		// let your application perform its mouseDown handling here
+		if (event.isRightDown()) { // Select a sender
+							   // SpoutPanel.exe must be in the executable folder
+			mSpoutIn.getSpoutReceiver().SelectSenderPanel(); // DirectX 11 by default
+		}
 	}
 }
 void _TBOX_PREFIX_App::mouseDrag(MouseEvent event)
@@ -193,14 +235,31 @@ void _TBOX_PREFIX_App::draw()
 	//gl::setMatricesWindow(toPixels(getWindowSize()),false);
 	gl::setMatricesWindow(mVDSettings->mRenderWidth, mVDSettings->mRenderHeight, false);
 	gl::draw(mVDSession->getMixTexture(), getWindowBounds());
+	// NDI receive
+	auto meta = mReceiver.getMetadata();
+	auto tex = mReceiver.getVideoTexture();
+	if (tex.first) {
+		Rectf centeredRect = Rectf(tex.first->getBounds()).getCenteredFit(getWindowBounds(), true);
+		gl::draw(tex.first, centeredRect);
+	}
+	CI_LOG_I(" Frame: " << tex.second << ", metadata: " << meta.first << " : " << meta.second);
+
+	// Spout Send
+	mSpoutOut.sendViewport();
 	getWindow()->setTitle(mVDSettings->sFps + " fps Reymenta");
 	// imgui
 	if (!mVDSettings->mCursorVisible) return;
-
+	if (mTexture) {
+		gl::draw(mTexture, getWindowBounds());
+	}
 	mVDUI->Run("UI", (int)getAverageFps());
 	if (mVDUI->isReady()) {
 	}	
 }
 
+void prepareSettings(App::Settings *settings)
+{
+	settings->setWindowSize(640, 480);
+}
 
-CINDER_APP(_TBOX_PREFIX_App, RendererGl)
+CINDER_APP(_TBOX_PREFIX_App, RendererGl, prepareSettings)

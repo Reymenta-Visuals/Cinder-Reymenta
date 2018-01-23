@@ -80,17 +80,6 @@ namespace VideoDromm {
 					t->fromXml(detailsXml);
 					vdtexturelist.push_back(t);
 				}
-				else if (texturetype == "movie") {
-#if (defined(  CINDER_MSW) ) || (defined( CINDER_MAC ))
-					TextureMovieRef t(new TextureMovie());
-					t->fromXml(detailsXml);
-					vdtexturelist.push_back(t);
-#else
-					// movie not supported on this platform
-					CI_LOG_V("movie not supported on this platform");
-					isValid = false;
-#endif
-				}
 				else if (texturetype == "camera") {
 #if (defined(  CINDER_MSW) ) || (defined( CINDER_MAC ))
 					TextureCameraRef t(new TextureCamera());
@@ -172,7 +161,6 @@ namespace VideoDromm {
 			switch (vdtexturelist[i]->mType) {
 			case IMAGE: texture.setAttribute("texturetype", "image"); break;
 			case SEQUENCE: texture.setAttribute("texturetype", "imagesequence"); break;
-			case MOVIE: texture.setAttribute("texturetype", "movie"); break;
 			case SHARED: texture.setAttribute("texturetype", "shared"); break;
 			case CAMERA: texture.setAttribute("texturetype", "camera"); break;
 			case AUDIO: texture.setAttribute("texturetype", "audio"); break;
@@ -632,93 +620,6 @@ namespace VideoDromm {
 	TextureImageSequence::~TextureImageSequence(void) {
 	}
 
-
-	/*
-	** ---- TextureMovie ------------------------------------------------
-	*/
-#if (defined(  CINDER_MSW) ) || (defined( CINDER_MAC ))
-	TextureMovie::TextureMovie() {
-		mType = MOVIE;
-
-	}
-	bool TextureMovie::fromXml(const XmlTree &xml)
-	{
-		bool rtn = false;
-		// init		
-		mTexture = ci::gl::Texture::create(mWidth, mHeight, ci::gl::Texture::Format().loadTopDown(mFlipV));
-		// retrieve attributes specific to this type of texture
-		mFlipV = xml.getAttributeValue<bool>("flipv", "false");
-		mFlipH = xml.getAttributeValue<bool>("fliph", "false");
-		mPath = xml.getAttributeValue<string>("path", "");
-		if (mPath.length() > 0) {
-			fs::path fullPath = getAssetPath("") / mPath;// TODO / mVDSettings->mAssetsPath
-			if (fs::exists(fullPath)) {
-				rtn = loadFromFullPath(fullPath.string());
-			}
-		}
-		mName = mPath;
-		return rtn;
-	}
-	XmlTree	TextureMovie::toXml() const {
-		XmlTree xml = VDTexture::toXml();
-
-		// add attributes specific to this type of texture
-		xml.setAttribute("path", mPath);
-		xml.setAttribute("flipv", mFlipV);
-		xml.setAttribute("fliph", mFlipH);
-		return xml;
-	}
-#endif
-#if (defined(  CINDER_MSW) ) || (defined( CINDER_MAC ))
-	bool TextureMovie::loadFromFullPath(string aPath)
-	{
-		bool rtn = false;
-		try {
-			mMovie.reset();
-			// load up the movie, set it to loop, and begin playing
-#if defined( CINDER_MSW )
-			mMovie = qtime::MovieGlHap::create(aPath);
-#endif
-#if defined( CINDER_MAC )
-			mMovie = qtime::MovieGl::create(aPath);
-#endif
-			if (mName.length() > 0) mName = aPath;
-			mLoopVideo = (mMovie->getDuration() < 30.0f);
-			mMovie->setLoop(mLoopVideo);
-			mMovie->play();
-			mWidth = mMovie->getWidth();
-			mHeight = mMovie->getHeight();
-			mTexture = ci::gl::Texture::create(mWidth, mHeight, ci::gl::Texture::Format().loadTopDown(mFlipV));
-			rtn = true;
-		}
-		catch (ci::Exception &e)
-		{
-			console() << string(e.what()) << std::endl;
-			console() << "Unable to load the movie." << std::endl;
-		}
-		return true;
-	}
-
-	ci::gl::Texture2dRef TextureMovie::getTexture() {
-		if (mMovie) {
-			// toggle play if necessary
-			if (mMovie->isPlaying()) {
-				if (!mPlaying) mMovie->stop();
-			}
-			else {
-				if (mPlaying) mMovie->play();
-			}
-			mTexture = mMovie->getTexture();
-			// if codec is not recognized the texture is empty, return an initialized texture
-			if (!mTexture) {
-				mTexture = ci::gl::Texture::create(mWidth, mHeight, ci::gl::Texture::Format().loadTopDown(mFlipV));
-			}
-		}
-		return mTexture;
-	}
-	TextureMovie::~TextureMovie(void) {
-	}
-#endif
 	/*
 	** ---- TextureCamera ------------------------------------------------
 	*/
