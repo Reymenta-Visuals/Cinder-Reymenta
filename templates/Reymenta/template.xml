@@ -22,6 +22,7 @@
 	<asset>assets/pupilles640x480.hap.mov</asset>
 	<asset>assets/mixes.xml</asset>
 	<asset>assets/mixfbo.frag</asset>
+	<asset>assets/shadertoy.inc</asset>
 	<asset>assets/texture0.frag</asset>
 	<asset>assets/texture1.frag</asset>
 	<asset>assets/textures.xml</asset>
