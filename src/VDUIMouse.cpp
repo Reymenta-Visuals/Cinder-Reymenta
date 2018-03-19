@@ -11,29 +11,29 @@ VDUIMouse::~VDUIMouse() {
 }
 
 void VDUIMouse::Run(const char* title) {
-	ui::SetNextWindowSize(ImVec2(mVDSettings->uiLargeW, mVDSettings->uiLargeH), ImGuiSetCond_Once);
-	ui::SetNextWindowPos(ImVec2(mVDSettings->uiMargin, mVDSettings->uiYPosRow2), ImGuiSetCond_Once);
+	ImGui::SetNextWindowSize(ImVec2(mVDSettings->uiLargeW, mVDSettings->uiLargeH), ImGuiSetCond_Once);
+	ImGui::SetNextWindowPos(ImVec2(mVDSettings->uiMargin, mVDSettings->uiYPosRow2), ImGuiSetCond_Once);
 	// Mouse
 #pragma region mouse
 
-	ui::Begin("Mouse");
+	ImGui::Begin("Mouse");
 	{
-		ui::Text("Position: %.1f,%.1f", ui::GetIO().MousePos.x, ui::GetIO().MousePos.y);
-		ui::Text("Clic %d", ui::GetIO().MouseDown[0]);
-		mouseGlobal ^= ui::Button("mouse gbl");
+		ImGui::Text("Position: %.1f,%.1f", ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
+		ImGui::Text("Clic %d", ImGui::GetIO().MouseDown[0]);
+		mouseGlobal ^= ImGui::Button("mouse gbl");
 		if (mouseGlobal)
 		{
-			mVDSettings->mRenderPosXY.x = ui::GetIO().MousePos.x; ui::SameLine();
-			mVDSettings->mRenderPosXY.y = ui::GetIO().MousePos.y;
-			//mVDSettings->iMouse.z = ui::GetIO().MouseDown[0];
+			mVDSettings->mRenderPosXY.x = ImGui::GetIO().MousePos.x; ImGui::SameLine();
+			mVDSettings->mRenderPosXY.y = ImGui::GetIO().MousePos.y;
+			//mVDSettings->iMouse.z = ImGui::GetIO().MouseDown[0];
 		}
 		else
 		{
-			//mVDSettings->iMouse.z = ui::Button("mouse click");
+			//mVDSettings->iMouse.z = ImGui::Button("mouse click");
 		}
-		ui::SliderFloat("MouseX", &mVDSettings->mRenderPosXY.x, 0, mVDSettings->mFboWidth);
-		ui::SliderFloat("MouseY", &mVDSettings->mRenderPosXY.y, 0, mVDSettings->mFboHeight);
+		ImGui::SliderFloat("MouseX", &mVDSettings->mRenderPosXY.x, 0, mVDSettings->mFboWidth);
+		ImGui::SliderFloat("MouseY", &mVDSettings->mRenderPosXY.y, 0, mVDSettings->mFboHeight);
 	}
-	ui::End();
+	ImGui::End();
 #pragma endregion mouse
 }
