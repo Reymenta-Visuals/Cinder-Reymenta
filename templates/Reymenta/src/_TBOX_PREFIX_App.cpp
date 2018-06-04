@@ -15,9 +15,6 @@
 // Spout
 #include "CiSpoutIn.h"
 #include "CiSpoutOut.h"
-// NDI
-#include "CinderNDISender.h"
-#include "CinderNDIReceiver.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -73,19 +70,13 @@ private:
 	bool									mFadeInDelay;
 	SpoutIn								mSpoutIn;
 	SpoutOut 							mSpoutOut;
-	CinderNDIReceiver 		mReceiver;
-	CinderNDISender				mSender;
-	ci::SurfaceRef 				mSurface;
 	ci::gl::Texture2dRef	mTexture;
 };
 
 
 _TBOX_PREFIX_App::_TBOX_PREFIX_App()
-	: mSender("Reymenta")
-	, mReceiver{}
-	, mSpoutOut("NDIReceiver", app::getWindowSize())
+	: mSpoutOut("NDIReceiver", app::getWindowSize())
 {
-	mSurface = ci::Surface::create(getWindowWidth(), getWindowHeight(), true, SurfaceChannelOrder::BGRA);
 	mTexture = ci::gl::Texture::create(getWindowWidth(), getWindowHeight());
 
 	// Settings
@@ -130,8 +121,7 @@ void _TBOX_PREFIX_App::update()
 {
 	mVDSession->setFloatUniformValueByIndex(mVDSettings->IFPS, getAverageFps());
 	mVDSession->update();
-	// NDI Receive	
-	mReceiver.update();
+
 
 	// Spout Receive
 	if (mSpoutIn.getSize() != app::getWindowSize()) {
@@ -140,16 +130,6 @@ void _TBOX_PREFIX_App::update()
 	}
 
 	mTexture = mSpoutIn.receiveTexture();
-	// Ndi Send
-	if (mTexture) {
-		mSurface = Surface::create(mTexture->createSource());
-	}
-
-	long long timecode = app::getElapsedFrames();
-
-	XmlTree msg{ "ci_meta", mSpoutIn.getSenderName() };
-	mSender.sendMetadata(msg, timecode);
-	mSender.sendSurface(*mSurface, timecode);	
 }
 void _TBOX_PREFIX_App::cleanup()
 {
@@ -235,14 +215,6 @@ void _TBOX_PREFIX_App::draw()
 	//gl::setMatricesWindow(toPixels(getWindowSize()),false);
 	gl::setMatricesWindow(mVDSettings->mRenderWidth, mVDSettings->mRenderHeight, false);
 	gl::draw(mVDSession->getMixTexture(), getWindowBounds());
-	// NDI receive
-	auto meta = mReceiver.getMetadata();
-	auto tex = mReceiver.getVideoTexture();
-	if (tex.first) {
-		Rectf centeredRect = Rectf(tex.first->getBounds()).getCenteredFit(getWindowBounds(), true);
-		gl::draw(tex.first, centeredRect);
-	}
-	CI_LOG_I(" Frame: " << tex.second << ", metadata: " << meta.first << " : " << meta.second);
 
 	// Spout Send
 	mSpoutOut.sendViewport();
