@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<cinder>
+<template name="VDR: Basic" parent="org.libcinder.apptemplates.basicopengl">
+	<requires>com.videodromm.vdr</requires>
+	<requires>mb.cinder.midi2</requires>
+	<platform os="msw">
+		<requires>fr.batchass.spout</requires>
+	</platform>
+	<source replaceContents="true" replaceName="true">src/_TBOX_PREFIX_App.cpp</source>
+	<asset>assets/0.jpg</asset>
+	<asset>assets/defaultvertex.fs</asset>
+	<asset>assets/inputImage.fs</asset>
+	<asset>assets/fbo0.json</asset>
+	<asset>assets/fx.glsl</asset>
+	<asset>assets/passthrough.vs</asset>
+	<asset>assets/post.glsl</asset>
+	<asset>assets/mixette.glsl</asset>
+	<asset>assets/shadertoy.vd</asset>
+	<asset>assets/video_texture.fs.glsl</asset>
+	<asset>assets/video_texture.vs.glsl</asset>
+</template>
+</cinder>

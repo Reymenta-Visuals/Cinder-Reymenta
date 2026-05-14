@@ -48,7 +48,7 @@ vec3 DataTransfernorm(vec3 p)
 }
 void main(void)
 {
-   vec2 uv = iZoom * gl_FragCoord.xy / iResolution.xy;
+   vec2 uv =  gl_FragCoord.xy / iResolution.xy;
    uv.x -= iRenderXY.x;
    uv.y -= iRenderXY.y;
 

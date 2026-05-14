@@ -1,0 +1,11 @@
+{
+  "shader": {
+    "shadername": "inputImage.fs",
+    "shadertype": "fs"
+  },
+  "texture": {
+    "texturemode": 5,
+    "texturename": "shared",
+    "texturetype": "shared"
+  }
+}

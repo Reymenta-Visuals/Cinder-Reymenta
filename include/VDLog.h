@@ -1,3 +1,9 @@
+/*
+	VDLog
+	Handles logging to the filesystem and console.
+*/
+// rewriten as a singleton
+
 #pragma once
 
 #include "cinder/Cinder.h"
@@ -9,24 +15,20 @@
 
 using namespace ci;
 using namespace ci::app;
-using namespace std;
 
-namespace VideoDromm
+namespace videodromm
 {
 	// stores the pointer to the VDLog instance
 	typedef std::shared_ptr<class VDLog> VDLogRef;
 
 	class VDLog {
 	public:		
-		VDLog();
 
-		static VDLogRef	create()
-		{
-			return shared_ptr<VDLog>(new VDLog());
-		}
+		static VDLogRef	create();
 
 	private:
-
+		static VDLogRef LOGGER;
+		VDLog();
 	};
 
 

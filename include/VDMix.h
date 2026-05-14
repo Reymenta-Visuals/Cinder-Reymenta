@@ -1,11 +1,18 @@
 #pragma once
+/*
+	VDMix
+	Handles mixing shaders.
+	Maintains a Fbo list
+	Outputs severals Fbos depending on the context: mix 2 shaders or several with weights
+*/
+
+#pragma once
 
 #include "cinder/app/App.h"
 #include "cinder/app/RendererGl.h"
 #include "cinder/gl/gl.h"
 #include "cinder/gl/GlslProg.h"
-#include "cinder/Xml.h"
-#include "cinder/Json.h"
+//#include "cinder/Json.h"
 #include "cinder/Capture.h"
 #include "cinder/Log.h"
 #include "cinder/Timeline.h"
@@ -14,8 +21,12 @@
 #include "VDSettings.h"
 // Animation
 #include "VDAnimation.h"
+// Uniforms
+#include "VDUniforms.h"
 // Fbos
-#include "VDFbo.h"
+#include "VDFboShader.h"
+// Params
+#include "VDParams.h"
 
 // Syphon
 #if defined( CINDER_MAC )
@@ -27,195 +38,224 @@
 
 using namespace ci;
 using namespace ci::app;
-using namespace std;
-using namespace VideoDromm;
 
-namespace VideoDromm
+using namespace videodromm;
+
+namespace videodromm
 {
 	// stores the pointer to the VDMix instance
 	typedef std::shared_ptr<class VDMix> 	VDMixRef;
-	struct VDMixFbo
-	{
-		ci::gl::FboRef					fbo;
-		ci::gl::Texture2dRef			texture;
-		string							name;
-	};
+
 	class VDMix {
 	public:
-		VDMix(VDSettingsRef aVDSettings, VDAnimationRef aVDAnimation);
-		static VDMixRef					create(VDSettingsRef aVDSettings, VDAnimationRef aVDAnimation)
+		VDMix(VDSettingsRef aVDSettings, VDAnimationRef aVDAnimation, VDUniformsRef aVDUniforms);
+		static VDMixRef					create(VDSettingsRef aVDSettings, VDAnimationRef aVDAnimation, VDUniformsRef aVDUniforms)
 		{
-			return shared_ptr<VDMix>(new VDMix(aVDSettings, aVDAnimation));
+			return std::shared_ptr<VDMix>(new VDMix(aVDSettings, aVDAnimation, aVDUniforms));
 		}
-		void							update();
-		void							updateAudio();
-		void							resize();
-		bool							handleMouseMove(MouseEvent &event);
-		bool							handleMouseDown(MouseEvent &event);
-		bool							handleMouseDrag(MouseEvent &event);
-		bool							handleMouseUp(MouseEvent &event);
-		bool							handleKeyDown(KeyEvent &event);
-		bool							handleKeyUp(KeyEvent &event);
-		bool							isFlipH() { return mFlipH; };
-		bool							isFlipV() { return mFlipV; };
 
-		unsigned int					getMixFbosCount() { return mMixFbos.size(); };
-		string							getMixFboName(unsigned int aMixFboIndex);
-
-		// blendmodes
-		unsigned int					getFboBlendCount();
-		ci::gl::TextureRef				getFboThumb(unsigned int aBlendIndex);
-		void							useBlendmode(unsigned int aBlendIndex);
 		// fbolist
-		unsigned int					getFboListSize() { return mFboList.size(); };
-
-		ci::gl::TextureRef				getMixTexture(unsigned int aMixFboIndex = 0);
-		ci::gl::TextureRef				getFboTexture(unsigned int aFboIndex = 0);
-		ci::gl::TextureRef				getFboRenderedTexture(unsigned int aFboIndex);
-		unsigned int					getBlendFbosCount() { return mBlendFbos.size(); }
-
-		// RTE in release mode ci::gl::Texture2dRef			getRenderedTexture(bool reDraw = true);
-		ci::gl::Texture2dRef			getRenderTexture();
-		void							save();
-		void							load();
-		// fbos
-		unsigned int 					createShaderFbo(string aShaderFilename, unsigned int aInputTextureIndex = 0);
-		unsigned int					createShaderFboFromString(string aFragmentShaderString, string aShaderFilename);
-		string							getFboName(unsigned int aFboIndex) { return mFboList[aFboIndex]->getName(); };
-		void							setFboInputTexture(unsigned int aFboIndex, unsigned int aInputTextureIndex);
-		unsigned int					getFboInputTextureIndex(unsigned int aFboIndex);
-		void							fboFlipV(unsigned int aFboIndex);
-		bool							isFboFlipV(unsigned int aFboIndex);
-		void							setFboFragmentShaderIndex(unsigned int aFboIndex, unsigned int aFboShaderIndex);
-		unsigned int					getFboFragmentShaderIndex(unsigned int aFboIndex);
-		unsigned int					getFboAIndex(unsigned int aIndex) { return 0; };
-		unsigned int					getFboBIndex(unsigned int aIndex) { return 1; };
-
-		// feedback get/set
-		int								getFeedbackFrames() {
-			return mFeedbackFrames;
+		unsigned int					getFboShaderListSize() {
+			return (unsigned int)mFboShaderList.size();
 		};
-		void							setFeedbackFrames(int aFeedbackFrames) {
-			mFeedbackFrames = aFeedbackFrames;
+		bool							isFboValid(unsigned int aFboIndex) {
+			bool valid = false;
+			if (mFboShaderList.size() > 0) {
+				valid = mFboShaderList[getValidFboIndex(aFboIndex)]->isValid();
+			}
+			return valid;
+
 		};
-		// textures
-		ci::gl::TextureRef				getInputTexture(unsigned int aTextureIndex);
-		string							getInputTextureName(unsigned int aTextureIndex);
-		unsigned int					getInputTexturesCount();
+		std::string						getFboMsg(unsigned int aFboIndex) {
+			return mFboShaderList[getValidFboIndex(aFboIndex)]->getFboMsg();
+		};
+		std::string						getFboError(unsigned int aFboIndex) {
+			return mFboShaderList[getValidFboIndex(aFboIndex)]->getFboError();
+		};
+		std::string						getFboStatus(unsigned int aFboIndex) {
+			return mFboShaderList[getValidFboIndex(aFboIndex)]->getFboStatus();
+		};
+		bool							isValidInputTexture(unsigned int aTexIndex = 0) {
+			return mFboShaderList[getValidFboIndex(mSelectedFbo)]->isValidInputTexture(aTexIndex);
+		};
+		unsigned int					getFboMs(unsigned int aTexIndex = 0) {
+			return mFboShaderList[getValidFboIndex(mSelectedFbo)]->getFboMs(aTexIndex);
+		};
+		unsigned int					getFboMsTotal(unsigned int aFboIndex = 0) {
+			return mFboShaderList[getValidFboIndex(aFboIndex)]->getFboMsTotal();
+		};
 
-		int								getInputTextureXLeft(unsigned int aTextureIndex);
-		void							setInputTextureXLeft(unsigned int aTextureIndex, int aXLeft);
-		int								getInputTextureYTop(unsigned int aTextureIndex);
-		void							setInputTextureYTop(unsigned int aTextureIndex, int aYTop);
-		int								getInputTextureXRight(unsigned int aTextureIndex);
-		void							setInputTextureXRight(unsigned int aTextureIndex, int aXRight);
-		int								getInputTextureYBottom(unsigned int aTextureIndex);
-		void							setInputTextureYBottom(unsigned int aTextureIndex, int aYBottom);
-		bool							isFlipVInputTexture(unsigned int aTextureIndex);
-		bool							isFlipHInputTexture(unsigned int aTextureIndex);
-		void							inputTextureFlipV(unsigned int aTextureIndex);
-		void							inputTextureFlipH(unsigned int aTextureIndex);
-		bool							getInputTextureLockBounds(unsigned int aTextureIndex);
-		void							toggleInputTextureLockBounds(unsigned int aTextureIndex);
-		unsigned int					getInputTextureOriginalWidth(unsigned int aTextureIndex);
-		unsigned int					getInputTextureOriginalHeight(unsigned int aTextureIndex);
-		void							togglePlayPause(unsigned int aTextureIndex);
-		void							loadImageFile(string aFile, unsigned int aTextureIndex);
-		void							loadAudioFile(string aFile);
-		void							loadMovie(string aFile, unsigned int aTextureIndex);
-		bool							loadImageSequence(string aFolder, unsigned int aTextureIndex);
-		void							updateStream(string * aStringPtr);
+		std::string						getAssetsPath() {
+			return mAssetsPath;
+		};
+		unsigned int findAvailableIndex(unsigned int aFboShaderIndex);
+		bool							setFragmentShaderString(const string& aFragmentShaderString, const std::string& aName = "", unsigned int aFboShaderIndex = 0);
 
-		// movie
-		bool							isMovie(unsigned int aTextureIndex);
+		int								loadFragmentShader(const std::string& aFilePath, unsigned int aFboShaderIndex);
+		std::vector<ci::gl::GlslProg::Uniform>			getUniforms(unsigned int aFboIndex = 0) {
+			return mFboShaderList[getValidFboIndex(aFboIndex)]->getUniforms();
+		}
 
-		// sequence
-		bool							isSequence(unsigned int aTextureIndex);
-		bool							isLoadingFromDisk(unsigned int aTextureIndex);
-		void							toggleLoadingFromDisk(unsigned int aTextureIndex);
-		void							syncToBeat(unsigned int aTextureIndex);
-		void							reverse(unsigned int aTextureIndex);
-		float							getSpeed(unsigned int aTextureIndex);
-		void							setSpeed(unsigned int aTextureIndex, float aSpeed);
-		int								getPosition(unsigned int aTextureIndex);
-		void							setPlayheadPosition(unsigned int aTextureIndex, int aPosition);
-		int								getMaxFrame(unsigned int aTextureIndex);
-		// shaders
-		void							updateShaderThumbFile(unsigned int aShaderIndex);
-		void							removeShader(unsigned int aShaderIndex);
-		void							setFragmentShaderString(unsigned int aShaderIndex, string aFragmentShaderString, string aName = "");
-		//string							getVertexShaderString(unsigned int aShaderIndex);
-		string							getFragmentShaderString(unsigned int aShaderIndex);
-		unsigned int					getShadersCount() { return mShaderList.size(); };
-		string							getShaderName(unsigned int aShaderIndex);
-		ci::gl::TextureRef				getShaderThumb(unsigned int aShaderIndex);
-		string							getFragmentString(unsigned int aShaderIndex) { return mShaderList[aShaderIndex]->getFragmentString(); };
-		// spout output
-		void							toggleSharedOutput(unsigned int aMixFboIndex = 0);
-		bool							isSharedOutputActive() { return mSharedOutputActive; };
-		unsigned int					getSharedMixIndex() { return mSharedFboIndex; };
+		void							setSelectedFbo(unsigned int aFboIndex = 0) {
+			mSelectedFbo = getValidFboIndex(aFboIndex);
+		}
+		unsigned int					getSelectedFbo() {
+			return mSelectedFbo;
+		};
+		/*void							setFboInputTexture(unsigned int aFboIndex = 0, unsigned int aTexIndex = 0) {
+			if (mFboShaderList.size() > 0) {
+				mFboShaderList[getValidFboIndex(aFboIndex)]->setInputTextureIndex(aTexIndex);
+				// TODO 20211227 check if useless now mFboShaderList[getValidFboIndex(aFboIndex)]->setInputTextureRef(mTextureList[texIndex]->getTexture());
+			}
+		}*/
 
+		ci::gl::Texture2dRef			getFboInputTexture(unsigned int aTexIndex = 0) {
+			return mFboShaderList[getValidFboIndex(mSelectedFbo)]->getInputTexture(aTexIndex);
+		}
+		std::string						getInputTextureName(unsigned int aTexIndex = 0) {
+			return mFboShaderList[getValidFboIndex(mSelectedFbo)]->getTextureName(aTexIndex);
+		}
+		std::string						getFboTextureName(unsigned int aFboIndex) {
+			return mFboShaderList[getValidFboIndex(aFboIndex)]->getTextureName(); // useless or duplic
+		};
+
+		int								getFboInputTextureWidth(unsigned int aFboIndex) {
+			return mFboShaderList[getValidFboIndex(aFboIndex)]->getInputTextureWidth();
+		};
+		int								getFboInputTextureHeight(unsigned int aFboIndex) {
+			return mFboShaderList[getValidFboIndex(aFboIndex)]->getInputTextureHeight();
+		};
+
+		void							setFboTextureAudioMode(unsigned int aFboIndex) {
+			mFboShaderList[getValidFboIndex(aFboIndex)]->setFboTextureAudioMode();
+		}
+		void							saveThumbnail(unsigned int aFboIndex) {
+			mFboShaderList[getValidFboIndex(aFboIndex)]->saveThumbnail();
+		}
+		ci::gl::Texture2dRef			getFboInputTextureListItem(unsigned int aFboIndex, unsigned int aTexIndex) {
+			return mFboShaderList[getValidFboIndex(aFboIndex)]->getFboInputTextureListItem(aTexIndex);
+		}
+		/*unsigned int					getFboInputTextureIndex(unsigned int aFboIndex) {
+			return mFboShaderList[getValidFboIndex(aFboIndex)]->getInputTextureIndex();
+		}*/
+		unsigned int					getInputTexturesCount(unsigned int aFboIndex = 0) {
+			return mFboShaderList[getValidFboIndex(aFboIndex)]->getInputTexturesCount();
+		}
+
+		std::string						getFboShaderName(unsigned int aFboIndex) {
+			return mFboShaderList[getValidFboIndex(aFboIndex)]->getShaderName();
+		};
+		void							loadImageFile(const std::string& aFile, unsigned int aFboIndex = 0);
+		void							loadVideoFile(const std::string& aFile, unsigned int aFboIndex = 0);
+
+		std::vector<ci::gl::GlslProg::Uniform>	getFboShaderUniforms(unsigned int aFboShaderIndex);
+		float							getUniformValueByLocation(unsigned int aFboShaderIndex, unsigned int aLocationIndex);
+		void							setUniformValueByLocation(unsigned int aFboShaderIndex, unsigned int aLocationIndex, float aValue);
+
+		unsigned int					createFboShaderTexture(unsigned int aFboIndex = 0, const std::string& aFolder = "");
+		void							clearFboShaderList() {
+			mFboShaderList.clear();
+		}
+		ci::gl::TextureRef				getFboRenderedTexture(unsigned int aFboIndex) {
+			if (mFboShaderList.size() == 0) return mDefaultTexture;
+			/* 20220101 hydra check
+
+			if (aFboIndex > mFboShaderList.size() - 1) aFboIndex = 0;
+
+			if (mFboShaderList[aFboIndex]->isHydraTex()) {
+				// fbo as inputTexture
+				for (unsigned int i = 0; i < 4; i++)
+				{
+					mFboShaderList[aFboIndex]->setInputTextureRefByIndex(i, mFboShaderList[getValidFboIndex(aFboIndex)]->getTexture());
+				}
+			}
+			else {
+				// 20211227 useless? mFboShaderList[aFboIndex]->setInputTextureRef(mFboShaderList[aFboIndex]->getTexture());
+			}
+			return mFboShaderList[aFboIndex]->getRenderedTexture();
+			*/
+			return mFboShaderList[getValidFboIndex(aFboIndex)]->getRenderedTexture();
+
+		}
+		ci::gl::TextureRef				getFboTexture(unsigned int aFboIndex) {
+			if (mFboShaderList.size() == 0) return mDefaultTexture;
+			if (aFboIndex > mFboShaderList.size() - 1) aFboIndex = 0;
+			return mFboShaderList[aFboIndex]->getTexture();
+
+		}
+
+
+
+
+
+
+		bool handleMouseDown(MouseEvent event)
+		{
+			bool handled = false;
+			if (mFboShaderList.size() > 0) {
+				for (unsigned int i = 0; i < mFboShaderList.size() - 1; i++)
+				{
+					if (mFboShaderList[i]->handleMouseDown(event)) handled = true;// event.getPos()
+				}
+			}
+			event.setHandled(handled);
+			return event.isHandled();
+		}
+		bool handleMouseDrag(MouseEvent event)
+		{
+			if (mFboShaderList.size() == 0) return false;
+			for (unsigned int i = 0; i < mFboShaderList.size() - 1; i++)
+			{
+				mFboShaderList[i]->handleMouseDrag(event);
+			}
+			return true;
+		}
+		ci::gl::TextureRef				getMixetteTexture(unsigned int aFboIndex);
+		ci::gl::TextureRef				getRenderedMixetteTexture(unsigned int aFboIndex) { return mMixetteTexture; };
+		void							selectSenderPanel() {
+			if (mFboShaderList.size() == 0) return;
+			mFboShaderList[0]->selectSenderPanel();
+			CI_LOG_E("selectSenderPanel " << (unsigned int)mFboShaderList.size());
+			for (size_t i{ 0 }; i < mFboShaderList.size() - 1; i++)
+			{
+				if (mFboShaderList[i]->getInputTextureMode() == VDTextureMode::SHARED) {
+					mFboShaderList[i]->selectSenderPanel();
+				}
+
+			}
+		};
+		void							restore(const fs::path& aFilePath);
 	private:
-		bool							mFlipV;
-		bool							mFlipH;
-		std::string						mFbosPath;
-		gl::Texture::Format				fmt;
-		gl::Fbo::Format					fboFmt;
-
-		//! mix shader
-		gl::GlslProgRef					mMixShader;
-
+		// Params
+		VDParamsRef						mVDParams;
 		// Animation
 		VDAnimationRef					mVDAnimation;
 		// Settings
 		VDSettingsRef					mVDSettings;
+		// Uniforms
+		VDUniformsRef					mVDUniforms;
 
-		//! Fbos
-		map<int, VDMixFbo>				mMixFbos;
-		map<int, VDMixFbo>				mTriangleFbos;
+		//! FboShaders
+		VDFboShaderRef					mMixFboShader;
+		VDFboShaderRef					mFboShader;
 		// maintain a list of fbos specific to this mix
-		VDFboList						mFboList;
-		fs::path						mMixesFilepath;
-
-		//! Shaders
-		VDShaderList					mShaderList;
-		void							initShaderList();
-		//! Textures
-		VDTextureList					mTextureList;
-		fs::path						mTexturesFilepath;
-		bool							initTextureList();
-		// blendmodes fbos
-		map<int, ci::gl::FboRef>		mBlendFbos;
-		int								mCurrentBlend;
-		gl::GlslProgRef					mGlslMix, mGlslBlend, mGlslFeedback;
-		// render
-		void							renderMix();
-		void							renderBlend();
-		// warping
-		gl::FboRef						mRenderFbo;
-		// warp rendered texture
-		ci::gl::Texture2dRef			mRenderedTexture;
-		// feedback
-		// 0: only last rendered 1+: number of feedback images
-		unsigned int					mFeedbackFrames;
-		map<int, ci::gl::Texture2dRef>	mOutputTextures;
-		unsigned int					mCurrentFeedbackIndex;
-		gl::FboRef						mFeedbackFbo;
-
-		// Output texture
-		ci::gl::Texture2dRef			mFeedbackTexture;
-		// shared texture output
-		bool							mSharedOutputActive;
-		unsigned int					mSharedFboIndex;
-		bool							mSpoutInitialized;
-		char							mSenderName[256];
-#if defined( CINDER_MSW )
-		// spout output
-		SpoutSender						mSpoutSender;
-#endif
-		// syphon output
-#if defined( CINDER_MAC )
-		syphonServer                    mSyphonServer;
-#endif
+		VDFboShaderList					mFboShaderList;
+		unsigned int					mSelectedFbo = 0;
+		// textures
+		bool							save();
+		gl::Texture::Format				fmt;
+		gl::Fbo::Format					fboFmt;
+		//! mixette
+		gl::FboRef						mMixetteFbo;
+		gl::GlslProgRef					mGlslMixette;
+		ci::gl::Texture2dRef			mMixetteTexture;
+		std::string						mError;
+		const unsigned int				MAXSHADERS = 8;
+		std::string						mAssetsPath = "";
+		fs::path						mixPath;
+		unsigned int					mCurrentSecond = 0;
+		unsigned int					mCurrentIndex = 0;
+		unsigned int					getValidFboIndex(unsigned int aFboIndex);
+		ci::gl::Texture2dRef			mDefaultTexture; //in case no fbos
 	};
 }

@@ -1,3 +1,11 @@
+/*
+	VDSettings
+	Global settings for the app
+*/
+// TODO switch from xml to json
+// TODO remove public Si beans on laisse à public
+
+
 #pragma once
 
 #include "cinder/app/App.h"
@@ -6,47 +14,39 @@
 #include "cinder/gl/Fbo.h"
 #include "cinder/Timeline.h"
 #include "cinder/Xml.h"
+//#include "cinder/Json.h"
+#include "cinder/Log.h"
 
 using namespace ci;
 using namespace ci::app;
-using namespace std;
 
-namespace VideoDromm {
+namespace videodromm {
 
 	typedef std::shared_ptr<class VDSettings> VDSettingsRef;
 
 	class VDSettings
 	{
 	public:
-		VDSettings();
-		static VDSettingsRef create();
+		VDSettings(const std::string& filename);
+		static VDSettingsRef create(const std::string& filename);
 
-		//! maximum number of fbos, shaders, textures
-		static const int			MAX = 14;
-		static const int			IFPS = 25;
-		// texture modes
-		static const int			TEXTUREMODEMIX = 0;				// mix two shaders
-		static const int			TEXTUREMODEAUDIO = 1;			// audio spectrum
-		static const int			TEXTUREMODELEFT = 2;			// left
-		static const int			TEXTUREMODERIGHT = 3;			// right
-		static const int			TEXTUREMODEINPUT = 4;			// spout
-		static const int			TEXTUREMODESHADER = 5;			// shader
-		static const int			TEXTUREMODEIMAGE = 6;			// image
-		static const int			TEXTUREMODEIMAGESEQUENCE = 7;	// image sequence
-		static const int			TEXTUREMODETHUMB = 8;			// thumb
-		static const int			TEXTUREMODEFBO = 9;				// fbo
-		static const int			TEXTUREMODETEXT = 10;			// text
-		static const int			TEXTUREMODEMOVIE = 11;			// movie
+		enum VDAnims {
+			ANIM_NONE = 0,
+			ANIM_TIME = 1,
+			ANIM_AUTO = 2,
+			ANIM_BASS = 3,
+			ANIM_MID = 4,
+			ANIM_SMOOTH = 5
+		};
+		//const int MAX = 14;//todo remove as it is in VDUniforms.h
 		bool						save();
 		bool						restore();
 		void						reset();
 		void						resetSomeParams();
-
+		// json
+		//ci::Json					toJson(bool save = false) const;
 		// params
-		//int							mMode, mPreviousMode, mNewMode;
-		int							mPreviewWidth, mPreviewHeight, mPreviewFboWidth, mPreviewFboHeight;
-		float						mAspectRatio;
-		int							mMainWindowX, mMainWindowY, mMarginSmall, mMainWindowWidth, mMainWindowHeight, mFboWidth, mFboHeight;
+		int							mMainWindowX, mMainWindowY, mMarginSmall, mMainWindowWidth, mMainWindowHeight;
 		float						mCodeEditorWidth, mCodeEditorHeight;
 		// MIDI
 		bool						mMIDIEnabled;
@@ -56,21 +56,22 @@ namespace VideoDromm {
 		uint16_t					mOSCDestinationPort;
 		std::string					mOSCDestinationHost2;
 		uint16_t					mOSCDestinationPort2;
-		uint16_t					mOSCReceiverPort;
-		std::string					mOSCMsg;
-		bool						mOSCNewMsg;		// log to console
-		std::string					mMsg;
-		bool						mNewMsg;
-		std::string					InfoMsg;
+
+		//std::string					mShaderMsg;
 		bool						mIsOSCSender;
+		//static const int			mMsgLength = 150;
+
 		// render windows
 		int							mRenderWidth;
-		int							mRenderHeight;
-		vec2						mRenderXY, mLeftRenderXY, mRightRenderXY, mPreviewRenderXY, mWarp1RenderXY, mWarp2RenderXY;
+		int							mRenderHeight;//mRenderXY,
+		vec2						mTexMult, mLeftRenderXY, mRightRenderXY, mPreviewRenderXY, mWarp1RenderXY, mWarp2RenderXY;
 		vec2						mRenderPosXY;
 		vec2						mPreviewFragXY;
 		vec2						mCamPosXY;
-		//vec2						mRenderResoXY;
+		int							mxLeft;
+		int							mxRight;
+		int							myLeft;
+		int							myRight;
 		bool						mAutoLayout;
 		bool						mStandalone;
 
@@ -82,25 +83,17 @@ namespace VideoDromm {
 		bool						isUIDirty;
 		bool						mMIDIOpenAllInputPorts;
 		int							mCount;
-		string						mImageFile;
+		std::string					mImageFile;
 
 		// shader uniforms	
-		float						iSpeedMultiplier;        // speed multiplier
+		//float						iSpeedMultiplier;   // speed multiplier 20211018 replaced by iSpeed
+		float						iStart = 1.0f;		// start adjustment
+		float						iBarDuration = 1.0f;// between 2 bars (seconds)
 		float						iChannelTime[4];
 		bool						iFade;
 		bool						iRepeat;
-		int							iBlendmode;
-		float						iParam1;
-		float						iParam2;
-		bool						iXorY;
-		//ci::Anim<float> 			iBadTv;
 		ci::Anim<float> 			iAlpha;
-
-		string						mAssetsPath;
 		bool						iShowFps;
-		bool						iDebug;
-		string						sFps;
-		bool						iGreyScale;
 		unsigned int				shaderEditIndex;
 		// transition
 		int							iTransition;
@@ -109,31 +102,22 @@ namespace VideoDromm {
 		//! Time in seconds at which the transition to the next shader starts.
 		double						mTransitionTime;
 
-		//int							multFactor;
 		// windows and params
 		int							mRenderX;
 		int							mRenderY;
 		int							mDisplayCount;
 		bool						mPreviewEnabled;
-		string						mCurrentFilePath;
+		std::string					mCurrentFilePath;
 		// Textures
 		bool						mRenderThumbs;
 		int							currentSelectedIndex;
 
-		// modes, should be the same in App
-		/*static const int			MODE_MIX = 0;
-		static const int			MODE_WARP = 1;
-		static const int			MODE_AUDIO = 2;
-		static const int			MODE_SPHERE = 3;
-		static const int			MODE_MESH = 4;
-		static const int			MODE_LIVE = 5;
-		static const int			MODE_ABP = 6;
-		static const int			MODE_KINECT = 8;
+
 		// windows to create, should be the same in App and UI
-		static const int			NONE = 0;
-		static const int			RENDER_1 = 1;
-		static const int			RENDER_DELETE = 5;
-		static const int			MIDI_IN = 6;*/
+		/*			NONE = 0;
+					RENDER_1 = 1;
+					RENDER_DELETE = 5;
+					MIDI_IN = 6;*/
 
 		int							mWindowToCreate;
 		ColorA						FPSColor;
@@ -143,10 +127,7 @@ namespace VideoDromm {
 		ColorA						ColorPurple;
 		// audio
 		bool						mIsPlaying;
-		bool						mUseLineIn;
-		int							iBeat;
-		int							mFftSize;
-		int							mWindowSize;
+
 		float						iSeed;
 
 		// z EyePointZ
@@ -164,10 +145,8 @@ namespace VideoDromm {
 
 		// spout
 		int							mFboResolution;
-		//int							mOutputVideoResolution;
-		//vec2						mOutputResolution;
 		// indexes for textures
-		map<int, int>				iChannels;
+		//std::map<int, int>			iChannels;
 		int							selectedChannel;
 		int							selectedWarp;
 		int							mWarpCount;
@@ -176,69 +155,35 @@ namespace VideoDromm {
 		bool						mSplitWarpV;
 		int							mUIZoom;
 		int							mCurrentPreviewFboIndex;
-		/*int							mSphereFboIndex, mMeshFboIndex, mLiveFboIndex, mMixFboIndex, mAudioFboIndex;
-		int							mLeftFboIndex, mRightFboIndex, mVertexSphereFboIndex, mWarp1FboIndex, mWarp2FboIndex, mABPFboIndex;
-		int							mLeftFragIndex, mRightFragIndex, mPreviewFragIndex, mPreviousFragIndex, mWarp1FragIndex, mWarp2FragIndex, mLiveFragIndex;
-		float						iZoomLeft, iZoomRight;*/
-		int							iTrack;
-		// meshes
-		int							mMeshIndex;
-		// VertexSphere
-		int							mVertexSphereTextureIndex;
+
 		// camera
 		CameraPersp					mCamera;
 		vec2						mCamEyePointXY;
 		float						mCamEyePointZ;
 		// web sockets
 		bool						mIsRouter;
-		bool						mAreWebSocketsEnabledAtStartup;
-		bool						mIsWebSocketsServer;
-		string						mWebSocketsProtocol;
-		string						mWebSocketsHost;
-		uint16_t					mWebSocketsPort;
-		std::string					mWebSocketsMsg;
-		bool						mWebSocketsNewMsg;
-		// midi
-		std::string					mMidiMsg;
-		float						xFade;
-		bool						xFadeChanged;
+		bool						mAreSocketIOEnabledAtStartup;
+		bool						mIsSocketIOServer;
+		std::string					mSocketIOProtocol;
+		std::string					mSocketIOHost;
+		std::string					mSocketIORoom;
+		std::string					mSocketIONickname;
+		uint16_t					mSocketIOPort;
+		std::string					mSocketIOMsg;
 
-		// abp
-		float						mBend;
-		float						liveMeter;
 		// info to backup in XML
-		string						mInfo;
+		std::string					mInfo;
 		// ableton liveOSC
-		string						mTrackName;
-		// imgui positions and sizes
-		int							uiMargin;
-		// mPreviewFboWidth 80 mPreviewFboHeight 60 margin 10 inBetween 15
-		int							uiElementWidth;
-		int							uiElementHeight;
-
-		int							uiXPos;
-		int							uiXPosCol1;
-		int							uiXPosCol2;
-		int							uiXPosCol3;
-		int							uiYPos;
-		int							uiYPosRow1;
-		int							uiYPosRow2;
-		int							uiYPosRow3;
-		int							uiLargeW;
-		int							uiLargeH;
-		int							uiLargePreviewW;
-		int							uiLargePreviewH;
-		int							uiPreviewH;
-		std::string					getDefaultVextexShaderString() { return mDefaultVextexShaderString; };
-		std::string					getDefaultFragmentShaderString() { return mDefaultFragmentShaderString; };
-		std::string					getMixFragmentShaderString() { return mMixFragmentShaderString; };
+		//std::string					mTrackName;
+		// messages for UI
+		std::string					getMsg() { return mMsg; }
+		void						setMsg(const std::string& aMsg) { mMsg = aMsg; }
+		std::string					getErrorMsg() { return mErrorMsg; };
+		void						setErrorMsg(const std::string& aMsg) { mErrorMsg = aMsg; }
 	private:
-		const string settingsFileName = "VDSettings.xml";
-		//! default vertex shader
-		std::string						mDefaultVextexShaderString;
-		std::string						mDefaultFragmentShaderString;
-		std::string						mMixFragmentShaderString;
-
+		std::string					settingsFileName;
+		std::string					mMsg;
+		std::string					mErrorMsg;
 	};
 
 }

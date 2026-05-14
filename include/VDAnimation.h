@@ -1,228 +1,177 @@
+/*
+	VDAnimation
+	Handles all uniform variables for shaders: index, name, type, bounds and their animation.
+*/
+// TODO put audio in a separate class
+// TODO put timing in separate class?
+// TODO implement lazy loading for audio
+
 #pragma once
 
 #include "cinder/Cinder.h"
 #include "cinder/app/App.h"
-
-// json
-#include "cinder/Json.h"
-// Settings
+//!  audio
+#include "cinder/audio/Context.h"
+#include "cinder/audio/MonitorNode.h"
+#include "cinder/audio/Utilities.h"
+#include "cinder/audio/Source.h"
+#include "cinder/audio/Target.h"
+#include "cinder/audio/dsp/Converter.h"
+#include "cinder/audio/SamplePlayerNode.h"
+#include "cinder/audio/SampleRecorderNode.h"
+#include "cinder/audio/NodeEffects.h"
+#include "cinder/Rand.h"
+//!  json
+//#include "cinder/Json.h"
+//!  Settings
 #include "VDSettings.h"
-// Live json params
-#include "LiveParam.h"
+//!  Uniforms
+#include "VDUniforms.h"
 
 using namespace ci;
 using namespace ci::app;
-using namespace std;
-using namespace live;
 
-namespace VideoDromm
+namespace videodromm
 {
 	// stores the pointer to the VDAnimation instance
 	typedef std::shared_ptr<class VDAnimation> VDAnimationRef;
 
-	//enum class UniformTypes { FLOAT, SAMPLER2D, VEC2, VEC3, VEC4, INT, BOOL };
-
-	struct VDUniform
-	{
-		int								uniformType;
-		int								index;
-		float							defaultValue;
-		float							floatValue;
-		bool							boolValue;
-		int								intValue;
-		vec2							vec2Value;
-		vec3							vec3Value;
-		vec4							vec4Value;
-		float							minValue;
-		float							maxValue;
-		bool							autotime;
-		bool							automatic;
-		int								textureIndex;
-		bool							isValid;
-	};
-
 	class VDAnimation {
-	public:		
-		VDAnimation(VDSettingsRef aVDSettings);
+	public:
+		VDAnimation(VDSettingsRef aVDSettings, VDUniformsRef aVDUniforms);
 
-		static VDAnimationRef			create(VDSettingsRef aVDSettings)
+		static VDAnimationRef			create(VDSettingsRef aVDSettings, VDUniformsRef aVDUniforms)
 		{
-			return shared_ptr<VDAnimation>(new VDAnimation(aVDSettings));
+			return std::shared_ptr<VDAnimation>(new VDAnimation(aVDSettings, aVDUniforms));
 		}
 		void							update();
-		void							load();
-		void							save();
-
-		Color							getBackgroundColor() { return mBackgroundColor; };
-		float							getExposure() { return mExposure; };
-		void							setExposure(float aExposure);
-		bool							getAutoBeatAnimation() { return mAutoBeatAnimation; };
-		void							setAutoBeatAnimation( bool aAutoBeatAnimation);
-
+		void							resetAnim();
+		void							resetUniformAnim(unsigned int anim);
 		const int						mBlendModes = 28;
 		void							blendRenderEnable(bool render) { mBlendRender = render; };
 		// tap tempo
-		float							iDeltaTime;
-		float							iTimeFactor;
 		bool							mUseTimeWithTempo;
+		void							toggleUseTimeWithTempo() { mUseTimeWithTempo = !mUseTimeWithTempo; };
+		void							useTimeWithTempo() { mUseTimeWithTempo = true; };
+		bool							getUseTimeWithTempo() { return mUseTimeWithTempo; };
 		float							iTempoTimeBeatPerBar;
-		float							getBpm() { return mBpm; };
-		void							setBpm(float aBpm) { iDeltaTime = 60 / mBpm; mBpm = aBpm; };
 		void							tapTempo();
-		void							setTimeFactor(const int &aTimeFactor);
-		int								getEndFrame() { return mEndFrame; };
-		void							setEndFrame(int frame) { mEndFrame = frame; };
-
-		//int							iBar;
-		//int								iBeatIndex; //1 to beatsperbar
 		// animation
 		int								currentScene;
-		//int							getBadTV(int frame);
 		// keyboard
-		bool							handleKeyDown(KeyEvent &event);
-		bool							handleKeyUp(KeyEvent &event);
+		bool							handleKeyDown(KeyEvent& event);
+		bool							handleKeyUp(KeyEvent& event);
 		// audio
-		float							maxVolume;		
-		static const int				mWindowSize = 128; // fft window size
-		float							iFreqs[mWindowSize];
+		ci::gl::TextureRef				getAudioTexture();
+		std::string						getAudioTextureName() { return mAudioName; };
+		bool							mLineInInitialized;
+		bool							mWaveInitialized;
+		audio::InputDeviceNodeRef		mLineIn;
+		audio::MonitorSpectralNodeRef	mMonitorLineInSpectralNode;
+		audio::MonitorSpectralNodeRef	mMonitorWaveSpectralNode;
+		audio::SamplePlayerNodeRef		mSamplePlayerNode;
+		audio::SourceFileRef			mSourceFile;
+		audio::MonitorSpectralNodeRef	mScopeLineInFmt;
+		audio::BufferPlayerNodeRef		mBufferPlayerNode;
+
+		std::vector<float>				mMagSpectrum;
+
+		// number of frequency bands of our spectrum
+		static const int				mFFTWindowSize = 32;
+		float							iFreqs[mFFTWindowSize];
+		int								mPosition;
+		std::string						mAudioName;
 		void							preventLineInCrash(); // at next launch
 		void							saveLineIn();
+		void							preventWaveMonitorCrash(); // at next launch
+		void							saveWaveMonitor();
+		bool							getUseAudio() {
+			return mUseAudio;
+		};
 		bool							getUseLineIn() {
-			return mVDSettings->mUseLineIn;
+			return mUseLineIn;
 		};
-		void							setUseLineIn(bool useLineIn) {
-			mVDSettings->mUseLineIn = useLineIn;
+		void							setUseLineIn(bool useLineIn = true) {
+			mUseLineIn = useLineIn;
 		};
-		void							toggleUseLineIn() { mVDSettings->mUseLineIn =  !mVDSettings->mUseLineIn; };
+		void							toggleUseLineIn() {
+			mUseLineIn = !mUseLineIn;
+			if (!mLineInInitialized && mUseLineIn) {
+				initLineIn();
+			}
+		};
+		void							setPreferredAudioInputDevice(const std::string& aPreferredAudioInputDevice) {
+			mPreferredAudioInputDevice = aPreferredAudioInputDevice;
+		};
+		void							setPreferredAudioOutputDevice(const std::string& aPreferredAudioOutputDevice) {
+			mPreferredAudioOutputDevice = aPreferredAudioOutputDevice;
+		};
+		void							initLineIn();
+		void							setUseWaveMonitor(bool useWaveMonitor) {
+			mUseAudio = useWaveMonitor;
+		};
+		bool							getUseWaveMonitor() { return mUseAudio; };
+		void							toggleUseWaveMonitor() { mUseAudio = !mUseAudio; };
+
 
 		// audio
 		bool							isAudioBuffered() { return mAudioBuffered; };
-		void							toggleAudioBuffered() { mAudioBuffered = !mAudioBuffered; };
+		void							toggleAudioBuffered() {
+			mAudioBuffered = !mAudioBuffered;
+		};
+		bool							getUseRandom() { return mUseRandom; };
+		void							toggleUseRandom() { mUseRandom = !mUseRandom; };
 
 		// shaders
-		bool							isExistingUniform(string aName);
-		int								getUniformType(string aName);
-		string							getUniformNameForIndex(int aIndex);
-		bool							toggleAuto(unsigned int aIndex);
+		int								getUniformTypeByName(const std::string& aName) {
+			return mVDUniforms->getUniformTypeByName(aName);
+		}
+		bool							isExistingUniform(const std::string& aName) {
+			return mVDUniforms->isExistingUniform(aName);
+		};
+
+		int								getUniformIndexForName(const std::string& aName) {
+			return mVDUniforms->getUniformIndexForName(aName);
+			//return shaderUniforms[stringToIndex(aName)].index;
+		};
 		bool							toggleValue(unsigned int aIndex);
-		bool							toggleTempo(unsigned int aIndex);
-		void							resetAutoAnimation(unsigned int aIndex);
-		bool							setFloatUniformValueByIndex(unsigned int aIndex, float aValue);
 
-		bool							setBoolUniformValueByIndex(unsigned int aIndex, bool aValue) {
-			shaderUniforms[getUniformNameForIndex(aIndex)].boolValue = aValue;
-			return aValue;
+		void							setAnim(unsigned int aCtrl, unsigned int aAnim) {
+			mVDUniforms->setAnim(aCtrl, aAnim);
 		}
-		void							setIntUniformValueByName(string aName, int aValue) {
-			shaderUniforms[aName].intValue = aValue;
-		};
-		void							setIntUniformValueByIndex(unsigned int aIndex, int aValue) {
-			shaderUniforms[getUniformNameForIndex(aIndex)].intValue = aValue;
+		unsigned int					getAnim(unsigned int aCtrl) {
+			return mVDUniforms->getAnim(aCtrl);
 		}
-
-		void setVec2UniformValueByName(string aName, vec2 aValue) {
-			shaderUniforms[aName].vec2Value = aValue;
-		}
-		void setVec2UniformValueByIndex(unsigned int aIndex, vec2 aValue) {
-			shaderUniforms[getUniformNameForIndex(aIndex)].vec2Value = aValue;
-		}
-		void setVec3UniformValueByName(string aName, vec3 aValue) {
-			shaderUniforms[aName].vec3Value = aValue;
-		}
-		void setVec3UniformValueByIndex(unsigned int aIndex, vec3 aValue) {
-			shaderUniforms[getUniformNameForIndex(aIndex)].vec3Value = aValue;
-		}
-		void setVec4UniformValueByName(string aName, vec4 aValue) {
-			shaderUniforms[aName].vec4Value = aValue;
-		}
-		void setVec4UniformValueByIndex(unsigned int aIndex, vec4 aValue) {
-			shaderUniforms[getUniformNameForIndex(aIndex)].vec4Value = aValue;
-		}
-		bool							getBoolUniformValueByIndex(unsigned int aIndex) {
-			return shaderUniforms[getUniformNameForIndex(aIndex)].boolValue;
-		}
-		float							getMinUniformValueByIndex(unsigned int aIndex) {
-			return shaderUniforms[getUniformNameForIndex(aIndex)].minValue;
-		}
-		float							getMaxUniformValueByIndex(unsigned int aIndex) {
-			return shaderUniforms[getUniformNameForIndex(aIndex)].maxValue;
-		}
-		bool							getBoolUniformValueByName(string aName) {
-			return shaderUniforms[aName].boolValue;
-		}
-		float							getFloatUniformValueByIndex(unsigned int aIndex) {
-			return shaderUniforms[getUniformNameForIndex(aIndex)].floatValue;
-		}
-		int								getSampler2DUniformValueByName(string aName) {
-			return shaderUniforms[aName].textureIndex;
-		}
-		float							getFloatUniformValueByName(string aName) {
-			return shaderUniforms[aName].floatValue;
-		}
-		vec2							getVec2UniformValueByName(string aName) {
-			return shaderUniforms[aName].vec2Value;
-		}
-		vec3							getVec3UniformValueByName(string aName) {
-			return shaderUniforms[aName].vec3Value;
-		}
-		vec4							getVec4UniformValueByName(string aName) {
-			return shaderUniforms[aName].vec4Value;
-		}
-		int								getIntUniformValueByName(string aName) {
-			return shaderUniforms[aName].intValue;
-		};
-
-		// mix fbo
-		bool							isFlipH() { return mFlipH; };
-		bool							isFlipV() { return mFlipV; };
-		void							flipH() { mFlipH = !mFlipH; };
-		void							flipV() { mFlipV = !mFlipV; };
 		unsigned int					getBlendModesCount() { return mBlendModes; };
 		bool							renderBlend() { return mBlendRender; };
 
 		// timed animation
-		int								mEndFrame;
-		//int								iBeatsPerBar;
-		int								getFreqIndexSize() { return freqIndexes.size(); };
-		int								getFreqIndex(unsigned int aFreqIndex) { return freqIndexes[aFreqIndex]; };
+		unsigned int					getFreqIndexSize() { return (unsigned int)freqIndexes.size(); };
+		unsigned int					getFreqIndex(unsigned int aFreqIndex) { return (unsigned int)freqIndexes[aFreqIndex]; };
 		void							setFreqIndex(unsigned int aFreqIndex, unsigned int aFreq) { freqIndexes[aFreqIndex] = aFreq; };
 		//float							getFreq(unsigned int aFreqIndex) { return iFreqs[freqIndexes[aFreqIndex]]; };
 
 	private:
 		// Settings
 		VDSettingsRef					mVDSettings;
-		map<int, int>					freqIndexes;
-		bool							mAudioBuffered;
-		// Live json params
-		fs::path						mJsonFilePath;
-		Parameter<Color>				mBackgroundColor;
-		Parameter<float>				mExposure;
-		Parameter<string>				mText;
-		Parameter<bool>					mAutoBeatAnimation;
-		// shaders
-		map<int, string>				controlIndexes;
-		map<string, VDUniform>			shaderUniforms;
-		//! read a uniforms json file 
-		void							loadUniforms(const ci::DataSourceRef &source);
-		void							floatFromJson(const ci::JsonTree &json);
-		void							sampler2dFromJson(const ci::JsonTree &json);
-		void							vec2FromJson(const ci::JsonTree &json);
-		void							vec3FromJson(const ci::JsonTree &json);
-		void							vec4FromJson(const ci::JsonTree &json);
-		void							intFromJson(const ci::JsonTree &json);
-		void							boolFromJson(const ci::JsonTree &json);
-		fs::path						mUniformsJson;
+		VDUniformsRef					mVDUniforms;
+		// Audio
+		ci::audio::Context* ctx = audio::Context::master();
+		std::vector<ci::audio::DeviceRef> inputDevices;
+		std::vector<ci::audio::DeviceRef> outputDevices;
+		std::string						  mPreferredAudioInputDevice = "Réseau de microphones (Realtek(R) Audio)";
+		std::string						  mPreferredAudioOutputDevice = "Haut-parleurs (Model 12)";
+		bool							mUseAudio = true;
+		bool							mUseRandom = false;
+		bool							mUseLineIn = false;
+		std::map<int, int>				freqIndexes;
+		bool							mAudioBuffered = false;
+		ci::gl::TextureRef				mAudioTexture;
+		gl::Texture2d::Format			mAudioFormat;
+		//unsigned char					dTexture[256];// MUST be < mWindowSize
 
-		void							createFloatUniform(string aName, int aCtrlIndex, float aValue = 0.01f, float aMin = 0.0f, float aMax = 1.0f);
-		void							createSampler2DUniform(string aName, int aCtrlIndex, int aTextureIndex = 0);
-		void							createVec2Uniform(string aName, int aCtrlIndex, vec2 aValue = vec2(0.0));
-		void							createVec3Uniform(string aName, int aCtrlIndex, vec3 aValue = vec3(0.0));
-		void							createVec4Uniform(string aName, int aCtrlIndex, vec4 aValue = vec4(0.0));
-		void							createIntUniform(string aName, int aCtrlIndex, int aValue = 1);
-		void							createBoolUniform(string aName, int aCtrlIndex, bool aValue = false);
-		//! write a uniforms json file
-		void							saveUniforms();
-		ci::JsonTree					uniformToJson(int i);
+		// shaders
+		//ci::Json					uniformToJson(int i);
 
 		// time
 		ci::Timer						mTimer;
@@ -234,16 +183,9 @@ namespace VideoDromm
 		double							startTime;
 		float							previousTime;
 		float							previousTimeBeatPerBar;
-		JsonTree						mData;
-		void							loadAnimation();
-		void							saveAnimation();
-
+		float							mLastBar = 0.0f; // 20210101 was int
 		std::unordered_map<int, float>	mBadTV;
-		bool							mFlipH;
-		bool							mFlipV;
 		bool							mBlendRender;
-		// timed animation
-		float							mBpm;
 
 	};
 }

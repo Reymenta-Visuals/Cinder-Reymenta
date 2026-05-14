@@ -1,576 +1,114 @@
 #include "VDAnimation.h"
 
-using namespace VideoDromm;
+using namespace videodromm;
 
-VDAnimation::VDAnimation(VDSettingsRef aVDSettings) {
+VDAnimation::VDAnimation(VDSettingsRef aVDSettings, VDUniformsRef aVDUniforms) {
 	mVDSettings = aVDSettings;
-	// mix fbo flip
-	mFlipH = true;
-	mFlipV = false;
+	mVDUniforms = aVDUniforms;
 	mBlendRender = false;
 	//audio
 	mAudioBuffered = false;
-	//setUseLineIn(true);
-	maxVolume = 0.0f;
-	for (int i = 0; i < 7; i++)
+	mUseAudio = true;
+	mUseLineIn = false;
+	mAudioFormat = gl::Texture2d::Format().swizzleMask(GL_RED, GL_RED, GL_RED, GL_ONE).internalFormat(GL_RED);
+	mAudioTexture = ci::gl::Texture::create(64, 2, mAudioFormat);
+	mLineInInitialized = false;
+	mWaveInitialized = false;
+	mAudioName = "not initialized";
+	for (int i{ 0 }; i < 7; i++)
 	{
 		freqIndexes[i] = i * 7;
 	}
-	for (int i = 0; i < mWindowSize; i++)
+	for (int i{ 0 }; i < mFFTWindowSize; i++)
 	{
-		iFreqs[i] = i;
+		iFreqs[i] = 0.0f;
 	}
-	// live json params
-	mJsonFilePath = app::getAssetPath("") / mVDSettings->mAssetsPath / "live_params.json";
-	JsonBag::add(&mBackgroundColor, "background_color");
-	JsonBag::add(&mExposure, "exposure", []() {
-		app::console() << "Updated exposure" << endl;
 
-	});
-	JsonBag::add(&mText, "text", []() {
-		app::console() << "Updated text" << endl;
-	});
-	mAutoBeatAnimation = true;
-	JsonBag::add(&mAutoBeatAnimation, "autobeatanimation");
 	currentScene = 0;
 
 	previousTime = 0.0f;
 	counter = 0;
-	iTimeFactor = 1.0f;
 	// tempo
 	mUseTimeWithTempo = false;
 	// init timer
 	mTimer.start();
 	startTime = currentTime = mTimer.getSeconds();
-	mBpm = 166;
-	iDeltaTime = 60 / mBpm;//mTempo;
-	//iBar = 0;
-	//iBadTvRunning = false;
-	//int ctrl;
 
-	mUniformsJson = getAssetPath("") / mVDSettings->mAssetsPath / "uniforms.json";
-	if (fs::exists(mUniformsJson)) {
-		loadUniforms(loadFile(mUniformsJson));
-	}
-	else {
-		// global time in seconds
-		createFloatUniform("iGlobalTime", 0, 0.0f);
-		// sliders
-		// red
-		createFloatUniform("iFR", 1, 1.0f);
-		// green
-		createFloatUniform("iFG", 2, 0.3f);
-		// blue
-		createFloatUniform("iFB", 3, 0.0f);
-		// Alpha 
-		createFloatUniform("iAlpha", 4, 1.0f);
-		// red multiplier 
-		createFloatUniform("iRedMultiplier", 5, 1.0f, 0.0f, 3.0f);
-		// green multiplier 
-		createFloatUniform("iGreenMultiplier", 6, 1.0f, 0.0f, 3.0f);
-		// blue multiplier 
-		createFloatUniform("iBlueMultiplier", 7, 1.0f, 0.0f, 3.0f);
-		// bad tv
-		createFloatUniform("iBadTv", 8, 0.0f, 0.0f, 5.0f);
-
-		// RotationSpeed
-		createFloatUniform("iRotationSpeed", 9, 0.0f, -2.0f, 2.0f);
-		// Steps
-		createFloatUniform("iSteps", 10, 16.0f, 1.0f, 128.0f);
-
-		// rotary
-		// ratio
-		createFloatUniform("iRatio", 11, 20.0f, 0.00000000001f, 20.0f);
-		// zoom
-		createFloatUniform("iZoom", 12, 1.0f, -3.0f, 3.0f);
-		// Audio multfactor 
-		createFloatUniform("iAudioMult", 13, 1.0f, 0.01f, 12.0f);
-		// exposure
-		createFloatUniform("iExposure", 14, 1.0f, 0.0f, 3.0f);
-		// Pixelate
-		createFloatUniform("iPixelate", 15, 1.0f, 0.01f);
-		// Trixels
-		createFloatUniform("iTrixels", 16, 0.0f);
-		// iChromatic
-		createFloatUniform("iChromatic", 17, 0.0f, 0.000000001f);
-		// iCrossfade
-		createFloatUniform("iCrossfade", 18, 1.0f);
-		// background red
-		createFloatUniform("iBR", 19, 0.1f);
-		// background green
-		createFloatUniform("iBG", 20, 0.5f);
-		// background blue
-		createFloatUniform("iBB", 21, 0.1f);
-
-
-		// top row 21 to 28
-		// Speed 
-		createFloatUniform("iSpeed", 22, 12.0f, 0.01f, 12.0f);
-		// background alpha
-		createFloatUniform("iBA", 23, 0.2f);
-		// tempo time
-		createFloatUniform("iTempoTime", 24, 0.1f);
-		// fps 25
-		createFloatUniform("iFps", mVDSettings->IFPS, 60.0f, 0.0f, 500.0f);
-		// contour
-		createFloatUniform("iContour", 26, 0.0f, 0.0f, 0.5f);
-		// slitscan (or other) Param1 
-		createFloatUniform("iParam1", 27, 1.0f, 0.01f, 100.0f);
-		// slitscan (or other) Param2 
-		createFloatUniform("iParam2", 28, 1.0f, 0.01f, 100.0f);
-		// iResolutionX (should be fbowidth) 
-		createFloatUniform("iResolutionX", 29, mVDSettings->mFboWidth, 0.01f, 1280.0f);
-		// iResolutionY (should be fboheight)  
-		createFloatUniform("iResolutionY", 30, mVDSettings->mFboHeight, 0.01f, 800.0f);
-		// nanokontrol middle row 31 to 38, bottom row 41 to 88
-		// iFreq0  
-		createFloatUniform("iFreq0", 31, 0.0f, 0.01f, 256.0f);
-		// iFreq1  
-		createFloatUniform("iFreq1", 32, 0.0f, 0.01f, 256.0f);
-		// iFreq2  
-		createFloatUniform("iFreq2", 33, 0.0f, 0.01f, 256.0f);
-		// iFreq3  
-		createFloatUniform("iFreq3", 34, 0.0f, 0.01f, 256.0f);
-
-		// int
-		// blend mode 
-		createIntUniform("iBlendmode", 50, 0);
-		// greyscale 
-		createIntUniform("iGreyScale", 51, 0);
-		// current beat
-		createIntUniform("iBeat", 52, 1);
-		// beats per bar 
-		createIntUniform("iBeatsPerBar", 53, 4);
-
-		// vec3
-		createVec3Uniform("iResolution", 60, vec3(getFloatUniformValueByName("iResolutionX"), getFloatUniformValueByName("iResolutionY"), 1.0));
-		createVec3Uniform("iColor", 61, vec3(1.0, 0.5, 0.0));
-		createVec3Uniform("iBackgroundColor", 62);
-		//createVec3Uniform("iChannelResolution[0]", 63, vec3(mVDSettings->mFboWidth, mVDSettings->mFboHeight, 1.0));
-
-		// vec4
-		createVec4Uniform("iMouse", 70, vec4(320.0f, 240.0f, 0.0f, 0.0f));
-		createVec4Uniform("iDate", 71, vec4(2016.0f, 12.0f, 1.0f, 5.0f));
-
-		// boolean
-		// invert
-		createBoolUniform("iInvert", 48);
-		createBoolUniform("iFlipH", 81);
-		createBoolUniform("iFlipV", 82);
-		createBoolUniform("iXorY", 83);
-		// glitch
-		createBoolUniform("iGlitch", 45);
-		// toggle
-		createBoolUniform("iToggle", 46);
-		// vignette
-		createBoolUniform("iVignette", 47);
-	}
-	// textures
-	for (size_t i = 0; i < 8; i++)
-	{
-		createSampler2DUniform("iChannel" + toString(i), 100 + i, i);// TODO verify doesn't mess up type (uint!)
-	}
-	load();
-	loadAnimation();
-	CI_LOG_V("VDAnimation, iResX:" + toString(getFloatUniformValueByIndex(29)));
-	CI_LOG_V("VDAnimation, iResY:" + toString(getFloatUniformValueByIndex(30)));
-
-	setVec3UniformValueByIndex(60, vec3(getFloatUniformValueByIndex(29), getFloatUniformValueByIndex(30), 1.0));
-	CI_LOG_V("VDAnimation, iResolution:" + toString(shaderUniforms[getUniformNameForIndex(60)].vec3Value));
-
+	mVDUniforms->setVec3UniformValueByIndex(mVDUniforms->IRESOLUTION, vec3(mVDUniforms->getUniformValue(mVDUniforms->IRESOLUTIONX), mVDUniforms->getUniformValue(mVDUniforms->IRESOLUTIONY), 1.0));
 }
-void VDAnimation::loadUniforms(const ci::DataSourceRef &source) {
 
-	JsonTree json(source);
-
-	// try to load the specified json file
-	if (json.hasChild("uniforms")) {
-		JsonTree u(json.getChild("uniforms"));
-
-		// iterate warps
-		for (size_t i = 0; i < u.getNumChildren(); i++) {
-			JsonTree child(u.getChild(i));
-
-			if (child.hasChild("uniform")) {
-				JsonTree w(child.getChild("uniform"));
-				// create uniform of the correct type
-				int uniformType = (w.hasChild("type")) ? w.getValueForKey<int>("type") : 0;
-				switch (uniformType) {
-				case 0:
-					//float
-					floatFromJson(child);
-					break;
-				case 1:
-					// sampler2d
-					sampler2dFromJson(child);
-					break;
-				case 2:
-					// vec2
-					vec2FromJson(child);
-					break;
-				case 3:
-					// vec3
-					vec3FromJson(child);
-					break;
-				case 4:
-					// vec4
-					vec4FromJson(child);
-					break;
-				case 5:
-					// int
-					intFromJson(child);
-					break;
-				case 6:
-					// boolean
-					boolFromJson(child);
-					break;
-				}
-			}
-		}
-	}
-}
-void VDAnimation::floatFromJson(const ci::JsonTree &json) {
-	string jName;
-	int jCtrlIndex;
-	float jValue, jMin, jMax;
-	if (json.hasChild("uniform")) {
-		JsonTree u(json.getChild("uniform"));
-		jName = (u.hasChild("name")) ? u.getValueForKey<string>("name") : "unknown";
-		jCtrlIndex = (u.hasChild("index")) ? u.getValueForKey<int>("index") : 249;
-		jValue = (u.hasChild("value")) ? u.getValueForKey<float>("value") : 0.01f;
-		jMin = (u.hasChild("min")) ? u.getValueForKey<float>("min") : 0.0f;
-		jMax = (u.hasChild("max")) ? u.getValueForKey<float>("max") : 1.0f;
-		createFloatUniform(jName, jCtrlIndex, jValue, jMin, jMax);
-	}
-}
-void VDAnimation::sampler2dFromJson(const ci::JsonTree &json) {
-	string jName;
-	int jCtrlIndex;
-	int jTextureIndex;
-	if (json.hasChild("uniform")) {
-		JsonTree u(json.getChild("uniform"));
-		jName = (u.hasChild("name")) ? u.getValueForKey<string>("name") : "unknown";
-		jCtrlIndex = (u.hasChild("index")) ? u.getValueForKey<int>("index") : 250;
-		jTextureIndex = (u.hasChild("textureindex")) ? u.getValueForKey<int>("textureindex") : 0;;
-		createSampler2DUniform(jName, jTextureIndex);
-	}
-}
-void VDAnimation::vec2FromJson(const ci::JsonTree &json) {
-	string jName;
-	int jCtrlIndex;
-	if (json.hasChild("uniform")) {
-		JsonTree u(json.getChild("uniform"));
-		jName = (u.hasChild("name")) ? u.getValueForKey<string>("name") : "unknown";
-		jCtrlIndex = (u.hasChild("index")) ? u.getValueForKey<int>("index") : 251;
-		createVec2Uniform(jName, jCtrlIndex);
-	}
-}
-void VDAnimation::vec3FromJson(const ci::JsonTree &json) {
-	string jName;
-	int jCtrlIndex;
-	if (json.hasChild("uniform")) {
-		JsonTree u(json.getChild("uniform"));
-		jName = (u.hasChild("name")) ? u.getValueForKey<string>("name") : "unknown";
-		jCtrlIndex = (u.hasChild("index")) ? u.getValueForKey<int>("index") : 252;
-		createVec3Uniform(jName, jCtrlIndex);
-	}
-}
-void VDAnimation::vec4FromJson(const ci::JsonTree &json) {
-	string jName;
-	int jCtrlIndex;
-	if (json.hasChild("uniform")) {
-		JsonTree u(json.getChild("uniform"));
-		jName = (u.hasChild("name")) ? u.getValueForKey<string>("name") : "unknown";
-		jCtrlIndex = (u.hasChild("index")) ? u.getValueForKey<int>("index") : 253;
-		createVec4Uniform(jName, jCtrlIndex);
-	}
-}
-void VDAnimation::intFromJson(const ci::JsonTree &json) {
-	string jName;
-	int jCtrlIndex, jValue;
-	if (json.hasChild("uniform")) {
-		JsonTree u(json.getChild("uniform"));
-		jName = (u.hasChild("name")) ? u.getValueForKey<string>("name") : "unknown";
-		jCtrlIndex = (u.hasChild("index")) ? u.getValueForKey<int>("index") : 254;
-		jValue = (u.hasChild("value")) ? u.getValueForKey<int>("value") : 1;
-		createIntUniform(jName, jCtrlIndex, jValue);
-	}
-
-}
-void VDAnimation::boolFromJson(const ci::JsonTree &json) {
-	string jName;
-	int jCtrlIndex;
-	bool jValue;
-	if (json.hasChild("uniform")) {
-		JsonTree u(json.getChild("uniform"));
-		jName = (u.hasChild("name")) ? u.getValueForKey<string>("name") : "unknown";
-		jCtrlIndex = (u.hasChild("index")) ? u.getValueForKey<int>("index") : 255;
-		jValue = (u.hasChild("value")) ? u.getValueForKey<bool>("value") : false;
-		createBoolUniform(jName, jCtrlIndex, jValue);
-	}
-}
 //! uniform to json
-JsonTree VDAnimation::uniformToJson(int i)
+/* ci::Json VDAnimation::uniformToJson( int i )
 {
-	JsonTree		json;
-	string s = controlIndexes[i];
+	std::stringstream svec4;
+	ci::Json		  json;
+	//string s = controlIndexes[i];
 
-	JsonTree u = JsonTree::makeArray("uniform");
+	ci::Json u = ci::Json::array();
+	u.push_back("uniform");
 	// common
-	int uniformType = shaderUniforms[s].uniformType;
-	u.addChild(ci::JsonTree("type", uniformType));
-	u.addChild(ci::JsonTree("name", s));
-	u.addChild(ci::JsonTree("index", i));
-	// type specific 
+	int uniformType = mVDUniforms->getUniformType(i);//  shaderUniforms[i].uniformType;
+	u.push_back(ci::Json{ {"type", uniformType} });
+	u.push_back(ci::Json{ {"name", mVDUniforms->getUniformName(i)} });
+	u.push_back(ci::Json{ {"index", i} });
+	// type specific
 	switch (uniformType) {
 	case 0:
 		//float
-		u.addChild(ci::JsonTree("value", shaderUniforms[s].defaultValue));
-		u.addChild(ci::JsonTree("min", shaderUniforms[s].minValue));
-		u.addChild(ci::JsonTree("max", shaderUniforms[s].maxValue));
+		u.push_back(ci::Json{ {"value", mVDUniforms->getDefaultUniformValue(i)} });
+		u.push_back(ci::Json{ {"min", mVDUniforms->getMinUniformValue(i)} });
+		u.push_back(ci::Json{ {"max", mVDUniforms->getMaxUniformValue(i)} });
 		break;
 	case 1:
 		// sampler2d
-		u.addChild(ci::JsonTree("textureindex", shaderUniforms[s].textureIndex));
+		u.push_back(ci::Json{ {"textureindex", mVDUniforms->getUniformTextureIndex(i)} });
+		break;
+	case 4:
+		// vec4
+		//svec4 << toString(shaderUniforms[i].vec4Value.x) << "," << toString(shaderUniforms[i].vec4Value.y);
+		//svec4 << "," << toString(shaderUniforms[i].vec4Value.z) << "," << toString(shaderUniforms[i].vec4Value.w);
+		u.push_back(ci::Json{ {"value", mVDUniforms->getDefaultUniformValue(i)} });
 		break;
 	case 5:
 		// int
-		u.addChild(ci::JsonTree("value", shaderUniforms[s].intValue));
+		u.push_back(ci::Json{ {"value", mVDUniforms->getDefaultUniformValue(i)} });
 		break;
 	case 6:
 		// boolean
-		u.addChild(ci::JsonTree("value", shaderUniforms[s].boolValue));
+		u.push_back(ci::Json{ {"value", mVDUniforms->getDefaultUniformValue(i)} });
 		break;
 	default:
 		break;
 	}
 
-	json.pushBack(u);
+	json.push_back( u );
 	return json;
-}
-void VDAnimation::saveUniforms()
-{
-	string jName;
-	int jCtrlIndex;
-	float jMin, jMax;
-	JsonTree		json;
-	// create uniforms json
-	JsonTree uniformsJson = JsonTree::makeArray("uniforms");
+}*/
 
-	for (unsigned i = 0; i < controlIndexes.size(); ++i) {
-		JsonTree		u(uniformToJson(i));
-		// create <uniform>
-		uniformsJson.pushBack(u);
-	}
-	// write file
-	json.pushBack(uniformsJson);
-	json.write(mUniformsJson);
-}
-
-void VDAnimation::createFloatUniform(string aName, int aCtrlIndex, float aValue, float aMin, float aMax) {
-	controlIndexes[aCtrlIndex] = aName;
-	shaderUniforms[aName].minValue = aMin;
-	shaderUniforms[aName].maxValue = aMax;
-	shaderUniforms[aName].defaultValue = aValue;
-	shaderUniforms[aName].boolValue = false;
-	shaderUniforms[aName].autotime = false;
-	shaderUniforms[aName].automatic = false;
-	shaderUniforms[aName].index = aCtrlIndex;
-	shaderUniforms[aName].floatValue = aValue;
-	shaderUniforms[aName].uniformType = 0;
-	shaderUniforms[aName].isValid = true;
-}
-void VDAnimation::createSampler2DUniform(string aName, int aCtrlIndex, int aTextureIndex) {
-	shaderUniforms[aName].textureIndex = aTextureIndex;
-	shaderUniforms[aName].index = aCtrlIndex;
-	shaderUniforms[aName].uniformType = 1;
-	shaderUniforms[aName].isValid = true;
-}
-void VDAnimation::createVec2Uniform(string aName, int aCtrlIndex, vec2 aValue) {
-	controlIndexes[aCtrlIndex] = aName;
-	shaderUniforms[aName].index = aCtrlIndex;
-	shaderUniforms[aName].uniformType = 2;
-	shaderUniforms[aName].isValid = true;
-	shaderUniforms[aName].vec2Value = aValue;
-}
-void VDAnimation::createVec3Uniform(string aName, int aCtrlIndex, vec3 aValue) {
-	controlIndexes[aCtrlIndex] = aName;
-	shaderUniforms[aName].index = aCtrlIndex;
-	shaderUniforms[aName].uniformType = 3;
-	shaderUniforms[aName].isValid = true;
-	shaderUniforms[aName].vec3Value = aValue;
-}
-void VDAnimation::createVec4Uniform(string aName, int aCtrlIndex, vec4 aValue) {
-	controlIndexes[aCtrlIndex] = aName;
-	shaderUniforms[aName].index = aCtrlIndex;
-	shaderUniforms[aName].uniformType = 4;
-	shaderUniforms[aName].isValid = true;
-	shaderUniforms[aName].vec4Value = aValue;
-}
-void VDAnimation::createIntUniform(string aName, int aCtrlIndex, int aValue) {
-	controlIndexes[aCtrlIndex] = aName;
-	shaderUniforms[aName].index = aCtrlIndex;
-	shaderUniforms[aName].uniformType = 5;
-	shaderUniforms[aName].isValid = true;
-	shaderUniforms[aName].intValue = aValue;
-}
-void VDAnimation::createBoolUniform(string aName, int aCtrlIndex, bool aValue) {
-	controlIndexes[aCtrlIndex] = aName;
-	shaderUniforms[aName].minValue = 0;
-	shaderUniforms[aName].maxValue = 1;
-	shaderUniforms[aName].defaultValue = aValue;
-	shaderUniforms[aName].boolValue = aValue;
-	shaderUniforms[aName].autotime = false;
-	shaderUniforms[aName].automatic = false;
-	shaderUniforms[aName].index = aCtrlIndex;
-	shaderUniforms[aName].floatValue = aValue;
-	shaderUniforms[aName].uniformType = 6;
-	shaderUniforms[aName].isValid = true;
-}
-string VDAnimation::getUniformNameForIndex(int aIndex) {
-	return controlIndexes[aIndex];
-}
-/*bool VDAnimation::hasFloatChanged(int aIndex) {
-	if (shaderUniforms[getUniformNameForIndex(aIndex)].floatValue != controlValues[aIndex]) {
-	//CI_LOG_V("hasFloatChanged, aIndex:" + toString(aIndex));
-	CI_LOG_V("hasFloatChanged, shaderUniforms[getUniformNameForIndex(aIndex)].floatValue:" + toString(shaderUniforms[getUniformNameForIndex(aIndex)].floatValue));
-	CI_LOG_V("hasFloatChanged, controlValues[aIndex]:" + toString(controlValues[aIndex]));
-	//CI_LOG_W("hasFloatChanged, getUniformNameForIndex(aIndex):" + toString(getUniformNameForIndex(aIndex)));
-	}
-	return (shaderUniforms[getUniformNameForIndex(aIndex)].floatValue != controlValues[aIndex]);
-	}*/
-bool VDAnimation::toggleValue(unsigned int aIndex) {
-	shaderUniforms[getUniformNameForIndex(aIndex)].boolValue = !shaderUniforms[getUniformNameForIndex(aIndex)].boolValue;
-	return shaderUniforms[getUniformNameForIndex(aIndex)].boolValue;
-}
-bool VDAnimation::toggleAuto(unsigned int aIndex) {
-	shaderUniforms[getUniformNameForIndex(aIndex)].automatic = !shaderUniforms[getUniformNameForIndex(aIndex)].automatic;
-	return shaderUniforms[getUniformNameForIndex(aIndex)].automatic;
-}
-bool VDAnimation::toggleTempo(unsigned int aIndex) {
-	shaderUniforms[getUniformNameForIndex(aIndex)].autotime = !shaderUniforms[getUniformNameForIndex(aIndex)].autotime;
-	return shaderUniforms[getUniformNameForIndex(aIndex)].autotime;
-}
-void VDAnimation::resetAutoAnimation(unsigned int aIndex) {
-	shaderUniforms[getUniformNameForIndex(aIndex)].automatic = false;
-	shaderUniforms[getUniformNameForIndex(aIndex)].autotime = false;
-	shaderUniforms[getUniformNameForIndex(aIndex)].floatValue = shaderUniforms[getUniformNameForIndex(aIndex)].defaultValue;
-}
-
-bool VDAnimation::setFloatUniformValueByIndex(unsigned int aIndex, float aValue) {
-	bool rtn = false;
-	// we can't change iGlobalTime at index 0
-	if (aIndex > 0) {
-		/*if (aIndex == 31) {
-			CI_LOG_V("old value " + toString(shaderUniforms[getUniformNameForIndex(aIndex)].floatValue) + " newvalue " + toString(aValue));
-		}*/
-		if (shaderUniforms[getUniformNameForIndex(aIndex)].floatValue != aValue) {
-			if (aValue >= shaderUniforms[getUniformNameForIndex(aIndex)].minValue && aValue <= shaderUniforms[getUniformNameForIndex(aIndex)].maxValue) {
-				shaderUniforms[getUniformNameForIndex(aIndex)].floatValue = aValue;
-				rtn = true;
-			}
-		}
-		// not all controls are from 0.0 to 1.0
-		/* not working float lerpValue = lerp<float, float>(shaderUniforms[getUniformNameForIndex(aIndex)].minValue, shaderUniforms[getUniformNameForIndex(aIndex)].maxValue, aValue);
-		if (shaderUniforms[getUniformNameForIndex(aIndex)].floatValue != lerpValue) {
-			shaderUniforms[getUniformNameForIndex(aIndex)].floatValue = lerpValue;
-			rtn = true;
-		}*/
-	}
-	return rtn;
-}
-
-bool VDAnimation::isExistingUniform(string aName) {
-	return shaderUniforms[aName].isValid;
-}
-int VDAnimation::getUniformType(string aName) {
-	return shaderUniforms[aName].uniformType;
-}
-void VDAnimation::load() {
-	// Create json file if it doesn't already exist.
-#if defined( CINDER_MSW )
-	if (fs::exists(mJsonFilePath)) {
-		bag()->load(mJsonFilePath);
-	}
-	else {
-		bag()->save(mJsonFilePath);
-		bag()->load(mJsonFilePath);
-	}
-#endif
-}
-void VDAnimation::save() {
-#if defined( CINDER_MSW )
-	bag()->save(mJsonFilePath);
-	saveAnimation();
-	saveUniforms();
-#endif
-}
-void VDAnimation::saveAnimation() {
-	// save 
-	fs::path mJsonFilePath = app::getAssetPath("") / mVDSettings->mAssetsPath / "animation.json";
-	JsonTree doc;
-	JsonTree badtv = JsonTree::makeArray("badtv");
-
-	for (const auto& item : mBadTV) {
-		if (item.second > 0.0001) badtv.addChild(ci::JsonTree(ci::toString(item.first), ci::toString(item.second)));
-	}
-
-	doc.pushBack(badtv);
-	doc.write(writeFile(mJsonFilePath), JsonTree::WriteOptions());
-	// backup save
-	string fileName = "animation" + toString(getElapsedFrames()) + ".json";
-	mJsonFilePath = app::getAssetPath("") / mVDSettings->mAssetsPath / fileName;
-	doc.write(writeFile(mJsonFilePath), JsonTree::WriteOptions());
-}
-void VDAnimation::loadAnimation() {
-
-	fs::path mJsonFilePath = app::getAssetPath("") / mVDSettings->mAssetsPath / "animation.json";
-	// Create json file if it doesn't already exist.
-	if (!fs::exists(mJsonFilePath)) {
-		std::ofstream oStream(mJsonFilePath.string());
-		oStream.close();
-	}
-	if (!fs::exists(mJsonFilePath)) {
-		return;
-	}
-	try {
-		JsonTree doc(loadFile(mJsonFilePath));
-		JsonTree badtv(doc.getChild("badtv"));
-		for (JsonTree::ConstIter item = badtv.begin(); item != badtv.end(); ++item) {
-			const auto& key = std::stoi(item->getKey());
-			const auto& value = item->getValue<float>();
-			mBadTV[key] = value;
-
-		}
-	}
-	catch (const JsonTree::ExcJsonParserError&) {
-		CI_LOG_W("Failed to parse json file.");
-	}
-}
-
+/*
 void VDAnimation::setExposure(float aExposure) {
 	mExposure = aExposure;
 }
 void VDAnimation::setAutoBeatAnimation(bool aAutoBeatAnimation) {
 	mAutoBeatAnimation = aAutoBeatAnimation;
-}
-bool VDAnimation::handleKeyDown(KeyEvent &event)
+}*/
+bool VDAnimation::handleKeyDown(KeyEvent& event)
 {
 	//float newValue;
-	bool handled = true;
+	/*bool handled = true;
 	switch (event.getCode()) {
 	case KeyEvent::KEY_s:
 		// save animation
 		save();
 		break;
-	case KeyEvent::KEY_a:
-		// save badtv keyframe
-		mBadTV[getElapsedFrames() - 10] = 1.0f;
-		//iBadTvRunning = true;
-		// duration = 0.2
-		shaderUniforms["iBadTv"].floatValue = 5.0f;
-		//timeline().apply(&mVDSettings->iBadTv, 60.0f, 0.0f, 0.2f, EaseInCubic());
-		break;
+	//case KeyEvent::KEY_u:
+	//	// save badtv keyframe
+	//	mBadTV[getElapsedFrames() - 10] = 1.0f;
+	//	//iBadTvRunning = true;
+	//	// duration = 0.2
+	//	shaderUniforms["iBadTv"].floatValue = 5.0f;
+	//	//timeline().apply(&mVDSettings->iBadTv, 60.0f, 0.0f, 0.2f, EaseInCubic());
+	//	break;
 	case KeyEvent::KEY_d:
 		// save end keyframe
 		setEndFrame(getElapsedFrames() - 10);
@@ -583,19 +121,20 @@ bool VDAnimation::handleKeyDown(KeyEvent &event)
 
 	default:
 		handled = false;
-	}
-	event.setHandled(handled);
+	} */
+
+	event.setHandled(false);
 
 	return event.isHandled();
 }
-bool VDAnimation::handleKeyUp(KeyEvent &event)
+bool VDAnimation::handleKeyUp(KeyEvent& event)
 {
 	bool handled = true;
 	switch (event.getCode()) {
-	case KeyEvent::KEY_a:
+	case KeyEvent::KEY_u:
 		// save badtv keyframe
-		mBadTV[getElapsedFrames()] = 0.001f;
-		shaderUniforms["iBadTv"].floatValue = 0.0f;
+		// not used for now mBadTV[getElapsedFrames()] = 0.001f;
+		//shaderUniforms["iBadTv"].floatValue = 0.0f;
 		break;
 
 	default:
@@ -604,6 +143,216 @@ bool VDAnimation::handleKeyUp(KeyEvent &event)
 	event.setHandled(handled);
 
 	return event.isHandled();
+}
+void  VDAnimation::initLineIn() {
+#if (defined( CINDER_MSW ) || defined( CINDER_MAC ))
+	bool audioDeviceFound = false;
+
+	if (!mLineInInitialized) {
+		if (getUseLineIn()) {
+			// linein
+			preventLineInCrash(); // at next launch
+			try
+			{
+				// inputs
+				inputDevices = ci::audio::Device::getInputDevices();
+				outputDevices = ci::audio::Device::getOutputDevices();
+				std::string preferredAudioDeviceKey = "";
+				/* ci::Json	doc;
+				ci::Json	audioinputs = ci::Json::array();
+				audioinputs.push_back("audioinputs"); */
+				for (ci::audio::DeviceRef in : inputDevices) {
+					std::string currentInputName = in->getName();
+					//ci::Json inputObj = ci::Json::object();
+					//inputObj["key"] = in->getKey();
+					//inputObj["name"] = currentInputName;
+					//audioinputs.push_back(inputObj);
+
+					std::size_t nameIndex = currentInputName.find(mPreferredAudioInputDevice);
+					if (nameIndex != std::string::npos) {
+						audioDeviceFound = true;
+						preferredAudioDeviceKey = in->getKey();
+						mVDSettings->setMsg("Inputs\nPreferred: " + currentInputName + "\n");
+					}
+					else {
+						//mVDSettings->setMsg("Inputs\n: " + currentInputName + "\n");
+					}
+				}
+				/* doc.push_back( audioinputs );
+				// outputs
+				ci::Json audiooutputs = ci::Json::array();
+				audiooutputs.push_back("audiooutputs");*/
+				for (ci::audio::DeviceRef out : outputDevices) {
+					std::string currentOutputName = out->getName();
+					//audiooutputs.push_back( ci::Json( out->getKey(), currentOutputName ) );
+
+					std::size_t nameIndex = currentOutputName.find(mPreferredAudioOutputDevice);
+					if (nameIndex != std::string::npos) {
+						mVDSettings->setErrorMsg("Outputs\nPreferred: " + currentOutputName + "\n");
+					}
+					else {
+						//mVDSettings->setErrorMsg("Outputs\n" + currentOutputName + "\n");
+					}
+
+					//ci::Json outputObj = ci::Json::object();
+					//outputObj["key"] = out->getKey();
+					//outputObj["name"] = currentOutputName;
+					//audiooutputs.push_back(outputObj);
+				}
+				/* doc.push_back( audiooutputs );
+				//doc.write(writeFile(getAssetPath("") / "audio.json"), Json::WriteOptions());
+				*/
+				if (audioDeviceFound) {
+					auto device = ci::audio::Device::findDeviceByKey(preferredAudioDeviceKey);
+					CI_LOG_W("trying to open mic/line in, if no line follows in the log, the app crashed so put UseLineIn to false in the VDSettings.xml file");
+					mLineIn = ctx->createInputDeviceNode(device); //crashes if linein is present but disabled, doesn't go to catch block
+					mAudioName = mPreferredAudioInputDevice;
+				}
+				else {
+					mLineIn = ctx->createInputDeviceNode();
+					mAudioName = mLineIn->getDevice()->getName();
+				}
+
+				CI_LOG_V("mic/line in opened");
+				saveLineIn();
+
+				auto scopeLineInFmt = audio::MonitorSpectralNode::Format().fftSize(mFFTWindowSize * 2).windowSize(mFFTWindowSize);// CHECK is * 2 needed
+				mMonitorLineInSpectralNode = ctx->makeNode(new audio::MonitorSpectralNode(scopeLineInFmt));
+				mLineIn >> mMonitorLineInSpectralNode;
+				mLineIn->enable();
+				mLineInInitialized = true;
+			}
+			catch (const std::exception& ex)
+			{
+				CI_LOG_V("mic/line in crashed");
+				//mVDSettings->mMsg = "mic/line in crashed";
+				mVDSettings->setErrorMsg(ex.what());
+			}
+		}
+	}
+
+#endif
+}
+
+ci::gl::TextureRef VDAnimation::getAudioTexture() {
+	mAudioFormat = gl::Texture2d::Format().swizzleMask(GL_RED, GL_RED, GL_RED, GL_ONE).internalFormat(GL_RED);
+	//auto ctx = audio::Context::master();
+
+	if (!mWaveInitialized) {
+		if (getUseAudio()) {
+
+			preventWaveMonitorCrash(); // at next launch
+			try
+			{
+				//initialize wave monitor
+				auto scopeWaveFmt = audio::MonitorSpectralNode::Format().fftSize(mFFTWindowSize * 2).windowSize(mFFTWindowSize);// CHECK is * 2 needed
+				mMonitorWaveSpectralNode = ctx->makeNode(new audio::MonitorSpectralNode(scopeWaveFmt));
+				ctx->enable();
+				mAudioName = "wave";
+				saveWaveMonitor();
+				mWaveInitialized = true;
+			}
+			catch (const std::exception& ex)
+			{
+				CI_LOG_V("wave monitor crashed");
+				mVDSettings->setMsg("wave monitor crashed");
+				mVDSettings->setErrorMsg(ex.what());
+			}
+		}
+	}
+#if (defined( CINDER_MSW ) || defined( CINDER_MAC ))
+	if (getUseLineIn()) {
+		mMagSpectrum = mMonitorLineInSpectralNode->getMagSpectrum();
+	}
+	else {
+#endif
+		if (getUseAudio()) {
+			if (isAudioBuffered()) {
+				if (mBufferPlayerNode) {
+					mMagSpectrum = mMonitorWaveSpectralNode->getMagSpectrum();
+				}
+			}
+			else {
+				if (mSamplePlayerNode) {
+					mMagSpectrum = mMonitorWaveSpectralNode->getMagSpectrum();
+					mPosition = (int)mSamplePlayerNode->getReadPosition();
+				}
+			}
+		}
+#if (defined( CINDER_MSW ) || defined( CINDER_MAC ))
+	}
+#endif
+	if (!mMagSpectrum.empty()) {
+		mVDUniforms->setUniformValue(mVDUniforms->IMAXVOLUME, 0.0f);
+		//maxVolume = 0.0f;//mIntensity
+		size_t mDataSize = mMagSpectrum.size();
+		if (mDataSize > 0 && mDataSize < mFFTWindowSize + 1) {
+			float db;
+			unsigned char signal[mFFTWindowSize];
+			for (size_t i{ 0 }; i < mDataSize; i++) {
+				float f = mMagSpectrum[i];
+				db = audio::linearToDecibel(f);
+				f = db * mVDUniforms->getUniformValue(mVDUniforms->IAUDIOX);
+				if (f > mVDUniforms->getUniformValue(mVDUniforms->IMAXVOLUME))
+				{
+					mVDUniforms->setUniformValue(mVDUniforms->IMAXVOLUME, f);
+				}
+				iFreqs[i] = f;
+				// update iFreq uniforms 
+				if (i == getFreqIndex(0)) mVDUniforms->setUniformValue(mVDUniforms->IFREQ0, f);
+				if (i == getFreqIndex(1)) mVDUniforms->setUniformValue(mVDUniforms->IFREQ1, f);
+				if (i == getFreqIndex(2)) mVDUniforms->setUniformValue(mVDUniforms->IFREQ2, f);
+				if (i == getFreqIndex(3)) mVDUniforms->setUniformValue(mVDUniforms->IFREQ3, f);
+
+				if (i < mFFTWindowSize) {
+					int ger = (int)f;
+					signal[i] = static_cast<unsigned char>(ger);
+				}
+			}
+			// store it as a 512x2 texture
+			mAudioTexture = gl::Texture::create(signal, GL_RED, 32, 1, mAudioFormat);
+		}
+	}
+	else {
+		unsigned char signal[mFFTWindowSize];
+		float f = 0.0f;
+		int ger = 0;
+		for (size_t i{ 0 }; i < mFFTWindowSize; i++) {
+			if (mUseRandom) {
+				// generate random values
+				f = (float)(i + 23);
+			}
+			else {
+				// get freqs from Speckthor in VDRouter.cpp
+				f = iFreqs[i];
+			}
+			ger = (int)f;
+			signal[i] = static_cast<unsigned char>(ger);
+
+			if (f > mVDUniforms->getUniformValue(mVDUniforms->IMAXVOLUME))
+			{
+				mVDUniforms->setUniformValue(mVDUniforms->IMAXVOLUME, f);
+			}
+			// update iFreq uniforms 
+			if (i == getFreqIndex(0)) mVDUniforms->setUniformValue(mVDUniforms->IFREQ0, f);
+			if (i == getFreqIndex(1)) mVDUniforms->setUniformValue(mVDUniforms->IFREQ1, f);
+			if (i == getFreqIndex(2)) mVDUniforms->setUniformValue(mVDUniforms->IFREQ2, f);
+			if (i == getFreqIndex(3)) mVDUniforms->setUniformValue(mVDUniforms->IFREQ3, f);
+		}
+
+		// store it as a 512x2 texture
+		mAudioTexture = gl::Texture::create(signal, GL_RED, 32, 1, mAudioFormat);
+		mAudioName = "audio";
+	}
+
+	return mAudioTexture;
+};
+void VDAnimation::resetAnim() {
+	for (unsigned int anim{ 1 }; anim < 29; anim++)
+	{
+		mVDUniforms->setAnim(anim, mVDSettings->ANIM_NONE);
+		mVDUniforms->setUniformValue(anim, mVDUniforms->getDefaultUniformValue(anim));
+	}
 }
 
 void VDAnimation::update() {
@@ -614,98 +363,171 @@ void VDAnimation::update() {
 	else {
 		// duration = 0.2
 		//timeline().apply(&mVDSettings->iBadTv, 60.0f, 0.0f, 0.2f, EaseInCubic());
-		shaderUniforms["iBadTv"].floatValue = 5.0f;
+		mVDUniforms->setUniformValue(mVDUniforms->IBADTV, 5.0f);
 	}
 
-	mVDSettings->iChannelTime[0] = getElapsedSeconds();
-	mVDSettings->iChannelTime[1] = getElapsedSeconds() - 1;
-	mVDSettings->iChannelTime[2] = getElapsedSeconds() - 2;
-	mVDSettings->iChannelTime[3] = getElapsedSeconds() - 3;
-	// iGlobalTime
-	if (mUseTimeWithTempo)
+	mVDSettings->iChannelTime[0] = (float)getElapsedSeconds();
+	mVDSettings->iChannelTime[1] = (float)(getElapsedSeconds() - 1.0);
+	mVDSettings->iChannelTime[2] = (float)(getElapsedSeconds() - 2.0);
+	mVDSettings->iChannelTime[3] = (float)(getElapsedSeconds() - 3.0);
+	// ITIME
+	/*if (mUseTimeWithTempo)
 	{
-		shaderUniforms["iGlobalTime"].floatValue = shaderUniforms["iTempoTime"].floatValue*iTimeFactor;
+		// Ableton Link from openframeworks SocketIO
+		mVDUniforms->setUniformValue(mVDUniforms->ITIME,
+			mVDUniforms->getUniformValue(mVDUniforms->ITIME)  *
+			mVDUniforms->getUniformValue(mVDUniforms->ISPEED) *
+			mVDUniforms->getUniformValue(mVDUniforms->ITIMEFACTOR));
+		// sos
+		// IBARBEAT = IBAR * 4 + IBEAT
+		float current = mVDUniforms->getUniformValue(mVDUniforms->IBARBEAT); // 20210101 was int
+		if (current == 426.0f || current == 428.0f || current == 442.0f) {
+			mLastBar = 0.0f;
+		} //38 to set iStart
+		if (mLastBar != mVDUniforms->getUniformValue(mVDUniforms->IBAR)) {
+			mLastBar = mVDUniforms->getUniformValue(mVDUniforms->IBAR);
+			if (mLastBar < 419.0f && mLastBar > 424.0f) { mVDSettings->iStart = mVDUniforms->getUniformValue(mVDUniforms->ITIME); }
+		}
 	}
 	else
-	{
-		shaderUniforms["iGlobalTime"].floatValue = getElapsedSeconds();
+	{*/
+	mVDUniforms->setUniformValue(mVDUniforms->ITIME,
+		((float)getElapsedSeconds() - mVDUniforms->getUniformValue(mVDUniforms->ISTART)) *
+		mVDUniforms->getUniformValue(mVDUniforms->ISPEED) *
+		mVDUniforms->getUniformValue(mVDUniforms->ITIMEFACTOR));
+	// sos
+	// IBARBEAT = IBAR * 4 + IBEAT
+	float current = mVDUniforms->getUniformValue(mVDUniforms->IBARBEAT); // 20210101 was int
+	if (current == 426.0f || current == 428.0f || current == 442.0f) {
+		mLastBar = 0.0f;
+	} //38 to set iStart
+	if (mLastBar != mVDUniforms->getUniformValue(mVDUniforms->IBAR)) {
+		mLastBar = mVDUniforms->getUniformValue(mVDUniforms->IBAR);
+		if (mLastBar < 419.0f && mLastBar > 424.0f) { mVDSettings->iStart = mVDUniforms->getUniformValue(mVDUniforms->ITIME); }
 	}
-	shaderUniforms["iGlobalTime"].floatValue *= mVDSettings->iSpeedMultiplier;
+	//}
+	// iResolution
+	mVDUniforms->setVec3UniformValueByIndex(mVDUniforms->IRESOLUTION, vec3(mVDUniforms->getUniformValue(mVDUniforms->IRESOLUTIONX), mVDUniforms->getUniformValue(mVDUniforms->IRESOLUTIONY), 1.0));
+	mVDUniforms->setVec2UniformValueByIndex(mVDUniforms->RESOLUTION, vec2(mVDUniforms->getUniformValue(mVDUniforms->IRESOLUTIONX), mVDUniforms->getUniformValue(mVDUniforms->IRESOLUTIONY)));
+	mVDUniforms->setVec2UniformValueByIndex(mVDUniforms->RENDERSIZE, vec2(mVDUniforms->getUniformValue(mVDUniforms->IRESOLUTIONX), mVDUniforms->getUniformValue(mVDUniforms->IRESOLUTIONY)));
+	mVDUniforms->setVec2UniformValueByIndex(mVDUniforms->IRENDERXY, vec2(mVDUniforms->getUniformValue(mVDUniforms->IRENDERXYX), mVDUniforms->getUniformValue(mVDUniforms->IRENDERXYY)));
+
 	// iDate
 	time_t now = time(0);
-	tm *   t = gmtime(&now);
-	shaderUniforms["iDate"].vec4Value = vec4(float(t->tm_year + 1900), float(t->tm_mon + 1), float(t->tm_mday), float(t->tm_hour * 3600 + t->tm_min * 60 + t->tm_sec));
+	struct tm* t = gmtime(&now);
+	mVDUniforms->setVec4UniformValueByIndex(mVDUniforms->IDATE,
+		vec4(float(t->tm_year + 1900), float(t->tm_mon + 1), float(t->tm_mday), float(t->tm_hour * 3600 + t->tm_min * 60 + t->tm_sec)));
+	mVDUniforms->setUniformValue(mVDUniforms->IDATEX, float(t->tm_hour * 3600 + t->tm_min * 60 + t->tm_sec));
+	mVDUniforms->setUniformValue(mVDUniforms->IDATEY, float(t->tm_hour + 2));
+	mVDUniforms->setUniformValue(mVDUniforms->IDATEZ, float(t->tm_sec));
+	mVDUniforms->setUniformValue(mVDUniforms->IDATEW, float((t->tm_hour + 2) * 3600 + t->tm_min * 60 + t->tm_sec));
+	//CI_LOG_E("sec:" + toString(t->tm_sec) + ", IDATEY:" + toString(mVDUniforms->getUniformValue(mVDUniforms->IDATEY)) + ", IDATEZ:" + toString(mVDUniforms->getUniformValue(mVDUniforms->IDATEZ)) + ", IDATEW:" + toString(mVDUniforms->getUniformValue(mVDUniforms->IDATEW)));
+
 
 #pragma region animation
 
 	currentTime = mTimer.getSeconds();
 	// TODO check bounds
-	if (mAutoBeatAnimation) mVDSettings->liveMeter = maxVolume * 2;
+	//if (mAutoBeatAnimation) mVDSettings->liveMeter = maxVolume * 2;
 
-	int time = (currentTime - startTime)*1000000.0;
-	int elapsed = iDeltaTime*1000000.0;
-	int elapsedBeatPerBar = iDeltaTime / shaderUniforms["iBeatsPerBar"].intValue*1000000.0;
-	if (elapsedBeatPerBar > 0)
+	int time = (int)((currentTime - startTime) * 1000000.0);
+
+	int elapsed = (int)(mVDUniforms->getUniformValue(mVDUniforms->IDELTATIME) * 1000000.0);
+	int elapsedBeatPerBar = (int)(mVDUniforms->getUniformValue(mVDUniforms->IDELTATIME) /
+		(mVDUniforms->getUniformValue(mVDUniforms->IBEATSPERBAR) + 1) * 1000000.0);
+	/*if (elapsedBeatPerBar > 0)
 	{
 		double moduloBeatPerBar = (time % elapsedBeatPerBar) / 1000000.0;
 		iTempoTimeBeatPerBar = (float)moduloBeatPerBar;
 		if (iTempoTimeBeatPerBar < previousTimeBeatPerBar)
 		{
-			if (shaderUniforms["iBeat"].intValue > shaderUniforms["iBeatsPerBar"].intValue ) shaderUniforms["iBeat"].intValue = 0;
-			shaderUniforms["iBeat"].intValue++;
+			if (shaderUniforms["iPhase"].intValue > shaderUniforms["iBeatsPerBar"].intValue ) shaderUniforms["iPhase"].intValue = 0;
+			shaderUniforms["iPhase"].intValue++;
 		}
 		previousTimeBeatPerBar = iTempoTimeBeatPerBar;
-	}
+	} */
 	if (elapsed > 0)
 	{
 		double modulo = (time % elapsed) / 1000000.0;
-		shaderUniforms["iTempoTime"].floatValue = (float)abs(modulo);
+		mVDUniforms->setUniformValue(mVDUniforms->ITEMPOTIME, (float)abs(modulo));
+
+		/* not used shaderUniforms["iDeltaTime"].floatValue = (float)abs(modulo);
 		if (shaderUniforms["iTempoTime"].floatValue < previousTime)
 		{
 			//iBar++;
-			if (mAutoBeatAnimation) mVDSettings->iBeat++;
-		}
-		previousTime = shaderUniforms["iTempoTime"].floatValue;
-
+			//if (mAutoBeatAnimation) mVDSettings->iPhase++;
+		}*/
+		previousTime = mVDUniforms->getUniformValue(mVDUniforms->ITEMPOTIME);
 		// TODO (modulo < 0.1) ? tempoMvg->setNameColor(ColorA::white()) : tempoMvg->setNameColor(UIController::DEFAULT_NAME_COLOR);
-		for (unsigned int anim = 1; anim < 29; anim++)
+		float targetValue = 1.0f;
+		for (unsigned int anim{ 1 }; anim < 29; anim++)
 		{
-			if (shaderUniforms[getUniformNameForIndex(anim)].autotime)
-			{
-				setFloatUniformValueByIndex(anim, (modulo < 0.1) ? shaderUniforms[getUniformNameForIndex(anim)].maxValue : shaderUniforms[getUniformNameForIndex(anim)].minValue);
-			}
-			else
-			{
-				if (shaderUniforms[getUniformNameForIndex(anim)].automatic) {
-					setFloatUniformValueByIndex(anim, lmap<float>(shaderUniforms["iTempoTime"].floatValue, 0.00001, iDeltaTime, shaderUniforms[getUniformNameForIndex(anim)].minValue, shaderUniforms[getUniformNameForIndex(anim)].maxValue));
+			switch (mVDUniforms->getUniformAnim(anim)) {
+			case 1: // ANIM_TIME
+				mVDUniforms->setUniformValue(anim, (modulo < 0.1f) ? mVDUniforms->getMaxUniformValue(anim) : mVDUniforms->getMinUniformValue(anim));
+				break;
+			case 2: // ANIM_AUTO
+				mVDUniforms->setUniformValue(anim, lmap<float>(mVDUniforms->getUniformValue(mVDUniforms->ITEMPOTIME), 0.00001f,
+					mVDUniforms->getUniformValue(mVDUniforms->IDELTATIME), mVDUniforms->getMinUniformValue(anim), mVDUniforms->getMaxUniformValue(anim)));
+				break;
+			case 3: // ANIM_BASS
+				mVDUniforms->setUniformValue(anim, (mVDUniforms->getDefaultUniformValue(anim) + 0.01f) * mVDUniforms->getUniformValue(mVDUniforms->IFREQ0) / 25.0f);
+				break;
+			case 4: // ANIM_MID
+				mVDUniforms->setUniformValue(anim, (mVDUniforms->getDefaultUniformValue(anim) + 0.01f) * mVDUniforms->getUniformValue(mVDUniforms->IFREQ1) / 5.0f);
+				break;
+			case 5: // ANIM_SMOOTH
+				targetValue = mVDUniforms->getTargetUniformValue(anim);
+				if (abs(targetValue - mVDUniforms->getUniformValue(anim)) <= 0.006f) {//mVDUniforms->getUniformValue(mVDUniforms->ISMOOTH)) {
+					resetUniformAnim(anim);
 				}
+				else {
+					if (mVDUniforms->getUniformValue(anim) > targetValue) {
+						mVDUniforms->setUniformValue(anim, (mVDUniforms->getUniformValue(anim) - mVDUniforms->getUniformValue(mVDUniforms->ISMOOTH) / 27.0f));
+					}
+					else if (mVDUniforms->getUniformValue(anim) < targetValue) {
+						mVDUniforms->setUniformValue(anim, (mVDUniforms->getUniformValue(anim) + mVDUniforms->getUniformValue(mVDUniforms->ISMOOTH) / 27.0f));
+					}
+					else {
+						resetUniformAnim(anim);
+					}
+				}
+				// ANIM_TREBLE mVDUniforms->setUniformValue(anim, (mVDUniforms->getDefaultUniformValue(anim) + 0.01f) * mVDUniforms->getUniformValue(mVDUniforms->IFREQ2) / 2.0f);
+				break;
+			default:
+				// no animation
+				break;
 			}
 		}
 
 		// foreground color vec3 update
-		shaderUniforms["iColor"].vec3Value = vec3(shaderUniforms[getUniformNameForIndex(1)].floatValue, shaderUniforms[getUniformNameForIndex(2)].floatValue, shaderUniforms[getUniformNameForIndex(3)].floatValue);
+		mVDUniforms->setVec3UniformValueByIndex(mVDUniforms->ICOLOR, vec3(mVDUniforms->getUniformValue(mVDUniforms->ICOLORX), mVDUniforms->getUniformValue(mVDUniforms->ICOLORY), mVDUniforms->getUniformValue(mVDUniforms->ICOLORZ)));
 
 		// background color vec3 update
-		shaderUniforms["iBackgroundColor"].vec3Value = vec3(shaderUniforms[getUniformNameForIndex(19)].floatValue, shaderUniforms[getUniformNameForIndex(20)].floatValue, shaderUniforms[getUniformNameForIndex(21)].floatValue);
+		mVDUniforms->setVec3UniformValueByIndex(mVDUniforms->IBACKGROUNDCOLOR, vec3(mVDUniforms->getUniformValue(mVDUniforms->IBACKGROUNDCOLORX), mVDUniforms->getUniformValue(mVDUniforms->IBACKGROUNDCOLORY), mVDUniforms->getUniformValue(mVDUniforms->IBACKGROUNDCOLORZ)));
+
+		// mouse vec4 update
+		mVDUniforms->setVec4UniformValueByIndex(mVDUniforms->IMOUSE, vec4(mVDUniforms->getUniformValue(mVDUniforms->IMOUSEX), mVDUniforms->getUniformValue(mVDUniforms->IMOUSEY), mVDUniforms->getUniformValue(mVDUniforms->IMOUSEZ), mVDUniforms->getUniformValue(mVDUniforms->IMOUSEW)));
+
 		// TODO migrate:
 		if (mVDSettings->autoInvert)
 		{
-			setBoolUniformValueByIndex(48, (modulo < 0.1) ? 1.0 : 0.0);
+			mVDUniforms->setUniformValue(mVDUniforms->IINVERT, (modulo < 0.1) ? 1.0f : 0.0f);
 		}
-
-		if (mVDSettings->tEyePointZ)
-		{
-			mVDSettings->mCamEyePointZ = (modulo < 0.1) ? mVDSettings->minEyePointZ : mVDSettings->maxEyePointZ;
-		}
-		else
-		{
-			mVDSettings->mCamEyePointZ = mVDSettings->autoEyePointZ ? lmap<float>(shaderUniforms["iTempoTime"].floatValue, 0.00001, iDeltaTime, mVDSettings->minEyePointZ, mVDSettings->maxEyePointZ) : mVDSettings->mCamEyePointZ;
-		}
-
 	}
 #pragma endregion animation
 }
-
+void VDAnimation::resetUniformAnim(unsigned int anim) {
+	mVDUniforms->setUniformValue(anim, mVDUniforms->getDefaultUniformValue(anim));
+	mVDUniforms->setAnim(anim, mVDSettings->ANIM_NONE);
+}
+bool VDAnimation::toggleValue(unsigned int aIndex) {
+	bool rtn = mVDUniforms->getUniformValue(aIndex);
+	rtn = !rtn;
+	mVDUniforms->setUniformValue(aIndex, rtn);
+	//shaderUniforms[aIndex].boolValue = !shaderUniforms[aIndex].boolValue;
+	return rtn;
+}
 // tempo
 void VDAnimation::tapTempo()
 {
@@ -732,55 +554,28 @@ void VDAnimation::calculateTempo()
 {
 	// NORMAL AVERAGE
 	double tAverage = 0;
-	for (int i = 0; i < buffer.size(); i++)
+	for (int i{ 0 }; i < buffer.size(); i++)
 	{
 		tAverage += buffer[i];
 	}
 	averageTime = (double)(tAverage / buffer.size());
-	iDeltaTime = averageTime;
-	setBpm(60 / averageTime);
+	mVDUniforms->setUniformValue(mVDUniforms->IDELTATIME, (float)averageTime);
+	mVDUniforms->setUniformValue(mVDUniforms->IBPM, (float)(60.0 / averageTime));
 }
-void VDAnimation::setTimeFactor(const int &aTimeFactor)
-{
-	switch (aTimeFactor)
-	{
-	case 0:
-		iTimeFactor = 0.0001;
-		break;
-	case 1:
-		iTimeFactor = 0.125;
-		break;
-	case 2:
-		iTimeFactor = 0.25;
-		break;
-	case 3:
-		iTimeFactor = 0.5;
-		break;
-	case 4:
-		iTimeFactor = 0.75;
-		break;
-	case 5:
-		iTimeFactor = 1.0;
-		break;
-	case 6:
-		iTimeFactor = 2.0;
-		break;
-	case 7:
-		iTimeFactor = 4.0;
-		break;
-	case 8:
-		iTimeFactor = 16.0;
-		break;
-	default:
-		iTimeFactor = 1.0;
-		break;
-	}
-}
+
 void VDAnimation::preventLineInCrash() {
 	setUseLineIn(false);
-	mVDSettings->save();
+	//mVDSettings->save();
+}
+void VDAnimation::preventWaveMonitorCrash() {
+	setUseWaveMonitor(false);
+	//mVDSettings->save();
 }
 void VDAnimation::saveLineIn() {
 	setUseLineIn(true);
-	mVDSettings->save();
+	//mVDSettings->save();
+}
+void VDAnimation::saveWaveMonitor() {
+	setUseWaveMonitor(true);
+	//mVDSettings->save();
 }

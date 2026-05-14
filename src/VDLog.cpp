@@ -1,19 +1,21 @@
 #include "VDLog.h"
 
-using namespace VideoDromm;
+using namespace videodromm;
 
+VDLogRef VDLog::LOGGER;
+VDLogRef	VDLog::create() {
+	if (LOGGER.use_count() == 0) {
+		LOGGER = VDLogRef(new VDLog());
+	}
+	return LOGGER;
+}
 VDLog::VDLog()
 {
 	auto sysLogger = log::makeLogger<log::LoggerSystem>();
-	sysLogger->setLoggingLevel(log::LEVEL_WARNING);
-#ifdef _DEBUG
-	/* fs::path path;
-	path = getAppPath() / "log";
-	auto bLog = log::makeLogger<log::LoggerBreakpoint>();
-	bLog->setTriggerLevel(log::LEVEL_ERROR); 
-	log::makeLogger<log::LoggerFileRotating>(path.string(), "videodromm.%Y.%m.%d.txt", false);*/
-	log::makeLogger<log::LoggerFileRotating>("/tmp/videodromm", "videodromm.%Y.%m.%d.txt", false);
-#else
+	//sysLogger->setLoggingLevel(log::LEVEL_WARNING);
 
+	// only log to file in debug mode
+#ifdef _DEBUG
+	log::makeLogger<log::LoggerFileRotating>("/tmp/vd", "vd.%Y.%m.%d.txt", false);
 #endif  // _DEBUG
 }
