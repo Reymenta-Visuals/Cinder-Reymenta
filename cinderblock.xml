@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <cinder>
 <block
-	name="Cinder-VDR"
-	id="fr.batchass.vdr"
+	name="Cinder-Reymenta"
+	id="fr.batchass.Reymenta"
 	author="Bruce Lane"
 	license="MIT"
 	summary=" block for Cinder 0.9: utilities for Spout, WebSockets, Shaders"
