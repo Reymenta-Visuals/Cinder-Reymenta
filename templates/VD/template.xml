@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <cinder>
 <template name="VDR: Basic" parent="org.libcinder.apptemplates.basicopengl">
-	<requires>com.videodromm.vdr</requires>
+	<requires>fr.batchass.vdr</requires>
+		<requires>nl.cowlumbus.warping</requires>
 	<requires>mb.cinder.midi2</requires>
+		<requires>org.libcinder.OSC</requires>
 	<platform os="msw">
 		<requires>fr.batchass.spout</requires>
 	</platform>

@@ -2,7 +2,7 @@
 <cinder>
 <block
 	name="Cinder-VDR"
-	id="com.videodromm.vdr"
+	id="fr.batchass.vdr"
 	author="Bruce Lane"
 	license="MIT"
 	summary=" block for Cinder 0.9: utilities for Spout, WebSockets, Shaders"
@@ -17,6 +17,7 @@
 	<sourcePattern>src/*.cpp</sourcePattern>
 	<sourcePattern>src/*.c</sourcePattern>
 	<requires>nl.cowlumbus.warping</requires>
+		<requires>org.libcinder.OSC</requires>
 	<platform os="msw">
 		<requires>fr.batchass.spout</requires>
 		<requires>mb.cinder.midi2</requires>
